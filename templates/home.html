@@ -1,0 +1,4180 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+
+Hasan | NOC Engineer
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<style>
+
+/* =====================================================
+   HERO STATS
+===================================================== */
+
+.hero-stats {
+    width: 100%;
+    max-width: 650px;
+    margin-top: 42px;
+
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+
+    background: rgba(13, 27, 45, 0.78);
+
+    border: 1px solid rgba(56, 189, 248, 0.26);
+    border-radius: 14px;
+
+    overflow: hidden;
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =====================================================
+   STAT ITEM
+===================================================== */
+
+.hero-stats .hero-stat-item {
+    min-width: 0;
+    min-height: 145px;
+
+    padding: 20px 10px 18px;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+}
+
+
+.hero-stats .hero-stat-item:last-child {
+    border-right: 0;
+}
+
+
+.hero-stats .hero-stat-item:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+
+/* =====================================================
+   ICON - COMMON STYLE
+===================================================== */
+
+.hero-stats .hero-stat-icon {
+    width: 42px;
+    height: 42px;
+
+    margin-bottom: 12px;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    font-size: 18px;
+
+    border-radius: 9px;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+
+.hero-stats .hero-stat-item:hover .hero-stat-icon {
+    transform: translateY(-3px);
+}
+
+
+/* =====================================================
+   ICON 01 - CODEFORCES / BLUE
+===================================================== */
+
+.hero-stats .hero-stat-item:nth-child(1) .hero-stat-icon {
+    color: #38bdf8;
+
+    background: rgba(56, 189, 248, 0.10);
+
+    border: 1px solid rgba(56, 189, 248, 0.45);
+}
+
+
+.hero-stats .hero-stat-item:nth-child(1):hover .hero-stat-icon {
+    background: rgba(56, 189, 248, 0.15);
+
+    border-color: rgba(56, 189, 248, 0.70);
+
+    box-shadow:
+        0 0 20px rgba(56, 189, 248, 0.28);
+}
+
+
+/* =====================================================
+   ICON 02 - AWARDS / GOLD
+===================================================== */
+
+.hero-stats .hero-stat-item:nth-child(2) .hero-stat-icon {
+    color: #fbbf24;
+
+    background: rgba(251, 191, 36, 0.10);
+
+    border: 1px solid rgba(251, 191, 36, 0.45);
+}
+
+
+.hero-stats .hero-stat-item:nth-child(2):hover .hero-stat-icon {
+    background: rgba(251, 191, 36, 0.15);
+
+    border-color: rgba(251, 191, 36, 0.70);
+
+    box-shadow:
+        0 0 20px rgba(251, 191, 36, 0.28);
+}
+
+
+/* =====================================================
+   ICON 03 - EXPERIENCE / GREEN
+===================================================== */
+
+.hero-stats .hero-stat-item:nth-child(3) .hero-stat-icon {
+    color: #34d399;
+
+    background: rgba(52, 211, 153, 0.10);
+
+    border: 1px solid rgba(52, 211, 153, 0.45);
+}
+
+
+.hero-stats .hero-stat-item:nth-child(3):hover .hero-stat-icon {
+    background: rgba(52, 211, 153, 0.15);
+
+    border-color: rgba(52, 211, 153, 0.70);
+
+    box-shadow:
+        0 0 20px rgba(52, 211, 153, 0.28);
+}
+
+
+/* =====================================================
+   ICON 04 - TECHNOLOGIES / PURPLE
+===================================================== */
+
+.hero-stats .hero-stat-item:nth-child(4) .hero-stat-icon {
+    color: #a78bfa;
+
+    background: rgba(167, 139, 250, 0.10);
+
+    border: 1px solid rgba(167, 139, 250, 0.45);
+}
+
+
+.hero-stats .hero-stat-item:nth-child(4):hover .hero-stat-icon {
+    background: rgba(167, 139, 250, 0.15);
+
+    border-color: rgba(167, 139, 250, 0.70);
+
+    box-shadow:
+        0 0 20px rgba(167, 139, 250, 0.28);
+}
+
+
+/* =====================================================
+   NUMBER
+===================================================== */
+
+.hero-stats strong {
+    display: block;
+
+    color: #f5f7fa;
+
+    font-size: 27px;
+    font-weight: 800;
+
+    line-height: 1;
+
+    letter-spacing: -0.5px;
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.hero-stats span {
+    display: block;
+
+    margin-top: 8px;
+
+    color: #a4b1c2;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    line-height: 1.35;
+
+    letter-spacing: 0.8px;
+
+    text-transform: uppercase;
+}
+
+
+/* =====================================================
+   SUB TITLE
+===================================================== */
+
+.hero-stats small {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #718096;
+
+    font-size: 7px;
+    font-weight: 500;
+
+    line-height: 1.3;
+
+    letter-spacing: 0.45px;
+
+    text-transform: uppercase;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 991px) {
+
+    .hero-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+    }
+
+
+    .hero-stats .hero-stat-item:nth-child(2) {
+        border-right: 0;
+    }
+
+
+    .hero-stats .hero-stat-item:nth-child(1),
+    .hero-stats .hero-stat-item:nth-child(2) {
+        border-bottom:
+            1px solid rgba(255, 255, 255, 0.08);
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 575px) {
+
+    .hero-stats {
+        margin-top: 34px;
+    }
+
+
+    .hero-stats .hero-stat-item {
+        min-height: 128px;
+
+        padding: 16px 8px;
+    }
+
+
+    .hero-stats .hero-stat-icon {
+        width: 36px;
+        height: 36px;
+
+        font-size: 15px;
+    }
+
+
+    .hero-stats strong {
+        font-size: 23px;
+    }
+
+
+    .hero-stats span {
+        font-size: 7px;
+    }
+
+
+    .hero-stats small {
+        font-size: 6.5px;
+    }
+
+}
+
+</style>
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section id="home"
+         class="hero-section">
+
+    <div class="hero-grid"></div>
+
+
+    <div class="container position-relative">
+
+        <div class="row align-items-center min-vh-100">
+
+
+            <!-- LEFT -->
+
+            <div class="col-lg-7">
+
+                <div class="availability-badge">
+
+                    <span class="status-dot"></span>
+
+                    NETWORK OPERATIONS
+
+                </div>
+
+
+                <div class="hero-intro">
+
+                    HELLO, I'M HASAN
+
+                </div>
+
+
+                <h1 class="hero-title">
+
+                    NOC Engineer
+
+                    <br>
+
+                    <span>
+                        Focused on Network Reliability.
+                    </span>
+
+                </h1>
+
+
+                <p class="hero-description">
+
+                    I work with network operations,
+                    infrastructure monitoring,
+                    troubleshooting and technical
+                    support to maintain stable and
+                    reliable network services.
+
+                </p>
+
+
+              <div class="hero-buttons"> 
+                <a href="{% static 'files/CV.pdf' %}"
+                 class="btn btn-primary-custom" download> 
+                    Download CV <i class="bi bi-download"></i> </a>
+
+
+                    <a href="#projects" class="btn btn-secondary-custom"> 
+                        View Projects <i class="bi bi-arrow-right"></i> </a>
+
+                </div>
+
+
+               
+                                <!-- HERO STATS -->
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon"><i class="bi bi-code-slash"></i></div>
+                        <strong>300+</strong>
+                        <span>Problem Solved</span>
+                        <b>Codeforces</b>
+                        
+                        
+                    </div>
+
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon"><i class="bi bi-trophy"></i></div>
+                        <strong>5</strong>
+                        <span>Awards</span>
+                        <b>Achievements</b>
+                    </div>
+
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon"><i class="bi bi-briefcase"></i></div>
+                        <strong>5+</strong>
+                        <span>Years Experience</span>
+                        <b>ISP & Networking</b>
+                    </div>
+
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon"><i class="bi bi-cpu"></i></div>
+                        <strong>12+</strong>
+                        <span>Technologies</span>
+                        <b>Tools & Platforms</b>
+                    </div>
+                </div>
+
+            </div>
+
+            
+
+
+
+            <!-- RIGHT -->
+
+            <div class="col-lg-5">
+
+                <div class="profile-wrapper">
+
+
+                    <div class="profile-glow"></div>
+
+
+                    <div class="profile-card">
+
+
+                        <div class="profile-image-container">
+
+                            <img src="{% static 'img/personal.jpg' %}"
+                                 alt="Hasan - NOC Engineer"
+                                 class="profile-image">
+
+                        </div>
+
+
+                        <div class="profile-info">
+
+                            <span class="profile-label">
+
+                                CURRENT ROLE
+
+                            </span>
+
+
+                            <h3>
+                                Sr. Engineer, ISP NOC
+                            </h3>
+
+
+                            <p>
+                                Network Operations & Infrastructure
+                            </p>
+
+                        </div>
+
+
+                        <div class="profile-status">
+
+                            <span class="status-dot"></span>
+
+                            Network Operations
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Floating Card -->
+
+                    <div class="floating-card floating-card-one">
+
+                        <i class="bi bi-diagram-3"></i>
+
+                        <div>
+
+                            <strong>
+                                Network
+                            </strong>
+
+                            <small>
+                                Operations
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="floating-card floating-card-two">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+
+                            <strong>
+                                Infrastructure
+                            </strong>
+
+                            <small>
+                                Reliability
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ABOUT
+===================================================== -->
+
+<section id="about"
+         class="section-padding">
+
+    <div class="container">
+
+
+        <div class="section-heading">
+
+            <span class="section-number">
+                01
+            </span>
+
+            <span class="section-label">
+                ABOUT ME
+            </span>
+
+        </div>
+
+
+
+        <div class="row g-5">
+
+
+            <div class="col-lg-6">
+
+                <h2 class="section-title">
+
+                    Network operations with
+
+                    <span>
+                        precision and reliability.
+                    </span>
+
+                </h2>
+
+            </div>
+
+
+
+            <div class="col-lg-6">
+
+                <p class="about-text">
+
+                   I am an experienced Network Support Engineer with over 5 years of experience in ISP operations, 
+                   network infrastructure, enterprise connectivity, and technical support. Currently working as a 
+                   Sr. Engineer in ISP NOC operations, I specialize in network monitoring, troubleshooting, incident 
+                   management, and maintaining reliable network services. I have hands-on experience with MikroTik, Cisco, 
+                   and Huawei networking equipment, along with routing technologies such as BGP, OSPF, and MPLS.
+
+
+                </p>
+
+
+                <p class="about-text">
+                        My technical interests also extend to Linux system administration, network automation, Python scripting, DevOps, and 
+                        Cybersecurity. I continuously work on improving my technical skills and exploring modern technologies to build secure, 
+                        scalable, and reliable network infrastructure.
+
+                </p>
+
+
+                <p class="about-text">
+
+                    I am passionate about solving complex network issues, improving service reliability, and contributing to efficient 
+                    network operations.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     EXPERTISE
+===================================================== -->
+
+<section id="expertise"
+         class="section-padding expertise-section">
+
+    <div class="container">
+
+
+        <div class="section-heading">
+
+            <span class="section-number">
+                02
+            </span>
+
+            <span class="section-label">
+                CORE EXPERTISE
+            </span>
+
+        </div>
+
+
+
+        <div class="row g-4">
+
+
+            <!-- 1 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-activity"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Network Operations
+                    </h3>
+
+
+                    <p>
+
+                        Network monitoring, service
+                        availability and operational support
+                        across network infrastructure.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            Monitoring
+                        </span>
+
+                        <span>
+                            Operations
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 2 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-diagram-3"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Routing & Switching
+                    </h3>
+
+
+                    <p>
+
+                        Routing, switching, VLAN and
+                        network connectivity troubleshooting.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            Routing
+                        </span>
+
+                        <span>
+                            Switching
+                        </span>
+
+                        <span>
+                            VLAN
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 3 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-wrench-adjustable"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Network Troubleshooting
+                    </h3>
+
+
+                    <p>
+
+                        Structured investigation of
+                        connectivity, performance and
+                        service availability issues.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            Fault Finding
+                        </span>
+
+                        <span>
+                            Incident
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 4 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-hdd-network"></i>
+
+                    </div>
+
+
+                    <h3>
+                        ISP Infrastructure
+                    </h3>
+
+
+                    <p>
+
+                        Access network operations,
+                        ONU/PON environments, VLANs and
+                        customer connectivity services.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            ONU
+                        </span>
+
+                        <span>
+                            PON
+                        </span>
+
+                        <span>
+                            ISP
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 5 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                    </div>
+
+
+                    <h3>
+                        VPN & Connectivity
+                    </h3>
+
+
+                    <p>
+
+                        Secure connectivity, VPN
+                        environments and network access
+                        management concepts.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            VPN
+                        </span>
+
+                        <span>
+                            Security
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 6 -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="expertise-card">
+
+                    <div class="card-icon">
+
+                        <i class="bi bi-ticket-detailed"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Incident Management
+                    </h3>
+
+
+                    <p>
+
+                        Incident handling, escalation,
+                        ticket management and SLA-aware
+                        operational follow-up.
+
+                    </p>
+
+
+                    <div class="card-tags">
+
+                        <span>
+                            Incident
+                        </span>
+
+                        <span>
+                            SLA
+                        </span>
+
+                        <span>
+                            Ticketing
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     TECHNOLOGY STACK
+===================================================== -->
+<!-- =====================================================
+     TECHNOLOGY STACK
+===================================================== -->
+
+<section id="technology"
+         class="section-padding technology-section">
+
+<div class="container">
+
+    <div class="section-heading">
+
+        <span class="section-number">
+            03
+        </span>
+
+        <span class="section-label">
+            TECHNOLOGY
+        </span>
+
+    </div>
+
+
+    <div class="tech-grid">
+
+        <!-- Cisco -->
+        <div class="tech-item">
+
+            <i class="bi bi-router"></i>
+
+            <span>
+                Cisco
+            </span>
+
+        </div>
+
+
+        <!-- MikroTik -->
+        <div class="tech-item">
+
+            <i class="bi bi-router"></i>
+
+            <span>
+                MikroTik
+            </span>
+
+        </div>
+
+
+        <!-- Huawei -->
+        <div class="tech-item">
+
+            <i class="bi bi-hdd-network"></i>
+
+            <span>
+                Huawei
+            </span>
+
+        </div>
+
+
+        <!-- Juniper -->
+        <div class="tech-item">
+
+            <i class="bi bi-diagram-3"></i>
+
+            <span>
+                Juniper
+            </span>
+
+        </div>
+
+
+        <!-- OLT -->
+        <div class="tech-item">
+
+            <i class="bi bi-diagram-3"></i>
+
+            <span>
+                OLT
+            </span>
+
+        </div>
+
+
+        <!-- Linux -->
+        <div class="tech-item">
+
+            <i class="bi bi-terminal"></i>
+
+            <span>
+                Linux
+            </span>
+
+        </div>
+
+
+        <!-- Python -->
+        <div class="tech-item">
+
+            <i class="bi bi-code-slash"></i>
+
+            <span>
+                Python
+            </span>
+
+        </div>
+
+
+        <!-- Django -->
+        <div class="tech-item">
+
+            <i class="bi bi-window"></i>
+
+            <span>
+                Django
+            </span>
+
+        </div>
+
+
+        <!-- Wireshark -->
+        <div class="tech-item">
+
+            <i class="bi bi-eye"></i>
+
+            <span>
+                Wireshark
+            </span>
+
+        </div>
+
+
+        <!-- Zabbix -->
+        <div class="tech-item">
+
+            <i class="bi bi-activity"></i>
+
+            <span>
+                Zabbix
+            </span>
+
+        </div>
+
+
+        <!-- PRTG -->
+        <div class="tech-item">
+
+            <i class="bi bi-speedometer2"></i>
+
+            <span>
+                PRTG Network Monitor
+            </span>
+
+        </div>
+
+
+        <!-- SNMP -->
+        <div class="tech-item">
+
+            <i class="bi bi-diagram-3"></i>
+
+            <span>
+                SNMP
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</section>
+
+
+
+
+<!-- =====================================================
+     EXPERIENCE
+===================================================== -->
+
+<section id="experience"
+         class="section-padding experience-section">
+
+    <div class="container">
+
+
+        <div class="section-heading">
+
+            <span class="section-number">
+                04
+            </span>
+
+            <span class="section-label">
+                EXPERIENCE
+            </span>
+
+        </div>
+
+
+
+        <div class="experience-timeline">
+
+
+            <!-- Experience 01 -->
+
+            <div class="experience-item">
+
+                <div class="experience-marker"></div>
+
+
+                <div class="experience-content">
+
+
+                    <div class="experience-header">
+
+                        <div>
+
+                            <span class="experience-date">
+                                PRESENT
+                            </span>
+
+
+                            <h3>
+                                Sr. Engineer, ISP NOC
+                            </h3>
+
+
+                            <h4>
+                                MANOR IT LIMITED
+                            </h4>
+
+                            <h4>
+                                Sep 2026 - Present
+                            </h4>
+
+                        </div>
+
+
+                        <span class="experience-type">
+                            FULL-TIME
+                        </span>
+
+                    </div>
+
+
+
+                    <p>
+
+                        Responsible for monitoring, configuring, troubleshooting, and maintaining ISP network infrastructure, 
+                        ensuring network stability, service availability, and efficient incident resolution.
+
+                    </p>
+
+
+
+                    <ul class="experience-list">
+
+                        <li>
+                           <b>Network Design & Architecture:</b> Design scalable ISP network architecture including Core, 
+                           Distribution, Access, Routing, VLAN, IP addressing, and redundancy.
+                        </li>
+
+                        <li>
+                          <b>Network Configuration & Deployment:</b> Configure and deploy MikroTik, Cisco, Huawei, Arista, BDCOM, OLT, 
+                          and other network platforms with required routing, VLAN, BGP, PPPoE, NAT, firewall, and bandwidth 
+                          policies.
+                        </li>
+
+                        <li>
+                           <b>Fiber & Access Network:</b> Design, configure, and maintain GPON/EPON, OLT/ONU, fiber, uplink, and 
+                           customer access infrastructure.
+                        </li>
+
+                        <li>
+                           <b>Network Operations & Troubleshooting:</b> Monitor network performance and availability, troubleshoot 
+                           complex outages and connectivity issues, and ensure timely service restoration.
+                        </li>
+
+                        <li>
+                          <b>Optimization & Service Assurance:</b> Analyze network performance and traffic, optimize capacity and 
+                          configurations, coordinate implementation and maintenance, and ensure stable, scalable, and SLA-compliant services.
+                        </li>
+
+                        <li>
+                            <b>Network Monitoring & Management:</b> Install, configure, and manage The Dude, LibreNMS, MRTG, and 
+                            other NMS platforms, including device integration, SNMP, traffic monitoring, alerts, performance 
+                            monitoring, and network health tracking.
+                        </li>    
+
+                      
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+
+
+             <!-- Experience 02 -->
+
+            <div class="experience-item">
+
+                <div class="experience-marker"></div>
+
+
+                <div class="experience-content">
+
+
+                    <div class="experience-header">
+
+                        <div>
+
+                            <span class="experience-date">
+                                PREVIOUS EXPERIENCE
+                            </span>
+
+
+                            <h3>
+                               Sr. Support Engineer, Technical
+                            </h3>
+
+
+                            <h4>
+                                Link3 Technologies Limited
+                            </h4>
+
+                            <h4>
+                                Dec, 2022 - Aug, 2026
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+
+
+                     <ul class="experience-list">
+
+                        <li>
+                           Troubleshoot Mikrotik, Cisco, and Huawei devices.
+                        </li>
+
+                        <li>
+                            Manage OLTs, GPON/EPON, and fiber network infrastructure.
+                        </li>
+
+                        <li>
+                            Handle retail and corporate customer network issues.
+                        </li>
+
+                        <li>
+                            Provide timely technical solutions and connectivity support.
+                        </li>
+
+                        <li>
+                            scalate critical issues and maintain proper documentation.
+                        </li>
+
+                        <li>
+                            Lead and coordinate fiber installation and maintenance teams.
+                        </li>
+
+                        <li>
+                            Assign field tasks and monitor operational activities.
+                        </li>
+
+                        <li>
+                            Ensure quick restoration during fiber outages.
+                        </li>
+
+                        <li>
+                            Maintain operational reports and management updates.
+                        </li>
+
+                        
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+             <!-- Experience 03 -->
+
+            <div class="experience-item">
+
+                <div class="experience-marker"></div>
+
+
+                <div class="experience-content">
+
+
+                    <div class="experience-header">
+
+                        <div>
+
+                            <span class="experience-date">
+                                PREVIOUS EXPERIENCE
+                            </span>
+
+
+                            <h3>
+                                Fiber Infrastructure Engineer, Fiber
+                            </h3>
+
+
+                            <h4>
+                                Global Link Sylhet
+                            </h4>
+
+                            <h4>
+                                Sep, 2020 - Dec, 2022
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+
+
+                     <ul class="experience-list">
+
+                        <li>
+                           Manage and guide the fiber installation and maintenance team to ensure smooth operations
+                        </li>
+
+                        <li>
+                            Plan, organize, and oversee field activities and task assignments
+                        </li>
+
+                        <li>
+                            Track fiber network performance and ensure fast resolution of outages
+                        </li>
+
+                        <li>
+                            Prepare and maintain operational reports for management.
+                        </li>
+
+                        <li>
+                            Audit fiber network details to ensure accuracy and quality.
+                        </li>
+                        
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PROJECTS
+===================================================== -->
+
+<section id="projects"
+         class="section-padding">
+
+    <div class="container">
+
+
+        <div class="section-heading">
+
+            <span class="section-number">
+                05
+            </span>
+
+            <span class="section-label">
+                FEATURED PROJECTS
+            </span>
+
+        </div>
+
+
+
+        <div class="row g-4">
+
+
+            <!-- Project 01 -->
+
+            <div class="col-lg-6">
+
+                <article class="project-card">
+
+
+                    <div class="project-top">
+
+                        <span>
+                            01
+                        </span>
+
+                        <i class="bi bi-arrow-up-right"></i>
+
+                    </div>
+
+
+                    <div class="project-icon">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Enterprise VPN Architecture
+                    </h3>
+
+
+                    <p>
+
+                        Designed a concept for
+                        employee-specific VPN access
+                        with controlled connectivity
+                        and centralized management.
+
+                    </p>
+
+
+                    <div class="project-tags">
+
+                        <span>VPN</span>
+                        <span>Networking</span>
+                        <span>Security</span>
+                        <span>Routing</span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+
+            <!-- Project 02 -->
+
+            <div class="col-lg-6">
+
+                <article class="project-card">
+
+
+                    <div class="project-top">
+
+                        <span>
+                            02
+                        </span>
+
+                        <i class="bi bi-arrow-up-right"></i>
+
+                    </div>
+
+
+                    <div class="project-icon">
+
+                        <i class="bi bi-activity"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Network Monitoring & Operations
+                    </h3>
+
+
+                    <p>
+
+                        Developed an operational approach
+                        for monitoring network availability,
+                        identifying faults and improving
+                        incident response.
+
+                    </p>
+
+
+                    <div class="project-tags">
+
+                        <span>NOC</span>
+                        <span>Monitoring</span>
+                        <span>Incident Management</span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+
+            <!-- Project 03 -->
+
+            <div class="col-lg-6">
+
+                <article class="project-card">
+
+
+                    <div class="project-top">
+
+                        <span>
+                            03
+                        </span>
+
+                        <i class="bi bi-arrow-up-right"></i>
+
+                    </div>
+
+
+                    <div class="project-icon">
+
+                        <i class="bi bi-hdd-network"></i>
+
+                    </div>
+
+
+                    <h3>
+                        ISP Network Troubleshooting
+                    </h3>
+
+
+                    <p>
+
+                        Practical troubleshooting workflows
+                        covering VLAN, ONU/PON, connectivity,
+                        router and service availability issues.
+
+                    </p>
+
+
+                    <div class="project-tags">
+
+                        <span>ISP</span>
+                        <span>VLAN</span>
+                        <span>ONU</span>
+                        <span>PON</span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+
+            <!-- Project 04 -->
+
+            <div class="col-lg-6">
+
+                <article class="project-card">
+
+
+                    <div class="project-top">
+
+                        <span>
+                            04
+                        </span>
+
+                        <i class="bi bi-arrow-up-right"></i>
+
+                    </div>
+
+
+                    <div class="project-icon">
+
+                        <i class="bi bi-code-slash"></i>
+
+                    </div>
+
+
+                    <h3>
+                        Django Portfolio System
+                    </h3>
+
+
+                    <p>
+
+                        Professional Django-based portfolio
+                        system with responsive UI, structured
+                        content and scalable backend architecture.
+
+                    </p>
+
+
+                    <div class="project-tags">
+
+                        <span>Python</span>
+                        <span>Django</span>
+                        <span>Bootstrap</span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CERTIFICATIONS
+===================================================== -->
+
+<section class="section-padding certifications-section">
+
+    <div class="container">
+
+
+        <div class="section-heading">
+
+            <span class="section-number">
+                06
+            </span>
+
+            <span class="section-label">
+                CERTIFICATIONS & LEARNING
+            </span>
+
+        </div>
+
+
+
+        <div class="row g-4">
+
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="certification-card">
+
+                    <div class="cert-icon">
+
+                        <i class="bi bi-award"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            NETWORKING
+                        </span>
+
+                        <h3>
+                            CCNA, Mikrotik, Rujie
+                        </h3>
+
+                        <p>
+
+                            Routing, switching, networking
+                            fundamentals and infrastructure concepts.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="certification-card">
+
+                    <div class="cert-icon">
+
+                        <i class="bi bi-terminal"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            SYSTEMS
+                        </span>
+
+                        <h3>
+                            Linux
+                        </h3>
+
+                        <p>
+
+                            Command-line operations, system
+                            administration and networking-related
+                            Linux skills.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="certification-card">
+
+                    <div class="cert-icon">
+
+                        <i class="bi bi-code-square"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            DEVELOPMENT
+                        </span>
+
+                        <h3>
+                            Python & Django
+                        </h3>
+
+                        <p>
+
+                            Automation, scripting and web
+                            application development.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =====================================================
+     07 - LESSONS & RESOURCES
+===================================================== -->
+
+<!-- =====================================================
+     07 - LESSONS & RESOURCES
+===================================================== -->
+
+<section id="lessons" class="section-padding lessons-scroll-section">
+
+<style>
+
+/* =====================================================
+   07 - LESSONS & RESOURCES
+===================================================== */
+
+#lessons.lessons-scroll-section {
+    position: relative;
+
+    overflow: hidden;
+
+    background: #0b1728;
+}
+
+
+/* Background glow */
+
+#lessons.lessons-scroll-section::before {
+    content: "";
+
+    position: absolute;
+
+    width: 520px;
+    height: 520px;
+
+    top: -220px;
+    right: -250px;
+
+    background: rgba(56, 189, 248, 0.055);
+
+    border-radius: 50%;
+
+    filter: blur(120px);
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   MAIN HEADER
+===================================================== */
+
+#lessons .lessons-main-header {
+    position: relative;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 40px;
+
+    margin-bottom: 38px;
+}
+
+
+#lessons .lessons-heading-content {
+    min-width: 0;
+}
+
+
+#lessons .lessons-main-title {
+    margin: 0;
+
+    color: #f5f7fa;
+
+    font-size: clamp(32px, 4vw, 46px);
+    font-weight: 700;
+
+    line-height: 1.15;
+
+    letter-spacing: -1.8px;
+}
+
+
+#lessons .lessons-main-title span {
+    color: #91a3b8;
+}
+
+
+#lessons .lessons-main-description {
+    max-width: 700px;
+
+    margin: 13px 0 0;
+
+    color: #71869d;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+}
+
+
+/* =====================================================
+   RESOURCE COUNT
+===================================================== */
+
+#lessons .lessons-resource-count {
+    flex-shrink: 0;
+
+    min-width: 120px;
+
+    padding-left: 26px;
+
+    border-left:
+        1px solid rgba(255,255,255,0.10);
+}
+
+
+#lessons .lessons-resource-count strong {
+    display: block;
+
+    color: #38bdf8;
+
+    font-size: 38px;
+    font-weight: 800;
+
+    line-height: 1;
+}
+
+
+#lessons .lessons-resource-count span {
+    display: block;
+
+    margin-top: 8px;
+
+    color: #71869d;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+/* =====================================================
+   BROWSE BAR
+===================================================== */
+
+#lessons .lessons-browse-bar {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 14px;
+}
+
+
+#lessons .lessons-browse-label {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color: #63798f;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    letter-spacing: 1.4px;
+
+    text-transform: uppercase;
+}
+
+
+#lessons .lessons-browse-dot {
+    width: 5px;
+    height: 5px;
+
+    background: #38bdf8;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 8px rgba(56,189,248,.65);
+}
+
+
+/* =====================================================
+   SCROLL BUTTONS
+===================================================== */
+
+#lessons .lessons-scroll-buttons {
+    display: flex;
+
+    gap: 7px;
+}
+
+
+#lessons .lesson-scroll-button {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    color: #8498ac;
+
+    background: #0e1d2e;
+
+    border: 1px solid #294057;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+
+#lessons .lesson-scroll-button:hover {
+    color: #ffffff;
+
+    background:
+        rgba(56,189,248,.10);
+
+    border-color:
+        rgba(56,189,248,.60);
+}
+
+
+#lessons .lesson-scroll-button:active {
+    transform: scale(.94);
+}
+
+
+#lessons .lesson-scroll-button svg {
+    display: block !important;
+
+    width: 14px !important;
+    height: 14px !important;
+
+    min-width: 14px !important;
+    min-height: 14px !important;
+
+    max-width: 14px !important;
+    max-height: 14px !important;
+}
+
+
+/* =====================================================
+   SCROLL VIEWPORT
+===================================================== */
+
+#lessons .lessons-scroll-viewport {
+    position: relative;
+
+    width: 100%;
+}
+
+
+/* right fade */
+
+#lessons .lessons-scroll-viewport::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 45px;
+    height: calc(100% - 15px);
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(11,23,40,.92)
+        );
+
+    pointer-events: none;
+
+    z-index: 3;
+}
+
+
+/* =====================================================
+   HORIZONTAL RAIL
+===================================================== */
+
+#lessons .lessons-resource-rail {
+    display: flex !important;
+
+    align-items: stretch;
+
+    gap: 16px !important;
+
+    width: 100%;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    padding:
+        4px
+        44px
+        20px
+        2px;
+
+    scroll-behavior: smooth;
+
+    scroll-snap-type:
+        x proximity;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        #29465f
+        transparent;
+
+    overscroll-behavior-x:
+        contain;
+
+    -webkit-overflow-scrolling:
+        touch;
+}
+
+
+/* Chrome scrollbar */
+
+#lessons
+.lessons-resource-rail::-webkit-scrollbar {
+    height: 6px;
+}
+
+
+#lessons
+.lessons-resource-rail::-webkit-scrollbar-track {
+    background:
+        rgba(255,255,255,.025);
+
+    border-radius: 999px;
+}
+
+
+#lessons
+.lessons-resource-rail::-webkit-scrollbar-thumb {
+    background: #29465f;
+
+    border-radius: 999px;
+}
+
+
+#lessons
+.lessons-resource-rail::-webkit-scrollbar-thumb:hover {
+    background: #38bdf8;
+}
+
+
+/* =====================================================
+   CARD
+===================================================== */
+
+#lessons .lesson-resource-card {
+    --lesson-color: #38bdf8;
+
+    position: relative;
+
+    flex:
+        0 0 235px !important;
+
+    width:
+        235px !important;
+
+    min-width:
+        235px !important;
+
+    min-height:
+        315px;
+
+    display:
+        flex !important;
+
+    flex-direction:
+        column !important;
+
+    padding:
+        24px !important;
+
+    overflow:
+        hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(16,31,49,.98),
+            rgba(10,23,38,.98)
+        ) !important;
+
+    border:
+        1px solid
+        rgba(91,117,145,.27) !important;
+
+    border-radius:
+        14px !important;
+
+    scroll-snap-align:
+        start;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255,255,255,.025);
+
+    transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
+}
+
+
+#lessons .lesson-resource-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--lesson-color),
+            transparent
+        );
+
+    opacity: 0;
+
+    transition:
+        opacity .25s ease;
+}
+
+
+#lessons .lesson-resource-card:hover {
+    transform:
+        translateY(-5px);
+
+    border-color:
+        var(--lesson-color) !important;
+
+    box-shadow:
+        0 20px 45px
+        rgba(0,0,0,.28);
+}
+
+
+#lessons
+.lesson-resource-card:hover::before {
+    opacity: .8;
+}
+
+
+/* =====================================================
+   CARD COLORS
+===================================================== */
+
+#lessons .lesson-blue {
+    --lesson-color: #38bdf8;
+}
+
+
+#lessons .lesson-yellow {
+    --lesson-color: #f5c400;
+}
+
+
+#lessons .lesson-green {
+    --lesson-color: #22d38a;
+}
+
+
+#lessons .lesson-red {
+    --lesson-color: #ff5267;
+}
+
+
+#lessons .lesson-purple {
+    --lesson-color: #a970ff;
+}
+
+
+#lessons .lesson-orange {
+    --lesson-color: #fb923c;
+}
+
+
+#lessons .lesson-cyan {
+    --lesson-color: #22d3ee;
+}
+
+
+#lessons .lesson-pink {
+    --lesson-color: #f472b6;
+}
+
+
+/* =====================================================
+   MAIN ICON
+===================================================== */
+
+#lessons .lesson-resource-icon {
+    width:
+        48px !important;
+
+    height:
+        48px !important;
+
+    min-width:
+        48px !important;
+
+    min-height:
+        48px !important;
+
+    max-width:
+        48px !important;
+
+    max-height:
+        48px !important;
+
+    flex:
+        0 0 48px !important;
+
+    display:
+        flex !important;
+
+    align-items:
+        center !important;
+
+    justify-content:
+        center !important;
+
+    margin:
+        0 0 20px 0 !important;
+
+    padding:
+        0 !important;
+
+    overflow:
+        hidden !important;
+
+    color:
+        var(--lesson-color);
+
+    background:
+        rgba(56,189,248,.06);
+
+    border:
+        1px solid
+        var(--lesson-color);
+
+    border-radius:
+        10px !important;
+}
+
+
+/* hard protect svg */
+
+#lessons
+.lesson-resource-icon > svg {
+    display:
+        block !important;
+
+    width:
+        23px !important;
+
+    height:
+        23px !important;
+
+    min-width:
+        23px !important;
+
+    min-height:
+        23px !important;
+
+    max-width:
+        23px !important;
+
+    max-height:
+        23px !important;
+
+    flex:
+        0 0 23px !important;
+
+    margin:
+        0 !important;
+
+    padding:
+        0 !important;
+
+    position:
+        static !important;
+
+    transform:
+        none !important;
+}
+
+
+/* =====================================================
+   CATEGORY
+===================================================== */
+
+#lessons .lesson-resource-category {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color:
+        var(--lesson-color);
+
+    font-size:
+        8px;
+
+    font-weight:
+        700;
+
+    line-height:
+        1.4;
+
+    letter-spacing:
+        1.3px;
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+#lessons
+.lesson-resource-card h3 {
+    margin:
+        0 0 10px !important;
+
+    color:
+        #f1f5f9 !important;
+
+    font-size:
+        20px !important;
+
+    font-weight:
+        700 !important;
+
+    line-height:
+        1.3 !important;
+}
+
+
+/* =====================================================
+   DESCRIPTION
+===================================================== */
+
+#lessons
+.lesson-resource-card p {
+    margin:
+        0 0 24px !important;
+
+    color:
+        #7e92aa !important;
+
+    font-size:
+        10.5px !important;
+
+    line-height:
+        1.75 !important;
+}
+
+
+/* =====================================================
+   PDF BUTTON
+===================================================== */
+
+#lessons .lesson-resource-btn {
+    width: 100%;
+
+    min-height: 42px;
+
+    display:
+        flex !important;
+
+    align-items:
+        center !important;
+
+    gap: 9px;
+
+    margin-top:
+        auto !important;
+
+    padding:
+        10px 12px !important;
+
+    color:
+        var(--lesson-color) !important;
+
+    background:
+        rgba(255,255,255,.015) !important;
+
+    border:
+        1px solid
+        var(--lesson-color) !important;
+
+    border-radius:
+        9px !important;
+
+    text-decoration:
+        none !important;
+
+    font-size:
+        10.5px;
+
+    font-weight:
+        650;
+
+    line-height:
+        1;
+
+    overflow:
+        hidden;
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        box-shadow .2s ease;
+}
+
+
+#lessons
+.lesson-resource-btn:hover {
+    color:
+        #ffffff !important;
+
+    background:
+        rgba(56,189,248,.11) !important;
+
+    box-shadow:
+        0 0 18px
+        rgba(56,189,248,.08);
+}
+
+
+#lessons
+.lesson-resource-btn-text {
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+/* =====================================================
+   PDF ICON
+===================================================== */
+
+#lessons
+.lesson-resource-pdf-icon {
+    display:
+        block !important;
+
+    width:
+        15px !important;
+
+    height:
+        15px !important;
+
+    min-width:
+        15px !important;
+
+    min-height:
+        15px !important;
+
+    max-width:
+        15px !important;
+
+    max-height:
+        15px !important;
+
+    flex:
+        0 0 15px !important;
+
+    margin:
+        0 !important;
+
+    padding:
+        0 !important;
+
+    position:
+        static !important;
+
+    transform:
+        none !important;
+}
+
+
+/* =====================================================
+   ARROW ICON
+===================================================== */
+
+#lessons
+.lesson-resource-arrow {
+    display:
+        block !important;
+
+    width:
+        13px !important;
+
+    height:
+        13px !important;
+
+    min-width:
+        13px !important;
+
+    min-height:
+        13px !important;
+
+    max-width:
+        13px !important;
+
+    max-height:
+        13px !important;
+
+    flex:
+        0 0 13px !important;
+
+    margin:
+        0 0 0 auto !important;
+
+    padding:
+        0 !important;
+
+    position:
+        static !important;
+
+    transform:
+        none !important;
+
+    transition:
+        transform .2s ease !important;
+}
+
+
+#lessons
+.lesson-resource-btn:hover
+.lesson-resource-arrow {
+    transform:
+        translate(2px,-2px) !important;
+}
+
+
+/* Global SVG protection */
+
+#lessons svg {
+    box-sizing:
+        border-box !important;
+
+    vertical-align:
+        middle !important;
+}
+
+
+/* =====================================================
+   FOOTER NOTE
+===================================================== */
+
+#lessons .lessons-footer-note {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-top: 42px;
+
+    text-align: center;
+}
+
+
+#lessons .lessons-footer-quote {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+
+    color: #8195aa;
+
+    font-size: 11px;
+
+    font-style: italic;
+}
+
+
+#lessons
+.lessons-footer-quote::before,
+
+#lessons
+.lessons-footer-quote::after {
+    content: "";
+
+    width: 55px;
+    height: 1px;
+
+    background: #2b4054;
+}
+
+
+#lessons .lessons-footer-small {
+    margin-top: 8px;
+
+    color: #50677e;
+
+    font-size: 7px;
+    font-weight: 700;
+
+    letter-spacing: 2.5px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 767px) {
+
+    #lessons .lessons-main-header {
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+    }
+
+
+    #lessons .lessons-resource-count {
+        padding-left: 0;
+
+        border-left: 0;
+    }
+
+
+    #lessons .lesson-resource-card {
+        flex-basis:
+            220px !important;
+
+        width:
+            220px !important;
+
+        min-width:
+            220px !important;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    #lessons .lesson-resource-card {
+        flex-basis:
+            82vw !important;
+
+        width:
+            82vw !important;
+
+        min-width:
+            82vw !important;
+
+        min-height:
+            285px;
+    }
+
+
+    #lessons
+    .lessons-footer-quote::before,
+
+    #lessons
+    .lessons-footer-quote::after {
+        width: 25px;
+    }
+
+}
+
+</style>
+
+
+<div class="container">
+
+
+    <!-- =================================================
+         SECTION LABEL
+    ================================================== -->
+
+    <div class="section-heading">
+
+        <span class="section-number">
+            07
+        </span>
+
+        <span class="section-label">
+            LESSONS & RESOURCES
+        </span>
+
+    </div>
+
+
+
+    <!-- =================================================
+         HEADER
+    ================================================== -->
+
+    <div class="lessons-main-header">
+
+        <div class="lessons-heading-content">
+
+            <h2 class="lessons-main-title">
+
+                Technical
+
+                <span>
+                    learning resources.
+                </span>
+
+            </h2>
+
+
+            <p class="lessons-main-description">
+
+                Quick access to networking,
+                infrastructure and system administration
+                lesson materials.
+
+            </p>
+
+        </div>
+
+
+        <div class="lessons-resource-count">
+
+            <strong id="lessonResourceCount">
+                05
+            </strong>
+
+            <span>
+                RESOURCES
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         BROWSE BAR
+    ================================================== -->
+
+    <div class="lessons-browse-bar">
+
+        <div class="lessons-browse-label">
+
+            <span class="lessons-browse-dot"></span>
+
+            Scroll to browse resources
+
+        </div>
+
+
+        <div class="lessons-scroll-buttons">
+
+            <!-- LEFT -->
+
+            <button
+                type="button"
+                class="lesson-scroll-button"
+                id="lessonScrollLeft"
+                aria-label="Scroll lesson resources left"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path d="M15 18l-6-6 6-6"></path>
+
+                </svg>
+
+            </button>
+
+
+            <!-- RIGHT -->
+
+            <button
+                type="button"
+                class="lesson-scroll-button"
+                id="lessonScrollRight"
+                aria-label="Scroll lesson resources right"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <path d="M9 18l6-6-6-6"></path>
+
+                </svg>
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         SCROLL AREA
+    ================================================== -->
+
+    <div class="lessons-scroll-viewport">
+
+        <div
+            class="lessons-resource-rail"
+            id="lessonsResourceRail"
+        >
+
+       <!-- =================================================
+     01 - NETWORKING LESSONS
+================================================== -->
+
+<div class="lesson-resource-card lesson-orange">
+
+    <div class="lesson-resource-icon">
+
+        <svg
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+
+            <circle cx="5" cy="12" r="2"></circle>
+            <circle cx="19" cy="5" r="2"></circle>
+            <circle cx="19" cy="19" r="2"></circle>
+
+            <path d="M7 11l10-5"></path>
+            <path d="M7 13l10 5"></path>
+
+        </svg>
+
+    </div>
+
+
+    <span class="lesson-resource-category">
+        NETWORKING
+    </span>
+
+
+    <h3>
+        Networking Lessons
+    </h3>
+
+
+    <p>
+        Networking fundamentals, routing,
+        switching, IP addressing, VLAN and
+        troubleshooting lessons.
+    </p>
+
+
+    <a
+        href="https://drive.google.com/drive/folders/1WXdcn08iP-wMq95_1pFWg8SXUCenm3Bh"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lesson-resource-btn"
+    >
+
+        <svg
+            class="lesson-resource-pdf-icon"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+
+            <path d="M6 2h8l4 4v16H6z"></path>
+            <path d="M14 2v5h5"></path>
+            <path d="M8 12h5"></path>
+            <path d="M8 16h8"></path>
+
+        </svg>
+
+
+        <span class="lesson-resource-btn-text">
+            Open Resources
+        </span>
+
+
+        <svg
+            class="lesson-resource-arrow"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+
+            <path d="M7 17L17 7"></path>
+            <path d="M8 7h9v9"></path>
+
+        </svg>
+
+    </a>
+
+</div>
+
+<!-- =================================================
+     02 - INTERNET PROBLEM DEBUGGING
+================================================== -->
+
+<div class="lesson-resource-card lesson-cyan">
+
+    <!-- ICON -->
+    <div class="lesson-resource-icon">
+
+        <svg
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <!-- Globe -->
+            <circle cx="12" cy="12" r="8"></circle>
+
+            <path d="M4 12h16"></path>
+            <path d="M12 4a13 13 0 0 1 0 16"></path>
+            <path d="M12 4a13 13 0 0 0 0 16"></path>
+
+            <!-- Debug / Alert -->
+            <circle cx="18.5" cy="18.5" r="3.5"></circle>
+            <path d="M18.5 16.8v2"></path>
+            <path d="M18.5 20.2h.01"></path>
+        </svg>
+
+    </div>
+
+
+    <!-- CATEGORY -->
+    <span class="lesson-resource-category">
+        TROUBLESHOOTING
+    </span>
+
+
+    <!-- TITLE -->
+    <h3>
+        Internet Problem Debugging
+    </h3>
+
+
+    <!-- DESCRIPTION -->
+    <p>
+        Step-by-step internet troubleshooting,
+        connectivity testing, DNS, gateway,
+        routing and packet-loss debugging.
+    </p>
+
+
+    <!-- RESOURCE BUTTON -->
+    <a
+        href="YOUR_GOOGLE_DRIVE_FOLDER_LINK_HERE"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lesson-resource-btn"
+    >
+
+        <!-- RESOURCE ICON -->
+        <svg
+            class="lesson-resource-pdf-icon"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M6 2h8l4 4v16H6z"></path>
+            <path d="M14 2v5h5"></path>
+            <path d="M8 12h5"></path>
+            <path d="M8 16h8"></path>
+        </svg>
+
+
+        <span class="lesson-resource-btn-text">
+            Open Resources
+        </span>
+
+
+        <!-- ARROW -->
+        <svg
+            class="lesson-resource-arrow"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M7 17L17 7"></path>
+            <path d="M8 7h9v9"></path>
+        </svg>
+
+    </a>
+
+</div>
+
+            <!-- =================================================
+                 01 - OLT
+            ================================================== -->
+
+            <div class="lesson-resource-card lesson-blue">
+
+                <div class="lesson-resource-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="9"
+                            y="2"
+                            width="6"
+                            height="5"
+                            rx="1">
+                        </rect>
+
+                        <path d="M12 7v5"></path>
+
+                        <path d="M5 12h14"></path>
+
+                        <path d="M5 12v4"></path>
+
+                        <path d="M12 12v4"></path>
+
+                        <path d="M19 12v4"></path>
+
+                        <rect
+                            x="2"
+                            y="16"
+                            width="6"
+                            height="5"
+                            rx="1">
+                        </rect>
+
+                        <rect
+                            x="9"
+                            y="16"
+                            width="6"
+                            height="5"
+                            rx="1">
+                        </rect>
+
+                        <rect
+                            x="16"
+                            y="16"
+                            width="6"
+                            height="5"
+                            rx="1">
+                        </rect>
+
+                    </svg>
+
+                </div>
+
+
+                <span class="lesson-resource-category">
+                    ACCESS NETWORK
+                </span>
+
+
+                <h3>
+                    OLT
+                </h3>
+
+
+                <p>
+                    GPON, EPON, ONU, PON and
+                    OLT configuration resources.
+                </p>
+
+
+                <a
+                    href="{% static 'files/lessons/olt.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="lesson-resource-btn"
+                >
+
+                    <svg
+                        class="lesson-resource-pdf-icon"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M6 2h8l4 4v16H6z"></path>
+                        <path d="M14 2v5h5"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h8"></path>
+
+                    </svg>
+
+
+                    <span class="lesson-resource-btn-text">
+                        Open PDF
+                    </span>
+
+
+                    <svg
+                        class="lesson-resource-arrow"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M7 17L17 7"></path>
+                        <path d="M8 7h9v9"></path>
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 02 - MIKROTIK
+            ================================================== -->
+
+            <div class="lesson-resource-card lesson-yellow">
+
+                <div class="lesson-resource-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="3"
+                            y="12"
+                            width="18"
+                            height="8"
+                            rx="2">
+                        </rect>
+
+                        <path d="M7 16h.01"></path>
+
+                        <path d="M11 16h.01"></path>
+
+                        <path d="M12 12V8"></path>
+
+                        <path
+                            d="M8.5 8.5a5 5 0 0 1 7 0">
+                        </path>
+
+                        <path
+                            d="M6 6a8.5 8.5 0 0 1 12 0">
+                        </path>
+
+                    </svg>
+
+                </div>
+
+
+                <span class="lesson-resource-category">
+                    ROUTING
+                </span>
+
+
+                <h3>
+                    MikroTik
+                </h3>
+
+
+                <p>
+                    RouterOS, routing, firewall,
+                    PPPoE and network configuration.
+                </p>
+
+
+                <a
+                    href="{% static 'files/lessons/mikrotik.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="lesson-resource-btn"
+                >
+
+                    <svg
+                        class="lesson-resource-pdf-icon"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M6 2h8l4 4v16H6z"></path>
+                        <path d="M14 2v5h5"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h8"></path>
+
+                    </svg>
+
+
+                    <span class="lesson-resource-btn-text">
+                        Open PDF
+                    </span>
+
+
+                    <svg
+                        class="lesson-resource-arrow"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M7 17L17 7"></path>
+                        <path d="M8 7h9v9"></path>
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 03 - CISCO
+            ================================================== -->
+
+            <div class="lesson-resource-card lesson-green">
+
+                <div class="lesson-resource-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="6"
+                            rx="2">
+                        </rect>
+
+                        <rect
+                            x="3"
+                            y="14"
+                            width="18"
+                            height="6"
+                            rx="2">
+                        </rect>
+
+                        <path d="M7 7h.01"></path>
+                        <path d="M7 17h.01"></path>
+
+                        <path d="M11 7h6"></path>
+                        <path d="M11 17h6"></path>
+
+                    </svg>
+
+                </div>
+
+
+                <span class="lesson-resource-category">
+                    ROUTING & SWITCHING
+                </span>
+
+
+                <h3>
+                    Cisco
+                </h3>
+
+
+                <p>
+                    Cisco routing, switching,
+                    VLAN and network fundamentals.
+                </p>
+
+
+                <a
+                    href="{% static 'files/lessons/cisco.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="lesson-resource-btn"
+                >
+
+                    <svg
+                        class="lesson-resource-pdf-icon"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M6 2h8l4 4v16H6z"></path>
+                        <path d="M14 2v5h5"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h8"></path>
+
+                    </svg>
+
+
+                    <span class="lesson-resource-btn-text">
+                        Open PDF
+                    </span>
+
+
+                    <svg
+                        class="lesson-resource-arrow"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M7 17L17 7"></path>
+                        <path d="M8 7h9v9"></path>
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 04 - HUAWEI
+            ================================================== -->
+
+            <div class="lesson-resource-card lesson-red">
+
+                <div class="lesson-resource-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="5"
+                            r="2.5">
+                        </circle>
+
+                        <circle
+                            cx="5"
+                            cy="18"
+                            r="2.5">
+                        </circle>
+
+                        <circle
+                            cx="19"
+                            cy="18"
+                            r="2.5">
+                        </circle>
+
+                        <path
+                            d="M10.5 7L6.5 15.5">
+                        </path>
+
+                        <path
+                            d="M13.5 7L17.5 15.5">
+                        </path>
+
+                        <path
+                            d="M7.5 18h9">
+                        </path>
+
+                    </svg>
+
+                </div>
+
+
+                <span class="lesson-resource-category">
+                    INFRASTRUCTURE
+                </span>
+
+
+                <h3>
+                    Huawei
+                </h3>
+
+
+                <p>
+                    Huawei routing, switching
+                    and infrastructure resources.
+                </p>
+
+
+                <a
+                    href="{% static 'files/lessons/huawei.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="lesson-resource-btn"
+                >
+
+                    <svg
+                        class="lesson-resource-pdf-icon"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M6 2h8l4 4v16H6z"></path>
+                        <path d="M14 2v5h5"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h8"></path>
+
+                    </svg>
+
+
+                    <span class="lesson-resource-btn-text">
+                        Open PDF
+                    </span>
+
+
+                    <svg
+                        class="lesson-resource-arrow"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M7 17L17 7"></path>
+                        <path d="M8 7h9v9"></path>
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 05 - LINUX
+            ================================================== -->
+
+            <div class="lesson-resource-card lesson-purple">
+
+                <div class="lesson-resource-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="2.5"
+                            y="4"
+                            width="19"
+                            height="16"
+                            rx="2">
+                        </rect>
+
+                        <path
+                            d="M7 9l3 3-3 3">
+                        </path>
+
+                        <path
+                            d="M13 15h4">
+                        </path>
+
+                    </svg>
+
+                </div>
+
+
+                <span class="lesson-resource-category">
+                    SYSTEMS
+                </span>
+
+
+                <h3>
+                    Linux
+                </h3>
+
+
+                <p>
+                    Linux administration,
+                    command line and networking.
+                </p>
+
+
+                <a
+                    href="{% static 'files/lessons/linux.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="lesson-resource-btn"
+                >
+
+                    <svg
+                        class="lesson-resource-pdf-icon"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M6 2h8l4 4v16H6z"></path>
+                        <path d="M14 2v5h5"></path>
+                        <path d="M8 12h5"></path>
+                        <path d="M8 16h8"></path>
+
+                    </svg>
+
+
+                    <span class="lesson-resource-btn-text">
+                        Open PDF
+                    </span>
+
+
+                    <svg
+                        class="lesson-resource-arrow"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M7 17L17 7"></path>
+                        <path d="M8 7h9v9"></path>
+
+                    </svg>
+
+                </a>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         FOOTER MESSAGE
+    ================================================== -->
+
+    <div class="lessons-footer-note">
+
+        <div class="lessons-footer-quote">
+
+            Learn. Practice. Solve. Repeat.
+
+        </div>
+
+
+        <div class="lessons-footer-small">
+
+            BETTER NETWORKS BUILD A BRIGHTER TOMORROW
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =====================================================
+     LESSON HORIZONTAL SCROLL JAVASCRIPT
+===================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        const rail =
+            document.getElementById(
+                "lessonsResourceRail"
+            );
+
+
+        const leftButton =
+            document.getElementById(
+                "lessonScrollLeft"
+            );
+
+
+        const rightButton =
+            document.getElementById(
+                "lessonScrollRight"
+            );
+
+
+        const countElement =
+            document.getElementById(
+                "lessonResourceCount"
+            );
+
+
+        if (!rail) {
+            return;
+        }
+
+
+
+        /* =================================================
+           AUTO RESOURCE COUNT
+        ================================================= */
+
+        const cards =
+            rail.querySelectorAll(
+                ".lesson-resource-card"
+            );
+
+
+        if (countElement) {
+
+            countElement.textContent =
+                String(cards.length)
+                    .padStart(2, "0");
+
+        }
+
+
+
+        /* =================================================
+           SCROLL DISTANCE
+        ================================================= */
+
+        function getScrollAmount() {
+
+            const firstCard =
+                rail.querySelector(
+                    ".lesson-resource-card"
+                );
+
+
+            if (!firstCard) {
+                return 250;
+            }
+
+
+            const cardWidth =
+                firstCard.getBoundingClientRect().width;
+
+
+            return cardWidth + 16;
+
+        }
+
+
+
+        /* =================================================
+           LEFT
+        ================================================= */
+
+        if (leftButton) {
+
+            leftButton.addEventListener(
+                "click",
+                function () {
+
+                    rail.scrollBy({
+
+                        left:
+                            -getScrollAmount(),
+
+                        behavior:
+                            "smooth"
+
+                    });
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           RIGHT
+        ================================================= */
+
+        if (rightButton) {
+
+            rightButton.addEventListener(
+                "click",
+                function () {
+
+                    rail.scrollBy({
+
+                        left:
+                            getScrollAmount(),
+
+                        behavior:
+                            "smooth"
+
+                    });
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           MOUSE WHEEL → HORIZONTAL SCROLL
+        ================================================= */
+
+        rail.addEventListener(
+            "wheel",
+            function (event) {
+
+
+                const canScroll =
+                    rail.scrollWidth >
+                    rail.clientWidth;
+
+
+                if (!canScroll) {
+                    return;
+                }
+
+
+                /*
+                   Shift + wheel keeps native behavior.
+                */
+
+                if (event.shiftKey) {
+                    return;
+                }
+
+
+                /*
+                   Only convert vertical wheel movement
+                   when mouse is over lesson rail.
+                */
+
+                if (
+                    Math.abs(event.deltaY) >
+                    Math.abs(event.deltaX)
+                ) {
+
+                    event.preventDefault();
+
+
+                    rail.scrollLeft +=
+                        event.deltaY;
+
+                }
+
+            },
+
+            {
+                passive: false
+            }
+
+        );
+
+
+
+        /* =================================================
+           BUTTON STATE
+        ================================================= */
+
+        function updateButtons() {
+
+
+            if (
+                !leftButton ||
+                !rightButton
+            ) {
+                return;
+            }
+
+
+            const maxScroll =
+                rail.scrollWidth -
+                rail.clientWidth;
+
+
+            const current =
+                rail.scrollLeft;
+
+
+            leftButton.style.opacity =
+                current <= 2
+                    ? "0.45"
+                    : "1";
+
+
+            rightButton.style.opacity =
+                current >=
+                maxScroll - 2
+                    ? "0.45"
+                    : "1";
+
+        }
+
+
+        rail.addEventListener(
+            "scroll",
+            updateButtons
+        );
+
+
+        window.addEventListener(
+            "resize",
+            updateButtons
+        );
+
+
+        updateButtons();
+
+
+    }
+);
+
+</script>
+
+</section>
+<!-- =====================================================
+     CONTACT
+===================================================== -->
+
+<section id="contact"
+         class="contact-section section-padding">
+
+    <div class="container">
+
+
+        <div class="contact-box">
+
+            <div class="row align-items-center g-5">
+
+
+                <div class="col-lg-7">
+
+                    <span class="section-label">
+                        GET IN TOUCH
+                    </span>
+
+
+                    <h2 class="contact-title">
+
+                        Let's talk about
+
+                        <span>
+                            networking & technology.
+                        </span>
+
+                    </h2>
+
+
+                    <p class="contact-description">
+
+                        Interested in networking,
+                        infrastructure, NOC operations
+                        or technical collaboration?
+                        Feel free to reach out.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="col-lg-5">
+
+                    <div class="contact-links">
+
+
+                       <a href="https://mail.google.com/mail/?view=cm&fs=1&to=mdhasan.cse9243@gmail.com"
+                                class="contact-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                    <div class="contact-link-icon">
+                                        <i class="bi bi-envelope"></i>
+                                    </div>
+
+                                    <div>
+                                        <small>EMAIL</small>
+
+                                        <strong>
+                                            mdhasan.cse9243@gmail.com
+                                        </strong>
+                                    </div>
+
+                                    <i class="bi bi-arrow-up-right"></i>
+
+                                </a>
+
+
+
+                        <a href="https://www.linkedin.com/in/hasan1617/"
+                            class="contact-link"
+                            target="_blank"
+                            rel="noopener noreferrer">
+
+                                <div class="contact-link-icon">
+                                    <i class="bi bi-linkedin"></i>
+                                </div>
+
+                                <div>
+                                    <small>LINKEDIN</small>
+
+                                    <strong>
+                                        LinkedIn Profile
+                                    </strong>
+                                </div>
+
+                                <i class="bi bi-arrow-up-right"></i>
+
+                        </a>
+
+
+
+                        <a href="https://github.com/Hasan-Gazi-1617"
+                           class="contact-link">
+
+                            <div class="contact-link-icon">
+
+                                <i class="bi bi-github"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    GITHUB
+                                </small>
+
+                                <strong>
+                                    View my projects
+                                </strong>
+
+                            </div>
+
+
+                            <i class="bi bi-arrow-up-right"></i>
+
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+{% endblock %}

@@ -1,0 +1,388 @@
+/* =========================================================
+   PROFESSIONAL OLT LOCATION SEARCH
+   Loaded AFTER style.css so these rules win consistently.
+========================================================= */
+
+.olt-location-search {
+    position: relative;
+    flex: 0 0 260px;
+    width: 260px;
+    margin-right: 12px;
+    z-index: 1200;
+}
+
+.olt-search-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    padding: 0 11px;
+    background: rgba(10, 23, 39, 0.96);
+    border: 1px solid rgba(93, 119, 148, 0.34);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.olt-search-shell:focus-within {
+    background: #0d1d30;
+    border-color: rgba(56, 189, 248, .82);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, .10), 0 8px 22px rgba(0, 0, 0, .18);
+}
+
+.olt-search-icon {
+    flex: 0 0 auto;
+    margin-right: 9px;
+    color: #7f94aa;
+    font-size: 13px;
+    line-height: 1;
+    transition: color .18s ease;
+}
+
+.olt-search-shell:focus-within .olt-search-icon {
+    color: #38bdf8;
+}
+
+.olt-search-input,
+.navbar-custom .olt-search-input {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    color: #e9f2fb !important;
+    caret-color: #38bdf8;
+    font-family: "Inter", sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+}
+
+.olt-search-input::placeholder {
+    color: #667b91 !important;
+    opacity: 1;
+}
+
+.olt-search-input::-webkit-search-decoration,
+.olt-search-input::-webkit-search-cancel-button,
+.olt-search-input::-webkit-search-results-button,
+.olt-search-input::-webkit-search-results-decoration {
+    display: none !important;
+    -webkit-appearance: none !important;
+}
+
+.olt-search-clear {
+    display: grid !important;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    margin: 0 0 0 6px !important;
+    padding: 0 !important;
+    background: rgba(106, 127, 149, .13) !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+    color: #8093a7 !important;
+    font-size: 9px;
+    line-height: 1;
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transition: opacity .15s ease, color .15s ease, background .15s ease;
+}
+
+.olt-search-shell:focus-within .olt-search-clear,
+.olt-search-input:not(:placeholder-shown) ~ .olt-search-clear {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.olt-search-clear:hover {
+    color: #dff5ff !important;
+    background: rgba(56, 189, 248, .20) !important;
+}
+
+.olt-search-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 430px;
+    max-height: min(470px, calc(100vh - 92px));
+    overflow: hidden;
+    background: rgba(10, 23, 39, .985) !important;
+    border: 1px solid rgba(113, 139, 168, .28) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .48), 0 8px 20px rgba(0, 0, 0, .20) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    z-index: 2500;
+}
+
+.olt-search-panel.show {
+    display: block;
+    animation: oltPanelIn .16s ease-out;
+}
+
+@keyframes oltPanelIn {
+    from { opacity: 0; transform: translateY(-5px) scale(.992); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.olt-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    padding: 0 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, .055);
+    color: #6f849a;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.25px;
+    text-transform: uppercase;
+}
+
+.olt-panel-header span:first-child {
+    color: #9ab0c5;
+}
+
+.olt-panel-header span:last-child {
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.olt-panel-list {
+    max-height: 350px;
+    padding: 7px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 145, 170, .28) transparent;
+}
+
+.olt-panel-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.olt-panel-list::-webkit-scrollbar-thumb {
+    background: rgba(120, 145, 170, .28);
+    border-radius: 999px;
+}
+
+.olt-search-result,
+button.olt-search-result {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 58px !important;
+    gap: 11px !important;
+    margin: 0 !important;
+    padding: 9px 10px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    text-align: left !important;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.olt-search-result + .olt-search-result {
+    margin-top: 2px !important;
+}
+
+.olt-search-result:hover,
+.olt-search-result:focus,
+.olt-search-result.is-active {
+    background: linear-gradient(90deg, rgba(56, 189, 248, .105), rgba(56, 189, 248, .035)) !important;
+    border-color: rgba(56, 189, 248, .26) !important;
+    outline: 0 !important;
+}
+
+.olt-search-result.is-active {
+    box-shadow: inset 2px 0 0 #38bdf8 !important;
+}
+
+.olt-result-icon {
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    background: rgba(56, 189, 248, .075) !important;
+    border: 1px solid rgba(56, 189, 248, .16) !important;
+    border-radius: 8px !important;
+    color: #72d4ff !important;
+    font-size: 14px !important;
+}
+
+.olt-result-content {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.olt-result-content strong {
+    display: block !important;
+    overflow: hidden;
+    color: #edf5fd !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.olt-result-content > span {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 3px;
+    color: #71869b !important;
+    font-size: 8.5px !important;
+    line-height: 1.3 !important;
+}
+
+.olt-result-content > span b {
+    color: #6fcdf6 !important;
+    font-weight: 550 !important;
+}
+
+.olt-result-content > span i {
+    color: #3f556b !important;
+    font-style: normal !important;
+}
+
+.olt-result-open {
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin-left: auto;
+    border-radius: 7px;
+    color: #647a90 !important;
+    font-size: 11px !important;
+    transition: color .15s ease, background .15s ease, transform .15s ease;
+}
+
+.olt-search-result:hover .olt-result-open,
+.olt-search-result.is-active .olt-result-open {
+    color: #81d9ff !important;
+    background: rgba(56, 189, 248, .08);
+    transform: translate(1px, -1px);
+}
+
+.olt-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 39px;
+    padding: 0 15px;
+    border-top: 1px solid rgba(255, 255, 255, .055);
+    color: #5d7288;
+    font-size: 8.5px;
+}
+
+.olt-panel-footer i {
+    margin-right: 5px;
+    color: #71869b;
+}
+
+.olt-search-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    padding: 22px;
+    text-align: center;
+}
+
+.olt-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 10px;
+    background: rgba(56, 189, 248, .07);
+    border: 1px solid rgba(56, 189, 248, .15);
+    border-radius: 9px;
+    color: #65cef9;
+}
+
+.olt-search-empty strong {
+    color: #dfeaf5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.olt-search-empty small {
+    margin-top: 4px;
+    color: #657a90;
+    font-size: 9px;
+}
+
+@media (max-width: 1199.98px) and (min-width: 992px) {
+    .olt-location-search {
+        flex-basis: 210px;
+        width: 210px;
+        margin-right: 8px;
+    }
+
+    .olt-search-panel {
+        width: 390px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .olt-location-search {
+        width: 100%;
+        flex: 0 0 100%;
+        margin: 14px 0 10px;
+    }
+
+    .olt-search-shell {
+        height: 42px;
+    }
+
+    .olt-search-panel {
+        position: static;
+        width: 100%;
+        margin-top: 8px;
+        max-height: 380px;
+    }
+
+    .olt-panel-list {
+        max-height: 275px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .olt-panel-footer {
+        display: none;
+    }
+
+    .olt-search-panel {
+        border-radius: 10px !important;
+    }
+
+    .olt-result-content > span {
+        font-size: 8px !important;
+    }
+}

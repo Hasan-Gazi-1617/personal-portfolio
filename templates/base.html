@@ -1,0 +1,672 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hasan | NOC Engineer - Network Operations, Infrastructure, Monitoring and Troubleshooting">
+
+    <title>
+        {% block title %}
+        Hasan | NOC Engineer
+        {% endblock %}
+    </title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/olt-search.css' %}">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom">
+    <div class="container">
+
+        <!-- Logo -->
+        <a class="navbar-brand brand-logo" href="#home">
+            hasan<span>.</span>net
+        </a>
+
+        <!-- Mobile Button -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav mx-auto">
+
+                <!-- HOME -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#home">Home</a>
+                </li>
+
+                <!-- ABOUT -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About</a>
+                </li>
+
+                <!-- EXPERTISE -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#expertise">Expertise</a>
+                </li>
+
+                  <!-- PROJECTS -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#technology">Technology</a>
+                </li>
+
+
+              <!-- EXPERIENCE -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#experience">
+                        Experience
+                    </a>
+                </li>
+
+
+                <!-- LESSONS -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#lessons">
+                        Lessons
+                    </a>
+                </li>
+
+
+                <!-- ================= MANOR-IT ================= -->
+                <li class="nav-item dropdown manor-dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       id="manorDropdown"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        MANOR-IT
+                    </a>
+
+                    <ul class="dropdown-menu manor-menu" aria-labelledby="manorDropdown">
+
+                        <!-- WEBMAIL -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://server344.web-hosting.com:2096/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-envelope"></i>
+                                <span>Webmail Login</span>
+                            </a>
+                        </li>
+
+                         <!-- Client Management System -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://isp.manor.net/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-receipt"></i>
+                                <span>Manor CMS</span>
+                            </a>
+                        </li>
+
+                        <!-- MIT BILLING -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://ispbiller.com/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-receipt"></i>
+                                <span>MIT Billing</span>
+                            </a>
+                        </li>
+
+                        <!-- CLIENT PORTAL -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://manor.web.asthatec.net/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Client Portal</span>
+                            </a>
+                        </li>
+
+                        <!-- OLT -->
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle olt-toggle"
+                               href="#"
+                               role="button"
+                               aria-expanded="false">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>OLT</span>
+                            </a>
+
+                            <ul class="dropdown-menu olt-menu">
+                                <!-- Replace # with your actual Drop 1 URL -->
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="https://103.101.253.17:4512/"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(E-PON)
+                                    </a>
+                                </li>
+
+                                <!-- Replace # with your actual Drop 2 URL -->
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4514/"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        OLT CDATA(G-PON-1)
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4515/"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(G-PON-2)
+                                    </a>
+                                </li>
+
+                                 <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4516"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(G-PON-3(POP Akhalia))
+                                    </a>
+                                </li>
+
+                                
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4518"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(G-PON-3(POP Akhalia))
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4519"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(G-PON-3(POP Akhalia))
+                                    </a>
+                                </li>
+
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="http://103.101.253.17:4517"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT CDATA(G-PON-4(POP Khadim))
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="https://103.101.253.17:4510"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       OLT VSOL
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- OLT LOCATION SEARCH -->
+            <div class="olt-location-search" id="oltLocationSearch">
+                <div class="olt-search-shell">
+                    <i class="bi bi-search olt-search-icon"></i>
+
+                    <input
+                        type="text"
+                        id="oltLocationInput"
+                        class="olt-search-input"
+                        placeholder="Search location..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        aria-label="Search OLT by location"
+                        aria-controls="oltSearchResults"
+                        aria-expanded="false">
+
+                    <button
+                        type="button"
+                        class="olt-search-clear"
+                        id="oltSearchClear"
+                        aria-label="Clear OLT search">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div
+                    class="olt-search-panel"
+                    id="oltSearchResults"
+                    role="listbox"
+                    aria-label="OLT location search results">
+                </div>
+            </div>
+
+            <!-- LET'S CONNECT -->
+            <a href="#contact" class="btn btn-outline-primary-custom connect-btn">
+                Let's Connect
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- ================= MAIN ================= -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer-section">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <!-- FOOTER LEFT -->
+            <div class="col-lg-7">
+                <div class="footer-brand">
+                    hasan<span>.</span>net
+                </div>
+
+                <p class="footer-text">
+                    NOC Engineer focused on network operations,
+                    infrastructure monitoring, troubleshooting
+                    and service reliability.
+                </p>
+            </div>
+
+            <!-- FOOTER SOCIAL -->
+            <div class="col-lg-5">
+                <div class="footer-social">
+
+                    <!-- LINKEDIN -->
+                    <a href="https://www.linkedin.com/in/hasan1617/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="LinkedIn">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+
+                    <!-- GITHUB -->
+                    <a href="https://github.com/Hasan-Gazi-1617"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="GitHub">
+                        <i class="bi bi-github"></i>
+                    </a>
+
+                    <!-- EMAIL -->
+                    <a href="mailto:mdhasan.cse9243@gmail.com"
+                       aria-label="Email">
+                        <i class="bi bi-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER LINE -->
+        <hr class="footer-line">
+
+        <!-- FOOTER BOTTOM -->
+        <div class="footer-bottom">
+            <span>© 2026 Hasan. All rights reserved.</span>
+            <span>Network Operations • Infrastructure • Reliability</span>
+        </div>
+    </div>
+</footer>
+
+
+
+<!-- ================= BOOTSTRAP JS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ================= OLT LOCATION SEARCH JS ================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchWrap = document.getElementById('oltLocationSearch');
+    const searchInput = document.getElementById('oltLocationInput');
+    const resultsBox = document.getElementById('oltSearchResults');
+    const clearButton = document.getElementById('oltSearchClear');
+
+    if (!searchWrap || !searchInput || !resultsBox || !clearButton) return;
+
+    // Keep usernames/passwords out of frontend JavaScript.
+    // Search results only open the matching OLT login page.
+    const oltLocations = [
+        { location: 'Baruthkhana', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+
+        { location: 'Galleria', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Zindabazar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Noyashorok', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Bondor Jail Road', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Taltola', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Sheikhghat', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Phatalia', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Lama Bazar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'South Surma', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+        { location: 'Kumarpara', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
+
+        { location: 'Amberkhana', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Jalalabad', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Mojumdari', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Badambagicha', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Baluchor', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Mirabazar', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Uposhohor', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'S. Eidgah', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Bondorbazar', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+        { location: 'Chowkidekhi', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
+
+        { location: 'Madina Market', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Bagbari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Sagordighirpar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Kalibari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Neharipara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Borobari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Shamimabad', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+        { location: 'Nobab Road', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
+
+        { location: 'Mejortila', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
+        { location: 'Khadim', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
+        { location: 'Surmagate', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
+        { location: 'Dolipara', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
+
+        { location: 'Surma', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Akhali', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Mahmudabad', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Chhigao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Salebergao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Thanabari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Shining City', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Haydarpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Khaligao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'N. Khanum', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Jti Pirpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Pirpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Tukerbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Shahpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Tulergao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+        { location: 'Nuagao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
+
+        { location: 'Shubidbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Kodomtoli (New)', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Dariapara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Jalalpara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Shibgonj', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Banullahkhana', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Dorgah', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Mirer Moydan', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Upo. F-J Block', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Nirapol', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Mendibug', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+        { location: 'Subhanighat', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'http://103.101.253.17:4519/' },
+
+        { location: 'Rikabibazar', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Kazitula', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Uposhohor', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Mirzejungle', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Muttalib Villa', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Kazitilas', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Kalighat-1', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' },
+        { location: 'Kalighat-2', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/' }
+    ];
+
+    let visibleMatches = [];
+    let activeIndex = -1;
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>'"]/g, function (char) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char];
+        });
+    }
+
+    function closeResults() {
+        resultsBox.classList.remove('show');
+        resultsBox.innerHTML = '';
+        searchInput.setAttribute('aria-expanded', 'false');
+        activeIndex = -1;
+        visibleMatches = [];
+    }
+
+    function openOlt(item) {
+        if (!item) return;
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+        closeResults();
+    }
+
+    function updateActiveResult() {
+        const resultButtons = resultsBox.querySelectorAll('.olt-search-result');
+
+        resultButtons.forEach(function (button, index) {
+            button.classList.toggle('is-active', index === activeIndex);
+        });
+
+        if (activeIndex >= 0 && resultButtons[activeIndex]) {
+            resultButtons[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function renderResults(query) {
+        const term = query.trim().toLowerCase();
+
+        if (!term) {
+            closeResults();
+            return;
+        }
+
+        visibleMatches = oltLocations
+            .filter(function (item) {
+                return [item.location, item.olt, item.pop, item.port]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(term);
+            })
+            .sort(function (a, b) {
+                const aName = a.location.toLowerCase();
+                const bName = b.location.toLowerCase();
+                const aStarts = aName.startsWith(term);
+                const bStarts = bName.startsWith(term);
+
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+                return aName.localeCompare(bName);
+            })
+            .slice(0, 12);
+
+        activeIndex = -1;
+
+        if (!visibleMatches.length) {
+            resultsBox.innerHTML = `
+                <div class="olt-panel-header">
+                    <span>OLT LOCATIONS</span>
+                    <span>0 results</span>
+                </div>
+                <div class="olt-search-empty">
+                    <span class="olt-empty-icon"><i class="bi bi-search"></i></span>
+                    <strong>No location found</strong>
+                    <small>Try another location, OLT name, or port.</small>
+                </div>
+                <div class="olt-panel-footer">
+                    <span><i class="bi bi-search"></i> Search by area name</span>
+                    <span>ESC to close</span>
+                </div>`;
+            resultsBox.classList.add('show');
+            searchInput.setAttribute('aria-expanded', 'true');
+            return;
+        }
+
+        const resultHtml = visibleMatches.map(function (item, index) {
+            return `
+                <button
+                    type="button"
+                    class="olt-search-result"
+                    data-index="${index}"
+                    role="option">
+
+                    <span class="olt-result-icon">
+                        <i class="bi bi-geo-alt"></i>
+                    </span>
+
+                    <span class="olt-result-content">
+                        <strong>${escapeHtml(item.location)}</strong>
+                        <span>
+                            <b>${escapeHtml(item.olt)}</b>
+                            <i>•</i>
+                            ${escapeHtml(item.pop)}
+                            <i>•</i>
+                            :${escapeHtml(item.port)}
+                        </span>
+                    </span>
+
+                    <span class="olt-result-open" aria-hidden="true">
+                        <i class="bi bi-arrow-up-right"></i>
+                    </span>
+                </button>`;
+        }).join('');
+
+        resultsBox.innerHTML = `
+            <div class="olt-panel-header">
+                <span>OLT LOCATIONS</span>
+                <span>${visibleMatches.length} result${visibleMatches.length === 1 ? '' : 's'}</span>
+            </div>
+
+            <div class="olt-panel-list">
+                ${resultHtml}
+            </div>
+
+            <div class="olt-panel-footer">
+                <span><i class="bi bi-search"></i> Search location / OLT / port</span>
+                <span>ESC to close</span>
+            </div>`;
+
+        resultsBox.classList.add('show');
+        searchInput.setAttribute('aria-expanded', 'true');
+
+        resultsBox.querySelectorAll('.olt-search-result').forEach(function (button) {
+            button.addEventListener('click', function () {
+                openOlt(visibleMatches[Number(button.dataset.index)]);
+            });
+        });
+    }
+
+    searchInput.addEventListener('input', function () {
+        renderResults(searchInput.value);
+    });
+
+    searchInput.addEventListener('focus', function () {
+        if (searchInput.value.trim()) renderResults(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeResults();
+            searchInput.blur();
+            return;
+        }
+
+        if (!visibleMatches.length) return;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            activeIndex = (activeIndex + 1) % visibleMatches.length;
+            updateActiveResult();
+        }
+
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            activeIndex = activeIndex <= 0 ? visibleMatches.length - 1 : activeIndex - 1;
+            updateActiveResult();
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            openOlt(visibleMatches[activeIndex >= 0 ? activeIndex : 0]);
+        }
+    });
+
+    clearButton.addEventListener('click', function () {
+        searchInput.value = '';
+        closeResults();
+        searchInput.focus();
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!searchWrap.contains(event.target)) closeResults();
+    });
+});
+</script>
+
+<!-- ================= MANOR-IT SUBMENU JS ================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const oltToggle = document.querySelector('.olt-toggle');
+    const oltMenu = document.querySelector('.olt-menu');
+
+    if (oltToggle && oltMenu) {
+        oltToggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const isOpen = oltMenu.classList.contains('show');
+
+            document.querySelectorAll('.olt-menu.show').forEach(function (menu) {
+                menu.classList.remove('show');
+            });
+
+            document.querySelectorAll('.olt-toggle[aria-expanded="true"]').forEach(function (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            });
+
+            if (!isOpen) {
+                oltMenu.classList.add('show');
+                oltToggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    }
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.olt-menu.show').forEach(function (menu) {
+            menu.classList.remove('show');
+        });
+
+        document.querySelectorAll('.olt-toggle[aria-expanded="true"]').forEach(function (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+});
+</script>
+
+</body>
+</html>
