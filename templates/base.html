@@ -27,6 +27,106 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/olt-search.css' %}">
+
+<style>
+/* ===== MANOR-IT DATABASE / OLT SIDE SUBMENU FIX ===== */
+.manor-dropdown .dropdown-submenu {
+    position: relative;
+}
+
+.manor-dropdown .submenu-menu {
+    display: none;
+    position: absolute !important;
+    top: -7px !important;
+    left: calc(100% + 8px) !important;
+    right: auto !important;
+    min-width: 250px;
+    margin: 0 !important;
+    padding: 7px !important;
+    background: #111c2e !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-radius: 9px !important;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.34) !important;
+    z-index: 1100 !important;
+}
+
+.manor-dropdown .submenu-menu.show {
+    display: block !important;
+}
+
+.manor-dropdown .submenu-menu .dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 11px !important;
+    min-height: 42px;
+    padding: 9px 11px !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: #cbd5e1 !important;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.manor-dropdown .submenu-menu .dropdown-item i {
+    width: 17px;
+    color: #14b8a6 !important;
+    font-size: 14px;
+    text-align: center;
+}
+
+.manor-dropdown .submenu-menu .dropdown-item span {
+    color: inherit !important;
+}
+
+.manor-dropdown .submenu-menu .dropdown-item:hover,
+.manor-dropdown .submenu-menu .dropdown-item:focus {
+    background: rgba(20, 184, 166, 0.11) !important;
+    color: #2dd4bf !important;
+}
+
+.manor-dropdown .submenu-toggle {
+    position: relative;
+    padding-right: 34px !important;
+}
+
+.manor-dropdown .submenu-toggle::after {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    margin: 0 !important;
+    transform: translateY(-50%) rotate(-90deg);
+    color: #14b8a6;
+}
+
+.manor-dropdown .submenu-toggle[aria-expanded="true"] {
+    background: rgba(20, 184, 166, 0.11) !important;
+    color: #2dd4bf !important;
+}
+
+/* Desktop: nested menus always open beside the main MANOR-IT menu. */
+@media (min-width: 992px) {
+    .manor-dropdown .manor-menu {
+        overflow: visible !important;
+    }
+}
+
+/* Mobile: side flyouts do not fit, so nest them cleanly below. */
+@media (max-width: 991.98px) {
+    .manor-dropdown .submenu-menu {
+        position: static !important;
+        width: 100%;
+        min-width: 0;
+        margin: 5px 0 5px 10px !important;
+        box-shadow: none !important;
+        background: rgba(15, 23, 42, 0.72) !important;
+    }
+
+    .manor-dropdown .submenu-toggle::after {
+        transform: translateY(-50%);
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -134,9 +234,10 @@
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
-                                <span>TNR Soft.</span>
+                                <span>TNR Soft./span>
                             </a>
                         </li>
+
 
 
                         <!-- DATABASE -->
