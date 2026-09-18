@@ -123,7 +123,7 @@
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
-                                <span>ISP Panel</span>
+                                <span>Manor CMS</span>
                             </a>
                         </li>
 
@@ -134,14 +134,68 @@
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
-                                <span>TNR Soft.</span>
+                                <span>MIT Billing</span>
+                            </a>
+                        </li>
+
+                        <!-- CLIENT PORTAL -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://manor.web.asthatec.net/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Client Portal</span>
                             </a>
                         </li>
 
 
+                        <!-- DATABASE -->
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle submenu-toggle"
+                               href="#"
+                               role="button"
+                               aria-expanded="false">
+                                <i class="bi bi-database"></i>
+                                <span>Database</span>
+                            </a>
+
+                            <ul class="dropdown-menu submenu-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="https://docs.google.com/spreadsheets/d/1uVHbN6owWXHIUM8e1nxWyyzau9nOLdL9oNUc_qgdjWg/edit?gid=1931080573#gid=1931080573"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                                        <span>New Client Database</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="https://docs.google.com/spreadsheets/d/1ediAyAoKrS-jAFY5xsp7Mwglwf_Xyoh9za-TofCAG8s/edit?gid=1438501927#gid=1438501927"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                                        <span>Level3 Clients Database</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="https://docs.google.com/spreadsheets/d/1LMgOkbj0CknOdS6yu5BT78m222O-xTHh/edit?gid=1089012791#gid=1089012791"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>Roaster</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         <!-- OLT -->
                         <li class="dropdown-submenu">
-                            <a class="dropdown-item dropdown-toggle olt-toggle"
+                            <a class="dropdown-item dropdown-toggle submenu-toggle"
                                href="#"
                                role="button"
                                aria-expanded="false">
@@ -149,7 +203,7 @@
                                 <span>OLT</span>
                             </a>
 
-                            <ul class="dropdown-menu olt-menu">
+                            <ul class="dropdown-menu submenu-menu">
                                 <!-- Replace # with your actual Drop 1 URL -->
                                 <li>
                                     <a class="dropdown-item"
@@ -654,37 +708,49 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- ================= MANOR-IT SUBMENU JS ================= -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const oltToggle = document.querySelector('.olt-toggle');
-    const oltMenu = document.querySelector('.olt-menu');
+    const submenuToggles = document.querySelectorAll('.submenu-toggle');
 
-    if (oltToggle && oltMenu) {
-        oltToggle.addEventListener('click', function (event) {
+    submenuToggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            const isOpen = oltMenu.classList.contains('show');
+            const parent = toggle.closest('.dropdown-submenu');
+            if (!parent) return;
 
-            document.querySelectorAll('.olt-menu.show').forEach(function (menu) {
+            const menu = parent.querySelector(':scope > .submenu-menu');
+            if (!menu) return;
+
+            const isOpen = menu.classList.contains('show');
+
+            document.querySelectorAll('.submenu-menu.show').forEach(function (openMenu) {
+                if (openMenu !== menu) {
+                    openMenu.classList.remove('show');
+                }
+            });
+
+            document.querySelectorAll('.submenu-toggle[aria-expanded="true"]').forEach(function (openToggle) {
+                if (openToggle !== toggle) {
+                    openToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            if (isOpen) {
                 menu.classList.remove('show');
-            });
-
-            document.querySelectorAll('.olt-toggle[aria-expanded="true"]').forEach(function (toggle) {
                 toggle.setAttribute('aria-expanded', 'false');
-            });
-
-            if (!isOpen) {
-                oltMenu.classList.add('show');
-                oltToggle.setAttribute('aria-expanded', 'true');
+            } else {
+                menu.classList.add('show');
+                toggle.setAttribute('aria-expanded', 'true');
             }
         });
-    }
+    });
 
     document.addEventListener('click', function () {
-        document.querySelectorAll('.olt-menu.show').forEach(function (menu) {
+        document.querySelectorAll('.submenu-menu.show').forEach(function (menu) {
             menu.classList.remove('show');
         });
 
-        document.querySelectorAll('.olt-toggle[aria-expanded="true"]').forEach(function (toggle) {
+        document.querySelectorAll('.submenu-toggle[aria-expanded="true"]').forEach(function (toggle) {
             toggle.setAttribute('aria-expanded', 'false');
         });
     });
