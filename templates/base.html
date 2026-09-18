@@ -37,16 +37,23 @@
 .manor-dropdown .submenu-menu {
     display: none;
     position: absolute !important;
-    top: -7px !important;
+    top: 0 !important;
     left: calc(100% + 8px) !important;
     right: auto !important;
+
     min-width: 250px;
     margin: 0 !important;
     padding: 7px !important;
-    background: #111c2e !important;
-    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+
+    /* Glass / transparent look matching the main dropdown */
+    background: rgba(15, 23, 42, 0.78) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(20, 184, 166, 0.16) !important;
     border-radius: 9px !important;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.34) !important;
+
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22) !important;
     z-index: 1100 !important;
 }
 
@@ -58,11 +65,14 @@
     display: flex !important;
     align-items: center !important;
     gap: 11px !important;
+
     min-height: 42px;
     padding: 9px 11px !important;
-    border-radius: 7px !important;
+
     background: transparent !important;
     color: #cbd5e1 !important;
+    border-radius: 6px !important;
+
     font-size: 12px;
     white-space: nowrap;
 }
@@ -80,7 +90,7 @@
 
 .manor-dropdown .submenu-menu .dropdown-item:hover,
 .manor-dropdown .submenu-menu .dropdown-item:focus {
-    background: rgba(20, 184, 166, 0.11) !important;
+    background: rgba(20, 184, 166, 0.10) !important;
     color: #2dd4bf !important;
 }
 
@@ -99,18 +109,16 @@
 }
 
 .manor-dropdown .submenu-toggle[aria-expanded="true"] {
-    background: rgba(20, 184, 166, 0.11) !important;
+    background: rgba(20, 184, 166, 0.10) !important;
     color: #2dd4bf !important;
 }
 
-/* Desktop: nested menus always open beside the main MANOR-IT menu. */
 @media (min-width: 992px) {
     .manor-dropdown .manor-menu {
         overflow: visible !important;
     }
 }
 
-/* Mobile: side flyouts do not fit, so nest them cleanly below. */
 @media (max-width: 991.98px) {
     .manor-dropdown .submenu-menu {
         position: static !important;
@@ -118,7 +126,7 @@
         min-width: 0;
         margin: 5px 0 5px 10px !important;
         box-shadow: none !important;
-        background: rgba(15, 23, 42, 0.72) !important;
+        background: rgba(15, 23, 42, 0.62) !important;
     }
 
     .manor-dropdown .submenu-toggle::after {
@@ -223,7 +231,7 @@
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
-                                <span>ISP Panel</span>
+                                <span>Manor CMS</span>
                             </a>
                         </li>
 
@@ -234,10 +242,20 @@
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
-                                <span>TNR Soft./span>
+                                <span>MIT Billing</span>
                             </a>
                         </li>
 
+                        <!-- CLIENT PORTAL -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="https://manor.web.asthatec.net/"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Client Portal</span>
+                            </a>
+                        </li>
 
 
                         <!-- DATABASE -->
