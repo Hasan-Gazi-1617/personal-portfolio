@@ -128,7 +128,8 @@
 
         ctx.clearRect(0, 0, width, height);
         const config = sections[active] || sectionMap[0];
-        const accent = config.accent;
+        const isLightTheme = document.documentElement.dataset.theme === "light";
+        const accent = isLightTheme ? [34, 197, 94] : config.accent;
         const nodes = nodeSeeds.map((seed, index) => nodePosition(seed, index, time));
 
         drawGrid(accent);
@@ -246,6 +247,9 @@
     }, { passive: true });
     document.addEventListener("visibilitychange", () => {
         if (!document.hidden) start();
+    });
+    document.addEventListener("portfolio-theme-change", () => {
+        if (reduceMotion.matches) draw(performance.now());
     });
     reduceMotion.addEventListener?.("change", () => {
         resize();
