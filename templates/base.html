@@ -307,6 +307,7 @@ html[data-theme="light"] .footer-social a {
 
 /* ===== THEME-AWARE NAVBAR POLISH ===== */
 .navbar-custom .brand-logo {
+    margin-left: 18px;
     font-family: "Space Grotesk", "Segoe UI", sans-serif;
     font-weight: 700;
     letter-spacing: -.8px;
@@ -341,8 +342,8 @@ html[data-theme="light"] .footer-social a {
 }
 
 .theme-toggle {
-    margin-left: 18px !important;
-    margin-right: 6px;
+    margin-left: 22px !important;
+    margin-right: -14px;
 }
 
 .olt-search-shell {
@@ -358,9 +359,24 @@ html[data-theme="light"] .footer-social a {
 }
 
 .manor-dropdown .dropdown-item {
+    min-height: 42px;
+    padding: 11px 13px;
     font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
     font-weight: 600;
     color: #cbd5e1 !important;
+}
+
+.admin-view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--accent) !important;
+}
+
+.admin-view-link i {
+    font-size: 12px;
 }
 
 .manor-dropdown .dropdown-item:hover,
@@ -467,6 +483,10 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
     .navbar-custom .nav-link {
         padding: 11px 12px !important;
+    }
+
+    .navbar-custom .brand-logo {
+        margin-left: 0;
     }
 
     .theme-toggle {
@@ -728,6 +748,13 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                             </ul>
                         </li>
                     </ul>
+                </li>
+                {% else %}
+                <li class="nav-item admin-view-item">
+                    <a class="nav-link admin-view-link" href="{% url 'owner_login' %}">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Admin View</span>
+                    </a>
                 </li>
                 {% endif %}
             </ul>
