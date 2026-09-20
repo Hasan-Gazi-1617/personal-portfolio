@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Access | Hasan{% endblock %}
+
+{% block content %}
+<section class="owner-login-section">
+    <div class="owner-login-card">
+        <div class="owner-login-icon">
+            <i class="bi bi-shield-lock"></i>
+        </div>
+        <span class="owner-login-eyebrow">PRIVATE ACCESS</span>
+        <h1>Owner Login</h1>
+        <p>Enter your private access key to unlock the internal NOC tools.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="owner-login-alert" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="owner-login-form">
+            {% csrf_token %}
+            <label for="ownerAccessKey">Access key</label>
+            <div class="owner-key-field">
+                <input
+                    type="password"
+                    name="access_key"
+                    id="ownerAccessKey"
+                    autocomplete="current-password"
+                    required
+                    autofocus>
+                <button type="button" id="toggleOwnerKey" aria-label="Show access key">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+            <button type="submit" class="btn btn-primary-custom owner-login-submit">
+                Unlock tools <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
+
+        <a href="{% url 'home' %}" class="owner-login-back">
+            <i class="bi bi-arrow-left"></i> Back to portfolio
+        </a>
+    </div>
+</section>
+
+<script>
+(function () {
+    const input = document.getElementById('ownerAccessKey');
+    const button = document.getElementById('toggleOwnerKey');
+    if (!input || !button) return;
+
+    button.addEventListener('click', function () {
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        button.setAttribute('aria-label', showing ? 'Show access key' : 'Hide access key');
+        button.innerHTML = showing
+            ? '<i class="bi bi-eye"></i>'
+            : '<i class="bi bi-eye-slash"></i>';
+    });
+})();
+</script>
+{% endblock %}
