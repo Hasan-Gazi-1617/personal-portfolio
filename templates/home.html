@@ -426,6 +426,209 @@ Hasan | NOC Engineer
     }
 }
 
+
+/* =====================================================
+   LAYERED FULL-PAGE NETWORK ANIMATIONS
+===================================================== */
+#about,
+#expertise,
+#technology,
+#experience,
+#projects,
+.certifications-section,
+.lessons-scroll-section,
+#contact {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+#about > .container,
+#expertise > .container,
+#technology > .container,
+#experience > .container,
+#projects > .container,
+.certifications-section > .container,
+.lessons-scroll-section > .container,
+#contact > .container {
+    position: relative;
+    z-index: 2;
+}
+
+#about::after,
+#expertise::after,
+#technology::after,
+#experience::after,
+#projects::after,
+.certifications-section::after,
+.lessons-scroll-section::after,
+#contact::after {
+    content: "";
+    position: absolute;
+    inset: -15%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .3;
+    will-change: transform, background-position, opacity;
+}
+
+/* About: rotating radar rings */
+#about::after {
+    inset: 8% auto auto 58%;
+    width: 520px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, transparent 12%, rgba(56,189,248,.18) 12.4%, transparent 13%),
+        radial-gradient(circle, transparent 27%, rgba(20,184,166,.14) 27.4%, transparent 28%),
+        radial-gradient(circle, transparent 43%, rgba(56,189,248,.12) 43.4%, transparent 44%),
+        conic-gradient(from 30deg, transparent 0 72%, rgba(56,189,248,.2) 78%, transparent 84%);
+    animation: radar-rotate 24s linear infinite;
+}
+
+/* Expertise: horizontal packet/data lanes */
+#expertise::after {
+    background:
+        repeating-linear-gradient(90deg, transparent 0 92px, rgba(56,189,248,.23) 94px 96px, transparent 98px 180px),
+        repeating-linear-gradient(0deg, transparent 0 76px, rgba(20,184,166,.09) 77px 78px);
+    background-size: 360px 100%, 100% 156px;
+    animation: packet-lanes 18s linear infinite;
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+/* Technology: drifting node field */
+#technology::after {
+    background-image:
+        radial-gradient(circle, rgba(56,189,248,.75) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(20,184,166,.55) 0 1.5px, transparent 2.5px);
+    background-size: 92px 92px, 148px 148px;
+    background-position: 0 0, 36px 50px;
+    animation: node-drift 28s linear infinite;
+    mask-image: radial-gradient(ellipse at center, #000 0 65%, transparent 88%);
+}
+
+/* Experience: moving backbone route */
+#experience::after {
+    inset: 0 4%;
+    background:
+        linear-gradient(90deg, transparent 49.75%, rgba(56,189,248,.35) 49.9% 50.1%, transparent 50.25%),
+        repeating-linear-gradient(0deg, transparent 0 70px, rgba(125,211,252,.75) 72px 77px, transparent 79px 150px);
+    background-size: 100% 100%, 10px 300px;
+    background-position: center, center 0;
+    background-repeat: no-repeat, repeat-y;
+    animation: backbone-flow 10s linear infinite;
+}
+
+/* Projects: shifting routed mesh */
+#projects::after {
+    background:
+        linear-gradient(30deg, transparent 47.5%, rgba(56,189,248,.12) 48% 49%, transparent 49.5%),
+        linear-gradient(150deg, transparent 47.5%, rgba(20,184,166,.1) 48% 49%, transparent 49.5%);
+    background-size: 170px 98px;
+    animation: mesh-shift 22s linear infinite;
+    mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+}
+
+/* Certifications: expanding wireless signal waves */
+.certifications-section::after {
+    inset: auto auto -360px -190px;
+    width: 760px;
+    height: 760px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+        circle,
+        transparent 0 58px,
+        rgba(56,189,248,.16) 60px 62px,
+        transparent 64px 112px
+    );
+    animation: signal-wave 7s ease-in-out infinite;
+}
+
+/* Lessons: slow terminal/data scan */
+.lessons-scroll-section::after {
+    background:
+        repeating-linear-gradient(0deg, transparent 0 28px, rgba(20,184,166,.1) 29px 30px),
+        linear-gradient(90deg, transparent, rgba(56,189,248,.08), transparent);
+    background-size: 100% 120px, 35% 100%;
+    background-repeat: repeat, no-repeat;
+    animation: lesson-scan 16s linear infinite;
+}
+
+/* Contact: moving uplink glow */
+#contact::after {
+    background:
+        radial-gradient(circle at 72% 48%, rgba(20,184,166,.2), transparent 7%),
+        radial-gradient(circle at 72% 48%, transparent 0 15%, rgba(56,189,248,.12) 15.5% 16%, transparent 16.5%),
+        radial-gradient(circle at 72% 48%, transparent 0 27%, rgba(20,184,166,.09) 27.5% 28%, transparent 28.5%),
+        linear-gradient(115deg, transparent 0 66%, rgba(56,189,248,.13) 66.2% 66.5%, transparent 66.8%);
+    animation: uplink-pulse 6s ease-in-out infinite;
+}
+
+@keyframes radar-rotate {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes packet-lanes {
+    to { background-position: 360px 0, 0 156px; }
+}
+
+@keyframes node-drift {
+    to { background-position: 184px 92px, -112px 198px; }
+}
+
+@keyframes backbone-flow {
+    to { background-position: center, center 300px; }
+}
+
+@keyframes mesh-shift {
+    to { background-position: 340px 196px, -340px 196px; }
+}
+
+@keyframes signal-wave {
+    0%, 100% { transform: scale(.88); opacity: .18; }
+    50% { transform: scale(1.08); opacity: .38; }
+}
+
+@keyframes lesson-scan {
+    to { background-position: 0 240px, 145% 0; }
+}
+
+@keyframes uplink-pulse {
+    0%, 100% { transform: scale(.96); opacity: .2; }
+    50% { transform: scale(1.04); opacity: .38; }
+}
+
+@media (max-width: 767.98px) {
+    #about::after,
+    #expertise::after,
+    #technology::after,
+    #experience::after,
+    #projects::after,
+    .certifications-section::after,
+    .lessons-scroll-section::after,
+    #contact::after {
+        opacity: .18;
+    }
+
+    #about::after {
+        width: 360px;
+        left: 34%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #about::after,
+    #expertise::after,
+    #technology::after,
+    #experience::after,
+    #projects::after,
+    .certifications-section::after,
+    .lessons-scroll-section::after,
+    #contact::after {
+        animation: none !important;
+    }
+}
+
 </style>
 
 
