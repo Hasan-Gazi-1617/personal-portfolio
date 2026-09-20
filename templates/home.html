@@ -329,6 +329,103 @@ Hasan | NOC Engineer
 
 }
 
+
+/* =====================================================
+   ANIMATED ROUTING BACKGROUND
+===================================================== */
+.network-routing-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.95), rgba(0,0,0,.15));
+}
+
+.network-routing-bg .route-line {
+    fill: none;
+    stroke: rgba(56, 189, 248, 0.28);
+    stroke-width: 1.5;
+    stroke-dasharray: 8 12;
+    animation: route-flow 14s linear infinite;
+}
+
+.network-routing-bg .route-line.alt {
+    stroke: rgba(20, 184, 166, 0.24);
+    animation-duration: 18s;
+    animation-direction: reverse;
+}
+
+.network-routing-bg .route-node-ring {
+    fill: rgba(15, 23, 42, 0.78);
+    stroke: rgba(56, 189, 248, 0.55);
+    stroke-width: 1.5;
+}
+
+.network-routing-bg .route-node-core {
+    fill: #38bdf8;
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.95));
+    animation: node-pulse 2.8s ease-in-out infinite;
+}
+
+.network-routing-bg .route-node.teal .route-node-ring {
+    stroke: rgba(20, 184, 166, 0.65);
+}
+
+.network-routing-bg .route-node.teal .route-node-core {
+    fill: #14b8a6;
+    filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.95));
+}
+
+.network-routing-bg .packet {
+    fill: #7dd3fc;
+    filter: drop-shadow(0 0 5px rgba(125, 211, 252, 1));
+}
+
+.network-routing-bg .packet.teal {
+    fill: #5eead4;
+    filter: drop-shadow(0 0 5px rgba(94, 234, 212, 1));
+}
+
+.hero-section > .container {
+    z-index: 2;
+}
+
+@keyframes route-flow {
+    to { stroke-dashoffset: -200; }
+}
+
+@keyframes node-pulse {
+    0%, 100% { opacity: .55; transform: scale(.85); transform-origin: center; }
+    50% { opacity: 1; transform: scale(1.2); transform-origin: center; }
+}
+
+@media (max-width: 767.98px) {
+    .network-routing-bg {
+        opacity: 0.32;
+        transform: scale(1.35);
+    }
+
+    .network-routing-bg .route-line:nth-of-type(n+5),
+    .network-routing-bg .route-node:nth-of-type(n+7) {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .network-routing-bg .route-line,
+    .network-routing-bg .route-node-core {
+        animation: none;
+    }
+
+    .network-routing-bg .packet {
+        display: none;
+    }
+}
+
 </style>
 
 
@@ -340,6 +437,77 @@ Hasan | NOC Engineer
          class="hero-section">
 
     <div class="hero-grid"></div>
+
+    <svg class="network-routing-bg"
+         viewBox="0 0 1440 900"
+         preserveAspectRatio="xMidYMid slice"
+         aria-hidden="true"
+         focusable="false">
+        <defs>
+            <path id="route-a" d="M-40 690 C180 570 280 720 470 560 S760 330 950 440 S1210 610 1490 410"/>
+            <path id="route-b" d="M-20 230 C230 360 340 155 555 275 S820 520 1040 320 S1270 150 1490 250"/>
+            <path id="route-c" d="M180 940 C260 690 510 720 650 520 S780 190 1030 -20"/>
+        </defs>
+
+        <g>
+            <path class="route-line" d="M-40 690 C180 570 280 720 470 560 S760 330 950 440 S1210 610 1490 410"/>
+            <path class="route-line alt" d="M-20 230 C230 360 340 155 555 275 S820 520 1040 320 S1270 150 1490 250"/>
+            <path class="route-line" d="M180 940 C260 690 510 720 650 520 S780 190 1030 -20"/>
+            <path class="route-line alt" d="M-20 460 C210 390 315 480 470 560 C660 660 850 600 1040 690 S1310 720 1490 620"/>
+            <path class="route-line" d="M310 -20 C360 160 410 340 555 275 S850 70 1220 90"/>
+            <path class="route-line alt" d="M950 440 C1090 350 1190 300 1450 330"/>
+        </g>
+
+        <g class="route-node" transform="translate(180 625)">
+            <circle class="route-node-ring" r="13"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+        <g class="route-node teal" transform="translate(470 560)">
+            <circle class="route-node-ring" r="17"/>
+            <circle class="route-node-core" r="5"/>
+        </g>
+        <g class="route-node" transform="translate(555 275)">
+            <circle class="route-node-ring" r="14"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+        <g class="route-node teal" transform="translate(800 390)">
+            <circle class="route-node-ring" r="12"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+        <g class="route-node" transform="translate(950 440)">
+            <circle class="route-node-ring" r="17"/>
+            <circle class="route-node-core" r="5"/>
+        </g>
+        <g class="route-node teal" transform="translate(1040 320)">
+            <circle class="route-node-ring" r="13"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+        <g class="route-node" transform="translate(1280 555)">
+            <circle class="route-node-ring" r="14"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+        <g class="route-node teal" transform="translate(650 520)">
+            <circle class="route-node-ring" r="12"/>
+            <circle class="route-node-core" r="4"/>
+        </g>
+
+        <circle class="packet" r="4">
+            <animateMotion dur="7s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#route-a"/>
+            </animateMotion>
+        </circle>
+        <circle class="packet teal" r="4">
+            <animateMotion dur="9s" begin="-3s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#route-b"/>
+            </animateMotion>
+        </circle>
+        <circle class="packet" r="3.5">
+            <animateMotion dur="8s" begin="-5s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#route-c"/>
+            </animateMotion>
+        </circle>
+    </svg>
+
 
 
     <div class="container position-relative">
