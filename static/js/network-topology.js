@@ -128,6 +128,8 @@
 
         ctx.clearRect(0, 0, width, height);
         const config = sections[active] || sectionMap[0];
+        const protectedContent = config.element?.querySelector(":scope > .container");
+        const protectedRect = protectedContent ? protectedContent.getBoundingClientRect() : null;
         const isLightTheme = document.documentElement.dataset.theme === "light";
         const accent = isLightTheme ? [34, 197, 94] : config.accent;
         const nodes = nodeSeeds.map((seed, index) => nodePosition(seed, index, time));
@@ -216,11 +218,22 @@
                 const textWidth = ctx.measureText(label).width;
                 const boxX = node.x + 13;
                 const boxY = node.y - 13;
+                const boxWidth = textWidth + 18;
+                const boxHeight = 24;
+                const safetyGap = 18;
+                const overlapsContent = protectedRect
+                    && boxX < protectedRect.right + safetyGap
+                    && boxX + boxWidth > protectedRect.left - safetyGap
+                    && boxY < protectedRect.bottom + safetyGap
+                    && boxY + boxHeight > protectedRect.top - safetyGap;
+
+                if (overlapsContent) return;
+
                 ctx.fillStyle = "rgba(15, 23, 42, 0.78)";
                 ctx.strokeStyle = rgba(accent, 0.28);
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.roundRect(boxX, boxY, textWidth + 18, 24, 6);
+                ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
                 ctx.fill();
                 ctx.stroke();
                 ctx.fillStyle = rgba(accent, 0.88);
