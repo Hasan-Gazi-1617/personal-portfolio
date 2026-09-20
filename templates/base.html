@@ -200,6 +200,7 @@
                 </li>
 
 
+                {% if request.user.is_authenticated and request.user.is_superuser %}
                 <!-- ================= MANOR-IT ================= -->
                 <li class="nav-item dropdown manor-dropdown">
                     <a class="nav-link dropdown-toggle"
@@ -381,8 +382,10 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
             </ul>
 
+            {% if request.user.is_authenticated and request.user.is_superuser %}
             <!-- OLT LOCATION SEARCH -->
             <div class="olt-location-search" id="oltLocationSearch">
                 <div class="olt-search-shell">
@@ -415,6 +418,38 @@
                     aria-label="OLT location search results">
                 </div>
             </div>
+
+            {% else %}
+            <!-- PUBLIC PORTFOLIO SEARCH -->
+            <div class="olt-location-search" id="portfolioSearch">
+                <div class="olt-search-shell">
+                    <i class="bi bi-search olt-search-icon"></i>
+                    <input
+                        type="search"
+                        id="portfolioSearchInput"
+                        class="olt-search-input"
+                        placeholder="Search portfolio..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        aria-label="Search portfolio sections"
+                        aria-controls="portfolioSearchResults"
+                        aria-expanded="false">
+                    <button
+                        type="button"
+                        class="olt-search-clear"
+                        id="portfolioSearchClear"
+                        aria-label="Clear portfolio search">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div
+                    class="olt-search-panel"
+                    id="portfolioSearchResults"
+                    role="listbox"
+                    aria-label="Portfolio search results">
+                </div>
+            </div>
+            {% endif %}
 
             <!-- LET'S CONNECT -->
             <a href="#contact" class="btn btn-outline-primary-custom connect-btn">
@@ -853,6 +888,109 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+</script>
+
+
+<script>
+(function () {
+    const wrapper = document.getElementById('portfolioSearch');
+    const input = document.getElementById('portfolioSearchInput');
+    const panel = document.getElementById('portfolioSearchResults');
+    const clear = document.getElementById('portfolioSearchClear');
+
+    if (!wrapper || !input || !panel || !clear) return;
+
+    const sections = [
+        { title: 'Home', subtitle: 'Introduction and profile', selector: '#home', icon: 'bi-house' },
+        { title: 'About', subtitle: 'Profile, languages and interests', selector: '#about', icon: 'bi-person' },
+        { title: 'Expertise', subtitle: 'Network operations and troubleshooting', selector: '#expertise', icon: 'bi-diagram-3' },
+        { title: 'Technology', subtitle: 'Tools, platforms and protocols', selector: '#technology', icon: 'bi-cpu' },
+        { title: 'Experience', subtitle: 'Professional work history', selector: '#experience', icon: 'bi-briefcase' },
+        { title: 'Projects', subtitle: 'Featured networking and development work', selector: '#projects', icon: 'bi-kanban' },
+        { title: 'Certifications', subtitle: 'Certifications and learning', selector: '.certifications-section', icon: 'bi-award' },
+        { title: 'Lessons', subtitle: 'Networking learning resources', selector: '#lessons', icon: 'bi-journal-code' },
+        { title: 'Contact', subtitle: 'Send a message or connect', selector: '#contact', icon: 'bi-envelope' }
+    ];
+
+    function closeResults() {
+        panel.classList.remove('show');
+        panel.innerHTML = '';
+        input.setAttribute('aria-expanded', 'false');
+    }
+
+    function openSection(selector) {
+        const target = document.querySelector(selector);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        closeResults();
+        input.value = '';
+        clear.classList.remove('show');
+    }
+
+    function renderResults(query) {
+        const normalized = query.trim().toLowerCase();
+        if (!normalized) {
+            closeResults();
+            return;
+        }
+
+        const matches = sections.filter(item =>
+            (item.title + ' ' + item.subtitle).toLowerCase().includes(normalized)
+        );
+
+        panel.innerHTML = '';
+        if (!matches.length) {
+            panel.innerHTML = '<div class="olt-search-empty"><span>No matching section found</span></div>';
+        } else {
+            matches.forEach(item => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'olt-search-result';
+                button.setAttribute('role', 'option');
+                button.innerHTML =
+                    '<span class="olt-result-icon"><i class="bi ' + item.icon + '"></i></span>' +
+                    '<span class="olt-result-copy"><strong>' + item.title + '</strong><small>' + item.subtitle + '</small></span>' +
+                    '<i class="bi bi-arrow-right olt-result-arrow"></i>';
+                button.addEventListener('click', () => openSection(item.selector));
+                panel.appendChild(button);
+            });
+        }
+
+        panel.classList.add('show');
+        input.setAttribute('aria-expanded', 'true');
+    }
+
+    input.addEventListener('input', () => {
+        clear.classList.toggle('show', Boolean(input.value));
+        renderResults(input.value);
+    });
+
+    input.addEventListener('focus', () => {
+        if (input.value.trim()) renderResults(input.value);
+    });
+
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeResults();
+            input.blur();
+        }
+        if (event.key === 'Enter') {
+            const first = panel.querySelector('.olt-search-result');
+            if (first) first.click();
+        }
+    });
+
+    clear.addEventListener('click', () => {
+        input.value = '';
+        clear.classList.remove('show');
+        closeResults();
+        input.focus();
+    });
+
+    document.addEventListener('click', event => {
+        if (!wrapper.contains(event.target)) closeResults();
+    });
+})();
 </script>
 
 </body>
