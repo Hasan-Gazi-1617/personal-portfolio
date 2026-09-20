@@ -1,6 +1,8 @@
-from django.urls import path 
-from . import views 
+from django.urls import path
+from . import views
 
-urlpatterns = [ 
-    path('', views.home, name='home'), 
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("owner-login/", views.owner_login, name="owner_login"),
+    path("owner-logout/", views.owner_logout, name="owner_logout"),
 ]
