@@ -310,8 +310,16 @@ html[data-theme="light"] .footer-social a {
 
 
 /* ===== THEME-AWARE NAVBAR POLISH ===== */
+@media (min-width: 992px) {
+    .navbar-custom > .container {
+        width: 100%;
+        max-width: none;
+        padding-left: 48px;
+        padding-right: 48px;
+    }
+}
 .navbar-custom .brand-logo {
-    margin-left: 18px;
+    margin-left: 0;
     font-family: "Space Grotesk", "Segoe UI", sans-serif;
     font-weight: 700;
     letter-spacing: -.8px;
@@ -347,7 +355,7 @@ html[data-theme="light"] .footer-social a {
 
 .theme-toggle {
     margin-left: 22px !important;
-    margin-right: -14px;
+    margin-right: 0;
 }
 
 .olt-search-shell {
