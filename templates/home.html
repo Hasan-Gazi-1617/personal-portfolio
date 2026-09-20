@@ -340,21 +340,21 @@ Hasan | NOC Engineer
     height: 100%;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.68;
     overflow: hidden;
     mask-image: linear-gradient(to bottom, rgba(0,0,0,.95), rgba(0,0,0,.15));
 }
 
 .network-routing-bg .route-line {
     fill: none;
-    stroke: rgba(56, 189, 248, 0.28);
+    stroke: rgba(56, 189, 248, 0.42);
     stroke-width: 1.5;
     stroke-dasharray: 8 12;
     animation: route-flow 14s linear infinite;
 }
 
 .network-routing-bg .route-line.alt {
-    stroke: rgba(20, 184, 166, 0.24);
+    stroke: rgba(20, 184, 166, 0.36);
     animation-duration: 18s;
     animation-direction: reverse;
 }
@@ -428,7 +428,7 @@ Hasan | NOC Engineer
 
 
 /* =====================================================
-   LAYERED FULL-PAGE NETWORK ANIMATIONS
+   UNIQUE FULL-PAGE NETWORK MOTION — V2
 ===================================================== */
 #about,
 #expertise,
@@ -452,7 +452,7 @@ Hasan | NOC Engineer
 .lessons-scroll-section > .container,
 #contact > .container {
     position: relative;
-    z-index: 2;
+    z-index: 3;
 }
 
 #about::after,
@@ -465,137 +465,172 @@ Hasan | NOC Engineer
 #contact::after {
     content: "";
     position: absolute;
-    inset: -15%;
-    z-index: 0;
     pointer-events: none;
-    opacity: .3;
-    will-change: transform, background-position, opacity;
+    z-index: 1;
+    will-change: transform, opacity, background-position;
 }
 
-/* About: rotating radar rings */
+/* ABOUT — SONAR / DISCOVERY */
 #about::after {
-    inset: 8% auto auto 58%;
-    width: 520px;
+    width: min(620px, 56vw);
     aspect-ratio: 1;
+    right: -8%;
+    top: 50%;
+    transform: translateY(-50%);
     border-radius: 50%;
+    opacity: .58;
     background:
-        radial-gradient(circle, transparent 12%, rgba(56,189,248,.18) 12.4%, transparent 13%),
-        radial-gradient(circle, transparent 27%, rgba(20,184,166,.14) 27.4%, transparent 28%),
-        radial-gradient(circle, transparent 43%, rgba(56,189,248,.12) 43.4%, transparent 44%),
-        conic-gradient(from 30deg, transparent 0 72%, rgba(56,189,248,.2) 78%, transparent 84%);
-    animation: radar-rotate 24s linear infinite;
+        radial-gradient(circle at center, #5eead4 0 3px, transparent 4px),
+        linear-gradient(90deg, transparent 49.8%, rgba(94,234,212,.22) 50%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, rgba(56,189,248,.16) 50%, transparent 50.2%),
+        repeating-radial-gradient(circle, transparent 0 48px, rgba(56,189,248,.22) 49px 50px, transparent 51px 94px),
+        conic-gradient(from 0deg, transparent 0 78%, rgba(45,212,191,.32) 86%, transparent 94%);
+    filter: drop-shadow(0 0 20px rgba(20,184,166,.12));
+    animation: noc-radar 18s linear infinite;
+    mask-image: radial-gradient(circle, #000 0 62%, transparent 78%);
 }
 
-/* Expertise: horizontal packet/data lanes */
+/* EXPERTISE — LIVE PACKET LANES */
 #expertise::after {
+    inset: 10% -8%;
+    opacity: .68;
     background:
-        repeating-linear-gradient(90deg, transparent 0 92px, rgba(56,189,248,.23) 94px 96px, transparent 98px 180px),
-        repeating-linear-gradient(0deg, transparent 0 76px, rgba(20,184,166,.09) 77px 78px);
-    background-size: 360px 100%, 100% 156px;
-    animation: packet-lanes 18s linear infinite;
-    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+        radial-gradient(circle, #67e8f9 0 2px, transparent 3px) 0 18% / 180px 76px repeat-x,
+        radial-gradient(circle, #2dd4bf 0 2px, transparent 3px) 70px 52% / 230px 92px repeat-x,
+        radial-gradient(circle, #38bdf8 0 1.5px, transparent 3px) 20px 84% / 145px 68px repeat-x,
+        repeating-linear-gradient(90deg, transparent 0 46px, rgba(56,189,248,.24) 47px 49px, transparent 50px 118px);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    animation: packet-stream 12s linear infinite;
 }
 
-/* Technology: drifting node field */
+/* TECHNOLOGY — BREATHING NODE CONSTELLATION */
 #technology::after {
-    background-image:
-        radial-gradient(circle, rgba(56,189,248,.75) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(20,184,166,.55) 0 1.5px, transparent 2.5px);
-    background-size: 92px 92px, 148px 148px;
-    background-position: 0 0, 36px 50px;
-    animation: node-drift 28s linear infinite;
-    mask-image: radial-gradient(ellipse at center, #000 0 65%, transparent 88%);
+    inset: -28% -8%;
+    opacity: .52;
+    background:
+        radial-gradient(circle at 10% 35%, rgba(94,234,212,.95) 0 2px, transparent 3px),
+        radial-gradient(circle at 28% 68%, rgba(56,189,248,.9) 0 2px, transparent 3px),
+        radial-gradient(circle at 48% 24%, rgba(94,234,212,.8) 0 2px, transparent 3px),
+        radial-gradient(circle at 67% 71%, rgba(56,189,248,.9) 0 2px, transparent 3px),
+        radial-gradient(circle at 86% 34%, rgba(94,234,212,.85) 0 2px, transparent 3px),
+        repeating-linear-gradient(28deg, transparent 0 82px, rgba(56,189,248,.11) 83px 84px, transparent 85px 168px),
+        repeating-linear-gradient(152deg, transparent 0 108px, rgba(20,184,166,.1) 109px 110px, transparent 111px 204px);
+    filter: drop-shadow(0 0 8px rgba(56,189,248,.18));
+    animation: constellation-drift 24s ease-in-out infinite alternate;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 82%);
 }
 
-/* Experience: moving backbone route */
+/* EXPERIENCE — RIGHT-SIDE ROUTING CORE; NO CENTER DIVIDER */
 #experience::after {
-    inset: 0 4%;
-    background:
-        linear-gradient(90deg, transparent 49.75%, rgba(56,189,248,.35) 49.9% 50.1%, transparent 50.25%),
-        repeating-linear-gradient(0deg, transparent 0 70px, rgba(125,211,252,.75) 72px 77px, transparent 79px 150px);
-    background-size: 100% 100%, 10px 300px;
-    background-position: center, center 0;
-    background-repeat: no-repeat, repeat-y;
-    animation: backbone-flow 10s linear infinite;
-}
-
-/* Projects: shifting routed mesh */
-#projects::after {
-    background:
-        linear-gradient(30deg, transparent 47.5%, rgba(56,189,248,.12) 48% 49%, transparent 49.5%),
-        linear-gradient(150deg, transparent 47.5%, rgba(20,184,166,.1) 48% 49%, transparent 49.5%);
-    background-size: 170px 98px;
-    animation: mesh-shift 22s linear infinite;
-    mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
-}
-
-/* Certifications: expanding wireless signal waves */
-.certifications-section::after {
-    inset: auto auto -360px -190px;
-    width: 760px;
-    height: 760px;
+    width: min(760px, 54vw);
+    height: 92%;
+    right: -6%;
+    top: 4%;
+    opacity: .48;
     border-radius: 50%;
-    background: repeating-radial-gradient(
-        circle,
-        transparent 0 58px,
-        rgba(56,189,248,.16) 60px 62px,
-        transparent 64px 112px
-    );
-    animation: signal-wave 7s ease-in-out infinite;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(94,234,212,.9) 0 3px, transparent 4px),
+        radial-gradient(circle at 22% 30%, rgba(56,189,248,.8) 0 3px, transparent 4px),
+        radial-gradient(circle at 74% 22%, rgba(94,234,212,.72) 0 3px, transparent 4px),
+        radial-gradient(circle at 80% 72%, rgba(56,189,248,.75) 0 3px, transparent 4px),
+        radial-gradient(circle at 28% 77%, rgba(45,212,191,.7) 0 3px, transparent 4px),
+        conic-gradient(from 35deg at 50% 50%, transparent 0 12%, rgba(56,189,248,.18) 12.3% 12.7%, transparent 13% 33%, rgba(20,184,166,.18) 33.3% 33.7%, transparent 34% 61%, rgba(56,189,248,.16) 61.3% 61.7%, transparent 62%);
+    filter: drop-shadow(0 0 28px rgba(14,165,233,.16));
+    animation: routing-core 16s ease-in-out infinite;
+    mask-image: radial-gradient(ellipse, #000 0 52%, transparent 78%);
 }
 
-/* Lessons: slow terminal/data scan */
+/* PROJECTS — DYNAMIC GLOBAL MESH */
+#projects::after {
+    inset: -12% -4%;
+    opacity: .5;
+    background:
+        radial-gradient(circle, rgba(103,232,249,.8) 0 2px, transparent 3px) 0 0 / 170px 118px,
+        linear-gradient(32deg, transparent 49.4%, rgba(56,189,248,.16) 49.7% 50.1%, transparent 50.4%) 0 0 / 210px 130px,
+        linear-gradient(148deg, transparent 49.4%, rgba(20,184,166,.13) 49.7% 50.1%, transparent 50.4%) 0 0 / 210px 130px;
+    animation: project-mesh 20s linear infinite;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+}
+
+/* CERTIFICATIONS — AUTHENTICATION SIGNAL */
+.certifications-section::after {
+    width: min(680px, 60vw);
+    aspect-ratio: 1;
+    left: -14%;
+    bottom: -68%;
+    border-radius: 50%;
+    opacity: .54;
+    background:
+        radial-gradient(circle, rgba(94,234,212,.9) 0 3px, transparent 4px),
+        repeating-radial-gradient(circle, transparent 0 45px, rgba(56,189,248,.22) 46px 48px, transparent 49px 91px);
+    filter: drop-shadow(0 0 18px rgba(56,189,248,.18));
+    animation: auth-signal 5.5s ease-in-out infinite;
+}
+
+/* LESSONS — TERMINAL SCAN + DATA BITS */
 .lessons-scroll-section::after {
+    inset: 0;
+    opacity: .43;
     background:
-        repeating-linear-gradient(0deg, transparent 0 28px, rgba(20,184,166,.1) 29px 30px),
-        linear-gradient(90deg, transparent, rgba(56,189,248,.08), transparent);
-    background-size: 100% 120px, 35% 100%;
-    background-repeat: repeat, no-repeat;
-    animation: lesson-scan 16s linear infinite;
+        linear-gradient(180deg, transparent 0 45%, rgba(94,234,212,.23) 49%, rgba(56,189,248,.42) 50%, rgba(94,234,212,.2) 51%, transparent 55%) 0 -160px / 100% 320px no-repeat,
+        repeating-linear-gradient(90deg, transparent 0 64px, rgba(56,189,248,.12) 65px 66px, transparent 67px 132px),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(20,184,166,.09) 32px 33px);
+    animation: terminal-scan 9s linear infinite;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
-/* Contact: moving uplink glow */
+/* CONTACT — UPLINK HUB */
 #contact::after {
+    width: min(850px, 70vw);
+    aspect-ratio: 1.6;
+    right: -8%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: .58;
     background:
-        radial-gradient(circle at 72% 48%, rgba(20,184,166,.2), transparent 7%),
-        radial-gradient(circle at 72% 48%, transparent 0 15%, rgba(56,189,248,.12) 15.5% 16%, transparent 16.5%),
-        radial-gradient(circle at 72% 48%, transparent 0 27%, rgba(20,184,166,.09) 27.5% 28%, transparent 28.5%),
-        linear-gradient(115deg, transparent 0 66%, rgba(56,189,248,.13) 66.2% 66.5%, transparent 66.8%);
-    animation: uplink-pulse 6s ease-in-out infinite;
+        radial-gradient(circle at 52% 58%, #67e8f9 0 3px, transparent 4px),
+        radial-gradient(circle at 52% 58%, transparent 0 42px, rgba(56,189,248,.28) 43px 44px, transparent 45px 86px, rgba(20,184,166,.2) 87px 88px, transparent 89px),
+        conic-gradient(from 205deg at 52% 58%, transparent 0 8%, rgba(56,189,248,.22) 8.3% 8.7%, transparent 9% 21%, rgba(94,234,212,.2) 21.3% 21.7%, transparent 22% 38%, rgba(56,189,248,.2) 38.3% 38.7%, transparent 39% 61%, rgba(20,184,166,.18) 61.3% 61.7%, transparent 62%);
+    filter: drop-shadow(0 0 22px rgba(34,211,238,.2));
+    animation: uplink-hub 7s ease-in-out infinite;
+    mask-image: radial-gradient(ellipse, #000 10%, transparent 75%);
 }
 
-@keyframes radar-rotate {
-    to { transform: rotate(360deg); }
+@keyframes noc-radar {
+    from { transform: translateY(-50%) rotate(0deg); }
+    to { transform: translateY(-50%) rotate(360deg); }
 }
 
-@keyframes packet-lanes {
-    to { background-position: 360px 0, 0 156px; }
+@keyframes packet-stream {
+    to { background-position: 360px 18%, -390px 52%, 290px 84%, 472px 0; }
 }
 
-@keyframes node-drift {
-    to { background-position: 184px 92px, -112px 198px; }
+@keyframes constellation-drift {
+    from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+    to { transform: translate3d(1.5%, 1%, 0) scale(1.04); }
 }
 
-@keyframes backbone-flow {
-    to { background-position: center, center 300px; }
+@keyframes routing-core {
+    0%, 100% { transform: scale(.96) rotate(-2deg); opacity: .38; }
+    50% { transform: scale(1.04) rotate(2deg); opacity: .58; }
 }
 
-@keyframes mesh-shift {
-    to { background-position: 340px 196px, -340px 196px; }
+@keyframes project-mesh {
+    to { background-position: 340px 236px, 420px 260px, -420px 260px; }
 }
 
-@keyframes signal-wave {
-    0%, 100% { transform: scale(.88); opacity: .18; }
-    50% { transform: scale(1.08); opacity: .38; }
+@keyframes auth-signal {
+    0%, 100% { transform: scale(.86); opacity: .28; }
+    50% { transform: scale(1.08); opacity: .58; }
 }
 
-@keyframes lesson-scan {
-    to { background-position: 0 240px, 145% 0; }
+@keyframes terminal-scan {
+    to { background-position: 0 calc(100% + 160px), 264px 0, 0 198px; }
 }
 
-@keyframes uplink-pulse {
-    0%, 100% { transform: scale(.96); opacity: .2; }
-    50% { transform: scale(1.04); opacity: .38; }
+@keyframes uplink-hub {
+    0%, 100% { transform: translateY(-50%) scale(.94); opacity: .4; }
+    50% { transform: translateY(-50%) scale(1.05); opacity: .62; }
 }
 
 @media (max-width: 767.98px) {
@@ -607,16 +642,27 @@ Hasan | NOC Engineer
     .certifications-section::after,
     .lessons-scroll-section::after,
     #contact::after {
-        opacity: .18;
+        opacity: .25;
     }
 
     #about::after {
-        width: 360px;
-        left: 34%;
+        width: 430px;
+        right: -48%;
+    }
+
+    #experience::after {
+        width: 540px;
+        right: -58%;
+    }
+
+    #contact::after {
+        width: 580px;
+        right: -54%;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .network-routing-bg *,
     #about::after,
     #expertise::after,
     #technology::after,
