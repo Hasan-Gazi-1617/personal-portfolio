@@ -449,6 +449,8 @@ html[data-theme="light"] .owner-login-card{background:rgba(255,255,255,.96);box-
                     aria-label="OLT location search results">
                 </div>
             </div>
+            {% endif %}
+
             {% if request.session.owner_access %}
             <form method="post" action="{% url 'owner_logout' %}" class="owner-logout-form">
                 {% csrf_token %}
