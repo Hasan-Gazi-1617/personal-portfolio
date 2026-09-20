@@ -133,7 +133,38 @@
         transform: translateY(-50%);
     }
 }
+
+/* ===== OWNER ACCESS + THEME ===== */
+.theme-toggle,.owner-logout-btn{width:42px;height:42px;flex:0 0 42px;display:inline-grid;place-items:center;border:1px solid rgba(20,184,166,.42);border-radius:11px;background:rgba(15,23,42,.72);color:#5eead4;transition:.2s ease}
+.theme-toggle:hover,.owner-logout-btn:hover{transform:translateY(-2px);color:#f8fafc;border-color:#5eead4;background:rgba(20,184,166,.16)}
+.owner-logout-form{display:inline-flex;margin-left:10px}.theme-icon-dark{display:none}
+html[data-theme="light"]{color-scheme:light;--bg-primary:#f2fbf5;--bg-secondary:#e7f7ed;--bg-card:#fff;--text-primary:#123524;--text-secondary:#315844;--text-muted:#648072;--accent:#22c55e;--border:rgba(21,128,61,.16)}
+html[data-theme="light"] body{background:#f2fbf5;color:var(--text-primary)}
+html[data-theme="light"] .navbar-custom{background:rgba(242,251,245,.95)!important;border-bottom-color:rgba(34,197,94,.2)!important;box-shadow:0 10px 34px rgba(21,128,61,.08)}
+html[data-theme="light"] .navbar-brand,html[data-theme="light"] .nav-link,html[data-theme="light"] .hero-title,html[data-theme="light"] .section-title,html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] h4{color:#123524!important}
+html[data-theme="light"] .hero-title span,html[data-theme="light"] .section-label,html[data-theme="light"] .hero-intro,html[data-theme="light"] .availability-badge{color:#15803d!important}
+html[data-theme="light"] .hero-description,html[data-theme="light"] p,html[data-theme="light"] li,html[data-theme="light"] small{color:#496b59}
+html[data-theme="light"] .profile-card,html[data-theme="light"] [class*="expertise-card"],html[data-theme="light"] [class*="project-card"],html[data-theme="light"] [class*="certification-card"],html[data-theme="light"] [class*="lesson-card"],html[data-theme="light"] .hero-stat-item,html[data-theme="light"] .about-card{background:rgba(255,255,255,.86)!important;border-color:rgba(34,197,94,.2)!important;box-shadow:0 18px 45px rgba(21,128,61,.08)}
+html[data-theme="light"] .theme-toggle,html[data-theme="light"] .owner-logout-btn{background:#fff;color:#15803d;border-color:rgba(21,128,61,.28)}
+html[data-theme="light"] .theme-icon-light{display:none}html[data-theme="light"] .theme-icon-dark{display:inline-block}
+html[data-theme="light"] #live-network-topology{opacity:.62;mix-blend-mode:multiply}
+.owner-login-section{min-height:100vh;padding:140px 20px 70px;display:grid;place-items:center}
+.owner-login-card{width:min(100%,440px);padding:38px;border:1px solid var(--border);border-radius:22px;background:rgba(22,34,53,.96);box-shadow:0 26px 70px rgba(0,0,0,.25)}
+html[data-theme="light"] .owner-login-card{background:rgba(255,255,255,.96);box-shadow:0 26px 70px rgba(21,128,61,.12)}
+.owner-login-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:14px;color:#5eead4;background:rgba(20,184,166,.12);font-size:22px;margin-bottom:22px}
+.owner-login-eyebrow{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px}.owner-login-card h1{margin:8px 0 10px;font-size:34px}.owner-login-card>p{color:var(--text-muted);margin-bottom:25px}
+.owner-login-alert{padding:11px 13px;margin-bottom:18px;border:1px solid rgba(248,113,113,.35);border-radius:10px;background:rgba(248,113,113,.1);color:#fca5a5;font-size:13px}
+.owner-login-form label{display:block;margin-bottom:8px;color:var(--text-secondary);font-size:12px;font-weight:600}
+.owner-key-field{display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);overflow:hidden}.owner-key-field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(20,184,166,.1)}
+.owner-key-field input{width:100%;padding:13px 15px;border:0;outline:0;background:transparent;color:var(--text-primary)}.owner-key-field button{width:46px;align-self:stretch;border:0;background:transparent;color:var(--text-muted)}
+.owner-login-submit{width:100%;margin-top:16px;justify-content:center}.owner-login-back{display:inline-flex;align-items:center;gap:7px;margin-top:20px;color:var(--text-muted);font-size:13px;text-decoration:none}
+@media(max-width:991.98px){.theme-toggle{margin-left:10px}.owner-logout-form{margin:12px 0 0}}
+
 </style>
+
+<script>
+(function(){try{const saved=localStorage.getItem('hasan-portfolio-theme');const preferred=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=saved||preferred}catch(e){document.documentElement.dataset.theme='dark'}})();
+</script>
 
 </head>
 
@@ -200,7 +231,7 @@
                 </li>
 
 
-                {% if request.user.is_authenticated and request.user.is_superuser %}
+                {% if request.session.owner_access %}
                 <!-- ================= MANOR-IT ================= -->
                 <li class="nav-item dropdown manor-dropdown">
                     <a class="nav-link dropdown-toggle"
@@ -385,7 +416,7 @@
                 {% endif %}
             </ul>
 
-            {% if request.user.is_authenticated and request.user.is_superuser %}
+            {% if request.session.owner_access %}
             <!-- OLT LOCATION SEARCH -->
             <div class="olt-location-search" id="oltLocationSearch">
                 <div class="olt-search-shell">
@@ -418,43 +449,25 @@
                     aria-label="OLT location search results">
                 </div>
             </div>
-
-            {% else %}
-            <!-- PUBLIC PORTFOLIO SEARCH -->
-            <div class="olt-location-search" id="portfolioSearch">
-                <div class="olt-search-shell">
-                    <i class="bi bi-search olt-search-icon"></i>
-                    <input
-                        type="search"
-                        id="portfolioSearchInput"
-                        class="olt-search-input"
-                        placeholder="Search portfolio..."
-                        autocomplete="off"
-                        spellcheck="false"
-                        aria-label="Search portfolio sections"
-                        aria-controls="portfolioSearchResults"
-                        aria-expanded="false">
-                    <button
-                        type="button"
-                        class="olt-search-clear"
-                        id="portfolioSearchClear"
-                        aria-label="Clear portfolio search">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div
-                    class="olt-search-panel"
-                    id="portfolioSearchResults"
-                    role="listbox"
-                    aria-label="Portfolio search results">
-                </div>
-            </div>
+            {% if request.session.owner_access %}
+            <form method="post" action="{% url 'owner_logout' %}" class="owner-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="owner-logout-btn" aria-label="Lock private tools" title="Lock private tools">
+                    <i class="bi bi-lock"></i>
+                </button>
+            </form>
             {% endif %}
 
             <!-- LET'S CONNECT -->
             <a href="#contact" class="btn btn-outline-primary-custom connect-btn">
                 Let's Connect
             </a>
+
+            <button type="button" class="theme-toggle" id="themeToggle"
+                    aria-label="Switch to light theme" title="Switch theme">
+                <i class="bi bi-sun-fill theme-icon-light"></i>
+                <i class="bi bi-moon-stars-fill theme-icon-dark"></i>
+            </button>
         </div>
     </div>
 </nav>
@@ -892,104 +905,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <script>
-(function () {
-    const wrapper = document.getElementById('portfolioSearch');
-    const input = document.getElementById('portfolioSearchInput');
-    const panel = document.getElementById('portfolioSearchResults');
-    const clear = document.getElementById('portfolioSearchClear');
-
-    if (!wrapper || !input || !panel || !clear) return;
-
-    const sections = [
-        { title: 'Home', subtitle: 'Introduction and profile', selector: '#home', icon: 'bi-house' },
-        { title: 'About', subtitle: 'Profile, languages and interests', selector: '#about', icon: 'bi-person' },
-        { title: 'Expertise', subtitle: 'Network operations and troubleshooting', selector: '#expertise', icon: 'bi-diagram-3' },
-        { title: 'Technology', subtitle: 'Tools, platforms and protocols', selector: '#technology', icon: 'bi-cpu' },
-        { title: 'Experience', subtitle: 'Professional work history', selector: '#experience', icon: 'bi-briefcase' },
-        { title: 'Projects', subtitle: 'Featured networking and development work', selector: '#projects', icon: 'bi-kanban' },
-        { title: 'Certifications', subtitle: 'Certifications and learning', selector: '.certifications-section', icon: 'bi-award' },
-        { title: 'Lessons', subtitle: 'Networking learning resources', selector: '#lessons', icon: 'bi-journal-code' },
-        { title: 'Contact', subtitle: 'Send a message or connect', selector: '#contact', icon: 'bi-envelope' }
-    ];
-
-    function closeResults() {
-        panel.classList.remove('show');
-        panel.innerHTML = '';
-        input.setAttribute('aria-expanded', 'false');
-    }
-
-    function openSection(selector) {
-        const target = document.querySelector(selector);
-        if (!target) return;
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        closeResults();
-        input.value = '';
-        clear.classList.remove('show');
-    }
-
-    function renderResults(query) {
-        const normalized = query.trim().toLowerCase();
-        if (!normalized) {
-            closeResults();
-            return;
-        }
-
-        const matches = sections.filter(item =>
-            (item.title + ' ' + item.subtitle).toLowerCase().includes(normalized)
-        );
-
-        panel.innerHTML = '';
-        if (!matches.length) {
-            panel.innerHTML = '<div class="olt-search-empty"><span>No matching section found</span></div>';
-        } else {
-            matches.forEach(item => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'olt-search-result';
-                button.setAttribute('role', 'option');
-                button.innerHTML =
-                    '<span class="olt-result-icon"><i class="bi ' + item.icon + '"></i></span>' +
-                    '<span class="olt-result-copy"><strong>' + item.title + '</strong><small>' + item.subtitle + '</small></span>' +
-                    '<i class="bi bi-arrow-right olt-result-arrow"></i>';
-                button.addEventListener('click', () => openSection(item.selector));
-                panel.appendChild(button);
-            });
-        }
-
-        panel.classList.add('show');
-        input.setAttribute('aria-expanded', 'true');
-    }
-
-    input.addEventListener('input', () => {
-        clear.classList.toggle('show', Boolean(input.value));
-        renderResults(input.value);
-    });
-
-    input.addEventListener('focus', () => {
-        if (input.value.trim()) renderResults(input.value);
-    });
-
-    input.addEventListener('keydown', event => {
-        if (event.key === 'Escape') {
-            closeResults();
-            input.blur();
-        }
-        if (event.key === 'Enter') {
-            const first = panel.querySelector('.olt-search-result');
-            if (first) first.click();
-        }
-    });
-
-    clear.addEventListener('click', () => {
-        input.value = '';
-        clear.classList.remove('show');
-        closeResults();
-        input.focus();
-    });
-
-    document.addEventListener('click', event => {
-        if (!wrapper.contains(event.target)) closeResults();
-    });
+(function(){
+ const button=document.getElementById('themeToggle');if(!button)return;
+ function setTheme(theme){document.documentElement.dataset.theme=theme;button.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');try{localStorage.setItem('hasan-portfolio-theme',theme)}catch(e){}document.dispatchEvent(new CustomEvent('portfolio-theme-change',{detail:{theme}}))}
+ button.addEventListener('click',()=>setTheme((document.documentElement.dataset.theme||'dark')==='dark'?'light':'dark'));
+ setTheme(document.documentElement.dataset.theme||'dark');
 })();
 </script>
 
