@@ -392,10 +392,22 @@ html[data-theme="light"] .footer-social a {
 }
 
 .owner-login-nav-label {
+    position: absolute !important;
+    left: 50%;
     width: max-content;
-    margin: 0 auto;
+    margin: 0;
     padding: 10px 18px !important;
     font-size: 14px !important;
+    transform: translateX(-50%);
+}
+
+.owner-login-nav-label:hover,
+.owner-login-nav-label:focus {
+    transform: translate(-50%, -1px) !important;
+}
+
+.owner-login-theme-toggle {
+    margin-left: auto !important;
 }
 
 .manor-dropdown .dropdown-item:hover,
@@ -529,12 +541,22 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom">
     <div class="container">
         {% if request.resolver_match.url_name == 'owner_login' %}
+        <a class="navbar-brand brand-logo" href="{% url 'home' %}#home">
+            hasan<span>.</span>net
+        </a>
+
         <a class="nav-link admin-view-link owner-login-nav-label"
            href="{% url 'owner_login' %}"
            aria-current="page">
             <i class="bi bi-shield-lock"></i>
             <span>Admin View</span>
         </a>
+
+        <button type="button" class="theme-toggle owner-login-theme-toggle" id="themeToggle"
+                aria-label="Switch to light theme" title="Switch theme">
+            <i class="bi bi-sun-fill theme-icon-light"></i>
+            <i class="bi bi-moon-stars-fill theme-icon-dark"></i>
+        </button>
         {% else %}
 
         <!-- Logo -->
