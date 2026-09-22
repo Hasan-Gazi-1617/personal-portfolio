@@ -77,3 +77,48 @@ html[data-theme="light"] #projects .project-card p,html[data-theme="light"] #exp
 html[data-theme="light"] #projects .project-tags span{color:#315844!important;background:rgba(255,255,255,.75);border-color:rgba(21,128,61,.18)!important}
 
 @media(max-width:767.98px){body{font-size:15px}.section-heading{margin-bottom:34px}.profile-mini-card{padding:22px}#projects .project-card{padding:24px!important}#projects .project-card h3{font-size:20px!important}#projects .project-card p{font-size:14px!important}#projects .project-visual{height:88px}#experience .experience-content h3{font-size:21px}}
+
+
+/* ===== LIGHT THEME TEXT CONTRAST GUARANTEE ===== */
+html[data-theme="light"] main,
+html[data-theme="light"] main section{color:#173c28}
+html[data-theme="light"] main h1,
+html[data-theme="light"] main h2,
+html[data-theme="light"] main h3,
+html[data-theme="light"] main h4,
+html[data-theme="light"] main h5,
+html[data-theme="light"] main h6,
+html[data-theme="light"] main strong,
+html[data-theme="light"] main b{color:#123524!important}
+html[data-theme="light"] #experience .experience-list b,
+html[data-theme="light"] #experience .experience-list strong{color:#163d29!important;background:transparent!important;text-shadow:none!important}
+html[data-theme="light"] #experience .experience-date,
+html[data-theme="light"] #experience .experience-type,
+html[data-theme="light"] #experience .experience-content h4{color:#24563a!important}
+html[data-theme="light"] .profile-chip,
+html[data-theme="light"] .profile-chip strong,
+html[data-theme="light"] #technology .tech-item>span:not(.skill-level),
+html[data-theme="light"] .project-card h3,
+html[data-theme="light"] .certification-card h3,
+html[data-theme="light"] .contact-link strong{color:#123524!important}
+html[data-theme="light"] .profile-chip small,
+html[data-theme="light"] .project-card p,
+html[data-theme="light"] .certification-card p,
+html[data-theme="light"] .contact-link small{color:#466b56!important}
+html[data-theme="light"] #projects .project-top>span,
+html[data-theme="light"] #projects .project-tags span{color:#294f39!important}
+html[data-theme="light"] .hero-stat-item strong,
+html[data-theme="light"] .hero-stat-item b,
+html[data-theme="light"] .hero-stat-item span{color:#123524!important}
+html[data-theme="light"] .experience-toggle{color:#166534!important;background:rgba(34,197,94,.09)!important;border-color:rgba(21,128,61,.25)!important}
+html[data-theme="light"] .project-status{color:#166534!important}
+html[data-theme="light"] .project-action,
+html[data-theme="light"] .profile-mini-head,
+html[data-theme="light"] .section-label,
+html[data-theme="light"] .section-number{color:#15803d!important}
+html[data-theme="light"] .btn-primary-custom{color:#071b0f!important}
+html[data-theme="light"] .btn-secondary-custom{color:#164e2c!important}
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder{color:#173c28!important}
