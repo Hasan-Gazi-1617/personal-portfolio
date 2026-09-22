@@ -122,3 +122,22 @@ html[data-theme="light"] input,
 html[data-theme="light"] textarea,
 html[data-theme="light"] input::placeholder,
 html[data-theme="light"] textarea::placeholder{color:#173c28!important}
+
+
+/* ===== READABLE FONT WEIGHT + CLEAR NAV STATES ===== */
+body,button,input,textarea,select{font-family:"Manrope","Segoe UI",sans-serif}
+main p,main li,main small,main .about-text,main .hero-description,main .contact-description{font-weight:500!important}
+main strong,main b{font-weight:700}
+.navbar-custom .nav-link{font-weight:700!important;color:#cbd5e1!important}
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus,
+.navbar-custom .nav-link.active,
+.navbar-custom .nav-link.show{color:#ffffff!important;background:#0f766e!important;box-shadow:0 7px 18px rgba(15,118,110,.24);transform:translateY(-1px)}
+.navbar-custom .nav-link.active:before{background:#ffffff!important}
+html[data-theme="light"] .navbar-custom .nav-link{color:#173c28!important}
+html[data-theme="light"] .navbar-custom .nav-link:hover,
+html[data-theme="light"] .navbar-custom .nav-link:focus,
+html[data-theme="light"] .navbar-custom .nav-link.active,
+html[data-theme="light"] .navbar-custom .nav-link.show{color:#0f3d25!important;background:#bbf7d0!important;box-shadow:0 7px 18px rgba(21,128,61,.14)}
+html[data-theme="light"] .navbar-custom .nav-link.active:before{background:#15803d!important}
+.manor-dropdown .dropdown-item{font-family:"Manrope","Segoe UI",sans-serif!important;font-weight:650!important}
