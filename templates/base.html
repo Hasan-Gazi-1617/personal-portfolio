@@ -725,7 +725,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                        href="https://103.101.253.17:4512/"
                                        target="_blank"
                                        rel="noopener noreferrer">
-                                       OLT CDATA(E-PON):12
+                                       OLT CDATA(G-PON):12
                                     </a>
                                 </li>
 
@@ -791,7 +791,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                        href="https://103.101.253.17:4510/action/login.html"
                                        target="_blank"
                                        rel="noopener noreferrer">
-                                       OLT VSOL:10
+                                       OLT VSOL EPON:10
                                     </a>
                                 </li>
 
@@ -800,7 +800,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                        href="https://103.101.253.17:4511/action/login.html"
                                        target="_blank"
                                        rel="noopener noreferrer">
-                                       OLT VSOL:11
+                                       OLT VSOL EPON:11
                                     </a>
                                 </li>
                             </ul>
@@ -958,13 +958,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Keep usernames/passwords out of frontend JavaScript.
     // Search results only open the matching OLT login page.
     const oltLocations = [
-        { location: 'Madina Market 1', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Bagbari', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Zindabazar', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Kazi Elias', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Kalighat', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Mohajonpotti', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Bondor', olt: 'CDATA E-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Madina Market 1', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Bagbari', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Zindabazar', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Kazi Elias', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Kalighat', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Mohajonpotti', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
+        { location: 'Bondor', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
 
         { location: 'Galleria', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
         { location: 'Zindabazar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
@@ -1056,17 +1056,17 @@ document.addEventListener('DOMContentLoaded', function () {
         { location: 'Mendibag', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
         
 
-        { location: 'Rikabibazar', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Kazitula', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Uposhohor', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Jotorpur', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Mirzajangal', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Muttalib Villa', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Kalighat', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Vatalia', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Lamabazar', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Tatipara', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Subhanighat', olt: 'VSOL', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Rikabibazar', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Kazitula', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Uposhohor', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Jotorpur', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Mirzajangal', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Muttalib Villa', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Kalighat', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Vatalia', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Lamabazar', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Tatipara', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
+        { location: 'Subhanighat', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
     ];
 
     let visibleMatches = [];
