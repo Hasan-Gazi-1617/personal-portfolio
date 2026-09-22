@@ -30,3 +30,50 @@ html[data-theme=light] .profile-mini-card,html[data-theme=light] .command-dialog
 @media(max-width:991.98px){.about-profile-grid{margin-top:30px}.project-visual{height:82px}.command-launcher{right:16px;bottom:16px}.contact-form-row{grid-template-columns:1fr}.cv-modal,.command-palette{padding:12px}.cv-dialog{height:91vh}.navbar-custom .nav-link.active:before{left:12px;bottom:5px;transform:none}}
 @media(max-width:767.98px){.about-profile-grid{grid-template-columns:1fr}.profile-mini-card{padding:19px}.profile-chip{flex:1 1 100%}.hero-buttons{gap:10px}.hero-buttons .btn{width:100%;justify-content:center}.project-meta{align-items:flex-start;flex-direction:column}.command-launcher kbd{display:none}}
 @media(prefers-reduced-motion:reduce){.experience-toggle,.command-launcher,.navbar-custom .nav-link{transition:none!important}}
+
+
+/* ===== PREMIUM TYPOGRAPHY & PROFESSIONAL POLISH ===== */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{font-family:"Manrope","Segoe UI",sans-serif;font-size:16px;line-height:1.72;letter-spacing:-.006em}
+h1,h2,h3,h4,h5,h6,.navbar-brand,.nav-link,.section-label,.section-number,.btn,.project-status,.project-action{font-family:"Space Grotesk","Manrope",sans-serif}
+p,li,.about-text,.hero-description,.contact-description{font-weight:500;line-height:1.78;letter-spacing:0;color:#b6c2d3}
+.section-heading{margin-bottom:52px}.section-number,.section-label{font-size:12px!important;font-weight:700!important;line-height:1.2;letter-spacing:.18em!important}.section-title{font-weight:700;letter-spacing:-.035em;line-height:1.08}
+.hero-description{font-size:16px;max-width:660px;color:#c2ccda}
+.btn{font-weight:650;letter-spacing:.01em}
+
+.profile-mini-card{padding:28px 30px;border-color:rgba(45,212,191,.26);background:linear-gradient(145deg,rgba(25,43,64,.97),rgba(16,29,46,.95));box-shadow:0 22px 60px rgba(2,8,23,.2)}
+.profile-mini-head{font-size:13px;letter-spacing:.16em;margin-bottom:22px}.profile-mini-icon{width:42px;height:42px;font-size:18px}
+.profile-chip-list{gap:11px}.profile-chip{min-width:155px;padding:12px 14px;font-size:13px;font-weight:700;border-color:rgba(148,163,184,.2);background:rgba(15,23,42,.62)}.profile-chip small{font-family:"Manrope",sans-serif;font-size:11px;font-weight:600;color:#a7b4c7}
+
+#technology .tech-item>span:not(.skill-level){font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:650;color:#e7edf5}.skill-level span{padding:5px 9px;font-size:10px;letter-spacing:.09em}
+
+#experience .experience-content h3{font-size:25px;font-weight:650;letter-spacing:-.025em;color:#f4f7fb}
+#experience .experience-content h4{font-family:"Manrope",sans-serif;font-size:13px;font-weight:650;letter-spacing:.02em;color:#9fb0c4}
+#experience .experience-content>p,#experience .experience-list li{font-size:15px;line-height:1.75;color:#afbdd0}
+#experience .experience-list b{color:#dce6f2;font-weight:700}.experience-toggle{font-size:12px;padding:11px 15px}
+
+#projects .row{--bs-gutter-x:2rem;--bs-gutter-y:2rem}
+#projects .project-card{position:relative;padding:34px!important;border-color:rgba(94,234,212,.18)!important;background:linear-gradient(145deg,rgba(27,43,64,.97),rgba(20,33,52,.97))!important;box-shadow:0 20px 65px rgba(2,8,23,.18);transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease}
+#projects .project-card:hover{transform:translateY(-5px);border-color:rgba(94,234,212,.42)!important;box-shadow:0 28px 75px rgba(2,8,23,.3)}
+#projects .project-top>span{font-size:11px;font-weight:800;letter-spacing:.15em;color:#aab7c9}
+#projects .project-icon{width:52px;height:52px;margin-top:28px;margin-bottom:18px;border-radius:13px}
+#projects .project-visual{height:112px;margin-bottom:26px;border-color:rgba(56,189,248,.2);background-color:rgba(12,30,48,.72)}
+#projects .project-card h3{font-size:23px!important;font-weight:650;line-height:1.28;letter-spacing:-.025em;color:#f5f8fc!important}
+#projects .project-card p{font-size:15px!important;line-height:1.72;color:#adbbce!important;margin-top:13px;margin-bottom:20px}
+#projects .project-tags{gap:8px}#projects .project-tags span{padding:7px 10px!important;font-family:"Manrope",sans-serif;font-size:11px!important;font-weight:650;line-height:1;border-color:rgba(148,163,184,.23)!important;color:#bdc9d8!important;background:rgba(15,23,42,.34)}
+.project-meta{margin-top:26px;padding-top:19px}.project-status,.project-action{font-size:11px;letter-spacing:.045em}
+
+.certification-card{padding:28px!important}.certification-card h3{font-size:20px!important;font-weight:650;letter-spacing:-.02em}.certification-card p{font-size:14px;line-height:1.7;color:#adbbce}.certification-card>div>span:first-child{font-family:"Space Grotesk",sans-serif;font-size:11px;font-weight:700;letter-spacing:.13em}.cert-status{font-size:10px;padding:7px 10px}
+
+.contact-title{font-weight:700;letter-spacing:-.035em}.contact-description{font-size:16px;color:#b6c2d3}.contact-form-enhanced input,.contact-form-enhanced textarea{font-family:"Manrope",sans-serif;font-size:14px;font-weight:500}.contact-link small{font-family:"Space Grotesk",sans-serif;font-size:10px;letter-spacing:.13em}.contact-link strong{font-family:"Manrope",sans-serif;font-size:13px;font-weight:650}
+
+.command-search{font-family:"Manrope",sans-serif!important}.command-item span{font-size:14px}.command-item small{font-size:11px;line-height:1.4;margin-top:3px}
+
+html[data-theme="light"] p,html[data-theme="light"] li,html[data-theme="light"] .about-text,html[data-theme="light"] .hero-description,html[data-theme="light"] .contact-description{color:#3f654f!important}
+html[data-theme="light"] .profile-mini-card{background:linear-gradient(145deg,#fff,#f3faf5);border-color:rgba(21,128,61,.2)}
+html[data-theme="light"] #projects .project-card{background:linear-gradient(145deg,#fff,#f4faf6)!important;border-color:rgba(21,128,61,.18)!important;box-shadow:0 20px 55px rgba(21,128,61,.09)}
+html[data-theme="light"] #projects .project-card h3,html[data-theme="light"] #experience .experience-content h3{color:#153c28!important}
+html[data-theme="light"] #projects .project-card p,html[data-theme="light"] #experience .experience-content>p,html[data-theme="light"] #experience .experience-list li,html[data-theme="light"] .certification-card p{color:#496b59!important}
+html[data-theme="light"] #projects .project-tags span{color:#315844!important;background:rgba(255,255,255,.75);border-color:rgba(21,128,61,.18)!important}
+
+@media(max-width:767.98px){body{font-size:15px}.section-heading{margin-bottom:34px}.profile-mini-card{padding:22px}#projects .project-card{padding:24px!important}#projects .project-card h3{font-size:20px!important}#projects .project-card p{font-size:14px!important}#projects .project-visual{height:88px}#experience .experience-content h3{font-size:21px}}
