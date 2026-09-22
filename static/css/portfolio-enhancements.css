@@ -202,3 +202,33 @@ html[data-theme="light"] #contact .contact-link-icon{background:rgba(34,197,94,.
 @media(max-width:1199.98px){#home .profile-wrapper{max-width:330px}#home .profile-image-container{height:350px}#home .floating-card-one{left:-22px}#home .floating-card-two{right:-22px}}
 @media(max-width:991.98px){#home .profile-wrapper{max-width:340px;margin-top:25px}#contact .contact-box{padding:42px}#contact .contact-title{font-size:40px}}
 @media(max-width:575.98px){#home .profile-wrapper{max-width:300px}#home .profile-image-container{height:320px}#home .floating-card{display:none}#contact .contact-box{padding:25px 18px;border-radius:18px}#contact .contact-title{font-size:32px}#contact .contact-form-enhanced{padding:12px}}
+
+
+/* ===== LESSONS: COMPLETE LIGHT THEME CONTRAST ===== */
+html[data-theme="light"] #lessons .lessons-main-title,
+html[data-theme="light"] #lessons .lessons-main-title span{color:#123524!important;text-shadow:none!important}
+html[data-theme="light"] #lessons .lessons-main-description,
+html[data-theme="light"] #lessons .lessons-browse-label,
+html[data-theme="light"] #lessons .lessons-resource-count span,
+html[data-theme="light"] #lessons .lessons-footer-quote,
+html[data-theme="light"] #lessons .lessons-footer-small{color:#315844!important}
+html[data-theme="light"] #lessons .lessons-resource-count{border-left-color:rgba(21,128,61,.2)!important}
+html[data-theme="light"] #lessons .lessons-resource-count strong{color:#15803d!important}
+html[data-theme="light"] #lessons .lesson-resource-card{background:linear-gradient(145deg,#ffffff,#f2faf5)!important;border-color:rgba(21,128,61,.2)!important;box-shadow:0 16px 42px rgba(21,128,61,.09),inset 0 1px 0 rgba(255,255,255,.9)!important}
+html[data-theme="light"] #lessons .lesson-resource-card:hover{border-color:var(--lesson-color)!important;box-shadow:0 22px 50px rgba(21,128,61,.14)!important}
+html[data-theme="light"] #lessons .lesson-resource-card h3,
+html[data-theme="light"] #lessons .lesson-resource-card h4,
+html[data-theme="light"] #lessons .lesson-resource-card strong{color:#123524!important}
+html[data-theme="light"] #lessons .lesson-resource-card p{color:#3f654f!important}
+html[data-theme="light"] #lessons .lesson-resource-category{color:#166534!important}
+html[data-theme="light"] #lessons .lesson-resource-icon{background:rgba(255,255,255,.85)!important}
+html[data-theme="light"] #lessons .lesson-resource-btn{background:rgba(255,255,255,.72)!important;color:#14532d!important;font-weight:700!important}
+html[data-theme="light"] #lessons .lesson-resource-btn:hover{background:#dcfce7!important;color:#123524!important}
+html[data-theme="light"] #lessons .lesson-scroll-button{color:#123524!important;background:#ffffff!important;border-color:rgba(21,128,61,.28)!important;box-shadow:0 8px 20px rgba(21,128,61,.1)}
+html[data-theme="light"] #lessons .lesson-scroll-button:hover{color:#ffffff!important;background:#15803d!important;border-color:#15803d!important}
+html[data-theme="light"] #lessons .lessons-scroll-viewport:after{background:linear-gradient(90deg,transparent,rgba(242,251,245,.96))!important}
+html[data-theme="light"] #lessons .lessons-resource-rail{scrollbar-color:#65a77c transparent!important}
+html[data-theme="light"] #lessons .lessons-resource-rail::-webkit-scrollbar-track{background:rgba(21,128,61,.06)!important}
+html[data-theme="light"] #lessons .lessons-resource-rail::-webkit-scrollbar-thumb{background:#65a77c!important}
+html[data-theme="light"] #lessons .lessons-footer-quote:before,
+html[data-theme="light"] #lessons .lessons-footer-quote:after{background:rgba(21,128,61,.4)!important}
