@@ -232,3 +232,120 @@ html[data-theme="light"] #lessons .lessons-resource-rail::-webkit-scrollbar-trac
 html[data-theme="light"] #lessons .lessons-resource-rail::-webkit-scrollbar-thumb{background:#65a77c!important}
 html[data-theme="light"] #lessons .lessons-footer-quote:before,
 html[data-theme="light"] #lessons .lessons-footer-quote:after{background:rgba(21,128,61,.4)!important}
+
+
+/* =====================================================
+   FINAL CANONICAL THEME + TYPOGRAPHY SYSTEM
+   This block intentionally owns global readability.
+===================================================== */
+:root{
+  --ui-font-body:"Manrope","Segoe UI",sans-serif;
+  --ui-font-display:"Space Grotesk","Manrope",sans-serif;
+  --ui-dark-heading:#f8fafc;
+  --ui-dark-body:#cbd5e1;
+  --ui-dark-muted:#9aa9bc;
+  --ui-dark-surface:#132238;
+  --ui-dark-surface-soft:#172a42;
+  --ui-dark-border:rgba(94,234,212,.18);
+  --ui-light-heading:#123524;
+  --ui-light-body:#315844;
+  --ui-light-muted:#496b59;
+  --ui-light-surface:#ffffff;
+  --ui-light-surface-soft:#f2faf5;
+  --ui-light-border:rgba(21,128,61,.19);
+}
+body,button,input,textarea,select{font-family:var(--ui-font-body);font-weight:500}
+h1,h2,h3,h4,h5,h6,.navbar-brand,.nav-link,.section-number,.section-label,.btn{font-family:var(--ui-font-display)}
+main p,main li,main small,main input,main textarea{font-weight:500}
+main p,main li{font-size:max(12px,1em)}
+main small{font-size:12px}
+main strong,main b{font-weight:700}
+
+/* dark theme canonical text */
+html:not([data-theme="light"]) main h1,
+html:not([data-theme="light"]) main h2,
+html:not([data-theme="light"]) main h3,
+html:not([data-theme="light"]) main h4,
+html:not([data-theme="light"]) main h5,
+html:not([data-theme="light"]) main h6,
+html:not([data-theme="light"]) main strong,
+html:not([data-theme="light"]) main b{color:var(--ui-dark-heading)}
+html:not([data-theme="light"]) main p,
+html:not([data-theme="light"]) main li{color:var(--ui-dark-body)}
+html:not([data-theme="light"]) main small,
+html:not([data-theme="light"]) main .text-muted{color:var(--ui-dark-muted)}
+
+/* light theme canonical text */
+html[data-theme="light"] main h1,
+html[data-theme="light"] main h2,
+html[data-theme="light"] main h3,
+html[data-theme="light"] main h4,
+html[data-theme="light"] main h5,
+html[data-theme="light"] main h6,
+html[data-theme="light"] main strong,
+html[data-theme="light"] main b{color:var(--ui-light-heading)!important}
+html[data-theme="light"] main p,
+html[data-theme="light"] main li,
+html[data-theme="light"] main label{color:var(--ui-light-body)!important}
+html[data-theme="light"] main small,
+html[data-theme="light"] main .text-muted{color:var(--ui-light-muted)!important}
+
+/* preserve deliberate accents after global rules */
+html[data-theme="light"] .section-label,
+html[data-theme="light"] .section-number,
+html[data-theme="light"] .hero-intro,
+html[data-theme="light"] .profile-label,
+html[data-theme="light"] .timeline-label,
+html[data-theme="light"] .availability-badge,
+html[data-theme="light"] .contact-availability{color:#15803d!important}
+html:not([data-theme="light"]) .section-label,
+html:not([data-theme="light"]) .section-number,
+html:not([data-theme="light"]) .hero-intro,
+html:not([data-theme="light"]) .profile-label,
+html:not([data-theme="light"]) .timeline-label{color:#2dd4bf!important}
+
+/* common theme-aware surfaces */
+html[data-theme="light"] .profile-card,
+html[data-theme="light"] .profile-mini-card,
+html[data-theme="light"] .expertise-card,
+html[data-theme="light"] .tech-item,
+html[data-theme="light"] .experience-content,
+html[data-theme="light"] .project-card,
+html[data-theme="light"] .certification-card,
+html[data-theme="light"] .lesson-resource-card,
+html[data-theme="light"] .contact-box{border-color:var(--ui-light-border)!important}
+html:not([data-theme="light"]) .profile-card,
+html:not([data-theme="light"]) .profile-mini-card,
+html:not([data-theme="light"]) .expertise-card,
+html:not([data-theme="light"]) .tech-item,
+html:not([data-theme="light"]) .experience-content,
+html:not([data-theme="light"]) .project-card,
+html:not([data-theme="light"]) .certification-card,
+html:not([data-theme="light"]) .lesson-resource-card,
+html:not([data-theme="light"]) .contact-box{border-color:var(--ui-dark-border)!important}
+
+/* buttons and interactive states */
+html:not([data-theme="light"]) .btn-secondary-custom,
+html:not([data-theme="light"]) .experience-toggle{color:#e6fffb!important}
+html[data-theme="light"] .btn-secondary-custom,
+html[data-theme="light"] .experience-toggle{color:#14532d!important}
+html[data-theme="light"] .btn-primary-custom{color:#071b0f!important}
+html:not([data-theme="light"]) .btn-primary-custom{color:#061314!important}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid rgba(45,212,191,.34);outline-offset:3px}
+
+/* topology stays decorative, never competes with copy */
+html:not([data-theme="light"]) #live-network-topology{opacity:.38!important}
+html[data-theme="light"] #live-network-topology{opacity:.24!important;mix-blend-mode:multiply}
+section>.network-topology-layer,section [class*="topology-background"]{pointer-events:none}
+html[data-theme="light"] section>.network-topology-layer,
+html[data-theme="light"] section [class*="topology-background"]{opacity:.28!important}
+html:not([data-theme="light"]) section>.network-topology-layer,
+html:not([data-theme="light"]) section [class*="topology-background"]{opacity:.42!important}
+
+/* compact labels remain readable */
+.project-tags span,.skill-level span,.cert-status,.experience-date,.experience-type,.lessons-browse-label,.lessons-footer-small{font-family:var(--ui-font-body);font-weight:700!important}
+@media(max-width:767.98px){
+  body{font-size:15px}
+  main p,main li{line-height:1.7}
+  main small{font-size:12px}
+}
