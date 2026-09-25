@@ -10,6 +10,11 @@ def home(request):
     return render(request, "home.html")
 
 
+def mikrotik_generator(request):
+    """Interactive client-side RouterOS configuration generator."""
+    return render(request, "mikrotik_generator.html")
+
+
 @require_http_methods(["GET", "POST"])
 def owner_login(request):
     if request.session.get("owner_access"):
