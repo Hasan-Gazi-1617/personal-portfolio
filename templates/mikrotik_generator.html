@@ -162,5 +162,10 @@
     </div>
   </section>
 </main>
+<script>
+document.querySelectorAll('.navbar-custom a[href^="#"]').forEach(function(link) {
+  link.href = "{% url 'home' %}" + link.getAttribute("href");
+});
+</script>
 <script src="{% static 'js/mikrotik-generator.js' %}"></script>
 {% endblock %}
