@@ -499,3 +499,42 @@ html[data-theme="dark"] footer,
 html[data-theme="dark"] .footer-section{background:#08111e!important;border-top-color:rgba(94,234,212,.14)!important}
 html[data-theme="light"] footer,
 html[data-theme="light"] .footer-section{background:#e4f3e9!important;border-top-color:rgba(21,128,61,.18)!important}
+
+
+/* ===== EXPERIENCE: THEME-INTEGRATED TIMELINE =====
+   Keep timeline content open and integrated with its section instead of
+   rendering each entry as an oversized card.
+===================================================== */
+#experience .experience-content{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] #experience .experience-content{
+  background:transparent!important;
+  color:#315844!important;
+}
+html[data-theme="dark"] #experience .experience-content,
+html:not([data-theme]) #experience .experience-content{
+  background:transparent!important;
+  color:#cbd5e1!important;
+}
+html[data-theme="light"] #experience .experience-item{
+  border-color:rgba(21,128,61,.22)!important;
+}
+html[data-theme="dark"] #experience .experience-item,
+html:not([data-theme]) #experience .experience-item{
+  border-color:rgba(94,234,212,.20)!important;
+}
+html[data-theme="light"] #experience .experience-toggle{
+  background:rgba(21,128,61,.08)!important;
+  border-color:rgba(21,128,61,.28)!important;
+  color:#14532d!important;
+}
+html[data-theme="dark"] #experience .experience-toggle,
+html:not([data-theme]) #experience .experience-toggle{
+  background:rgba(45,212,191,.08)!important;
+  border-color:rgba(94,234,212,.24)!important;
+  color:#ccfbf1!important;
+}
