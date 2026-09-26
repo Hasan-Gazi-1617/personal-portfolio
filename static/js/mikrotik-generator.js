@@ -146,6 +146,15 @@ function show(index){
  if(index===panels.length-1)renderReview();window.scrollTo({top:document.querySelector('.mtg-workspace').offsetTop-90,behavior:'smooth'});
 }
 stepButtons.forEach((b,i)=>b.addEventListener('click',()=>{if(i>current&&!validate(current))return;show(i)}));
+document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>{
+ const index=panels.findIndex(panel=>panel.dataset.panel===button.dataset.jump);
+ if(index<0)return;
+ if(index>current&&!validate(current))return;
+ show(index);
+}));
+$('routerOsVersion').addEventListener('change',()=>{
+ const badge=$('targetVersionBadge');if(badge)badge.textContent='RouterOS v'+$('routerOsVersion').value;
+});
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
 document.querySelectorAll('input[name="wanType"],#enableDhcp,#enableVlan,#enableQueue,#enablePppoeServer,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
