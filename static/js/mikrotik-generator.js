@@ -14,6 +14,7 @@ function setVisible(id,on){$(id).hidden=!on}
 function syncConditional(){
  const w=wanType();setVisible('staticFields',w==='static');setVisible('pppoeFields',w==='pppoe');
  setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('queueFields',$('enableQueue').checked);
+ setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);
 }
 function validate(panelIndex=current){
  const errors=[];document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));
@@ -28,10 +29,18 @@ function validate(panelIndex=current){
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
  if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.')}
  if((panelIndex>=6||panelIndex===7)&&$('enableQueue').checked&&!cidr.test(clean($('queueTarget').value)))add('queueTarget','Queue target must use CIDR format.');
+ if(panelIndex>=6||panelIndex===7){
+  if($('enablePppoeServer').checked){if(!ip.test(clean($('pppoeLocal').value)))add('pppoeLocal','Enter a valid PPPoE local address.');if(!poolRangeValid($('pppoePool').value))add('pppoePool','PPPoE pool must be startIP-endIP.');if(!clean($('pppoeSecretUser').value))add('pppoeSecretUser','PPPoE test username is required.');if(!clean($('pppoeSecretPass').value))add('pppoeSecretPass','PPPoE test password is required.')}
+  if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
+  if($('enableFailover').checked){if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('wanInterface').value)add('backupWan','Backup WAN must differ from primary WAN.');}
+  if($('enableRemote').checked){if(!cidr.test(clean($('remoteSource').value)))add('remoteSource','Management source must use CIDR format.');const wp=+$('winboxPort').value;if(wp<1||wp>65535)add('winboxPort','Winbox port must be 1–65535.');}
+ }
  const box=$('validationSummary');box.hidden=!errors.length;box.innerHTML=errors.length?'<i class="bi bi-exclamation-triangle"></i><div><strong>Please fix:</strong><ul><li>'+errors.join('</li><li>')+'</li></ul></div>':'';
  return !errors.length;
 }
 function networkFromCidr(v){return clean(v).split('/')[0]}
+function poolRangeValid(v){const p=clean(v).split('-');return p.length===2&&ip.test(p[0])&&ip.test(p[1])}
+function gatewayAddress(v){return networkFromCidr(v)}
 function buildScript(){
  const lines=[];const wan=$('wanInterface').value;const bridge=clean($('bridgeName').value);const w=wanType();
  lines.push('# MikroTik RouterOS v'+$('routerOsVersion').value+' configuration');
@@ -45,7 +54,7 @@ function buildScript(){
  lines.push('');
  lines.push('# ---------- WAN ----------');
  if(w==='dhcp')lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes use-peer-dns=no disabled=no comment="ISP DHCP"');
- if(w==='static'){lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+' comment="DEFAULT ROUTE"');}
+ if(w==='static'){lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');const routeOptions=$('enableFailover').checked?' distance='+$('primaryDistance').value+' check-gateway=ping':'';lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');}
  if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes use-peer-dns=no disabled=no'+mtu+' comment="ISP PPPOE"');}
  lines.push('');
  lines.push('# ---------- BRIDGE & LAN ----------');
@@ -78,17 +87,45 @@ function buildScript(){
   lines.push('/ip firewall filter add chain=input action=drop connection-state=invalid comment="DROP INVALID"');
   lines.push('/ip firewall filter add chain=input action=accept protocol=icmp comment="ALLOW ICMP"');
   lines.push('/ip firewall filter add chain=input action=accept in-interface='+bridge+' comment="ALLOW LAN MANAGEMENT"');
+  if($('enableRemote').checked)lines.push('/ip firewall filter add chain=input action=accept protocol=tcp src-address='+clean($('remoteSource').value)+' dst-port=22,'+$('winboxPort').value+' comment="ALLOW RESTRICTED REMOTE MANAGEMENT"');
   const inIf=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input action=drop in-interface='+inIf+' comment="DROP UNSOLICITED WAN INPUT"');
  }
  if($('disableServices').checked){
   lines.push('');lines.push('# ---------- MANAGEMENT SERVICES ----------');
-  lines.push('/ip service disable telnet,ftp,api,api-ssl');
-  lines.push('/ip service set ssh address='+clean($('dhcpNetwork').value));
-  lines.push('/ip service set winbox address='+clean($('dhcpNetwork').value));
+  ['telnet','ftp','api','api-ssl'].forEach(service=>lines.push('/ip service set [find name='+service+'] disabled=yes'));
+  const managementSource=$('enableRemote').checked?clean($('remoteSource').value):clean($('dhcpNetwork').value);
+  lines.push('/ip service set [find name=ssh] disabled=no address='+managementSource);
+  lines.push('/ip service set [find name=winbox] disabled=no address='+managementSource+($('enableRemote').checked?' port='+$('winboxPort').value:''));
  }
  if($('enableQueue').checked){
   lines.push('');lines.push('# ---------- SIMPLE QUEUE ----------');
   lines.push('/queue simple add name='+q($('queueName').value)+' target='+clean($('queueTarget').value)+' max-limit='+$('uploadLimit').value+'/'+$('downloadLimit').value+' comment="GENERATED BANDWIDTH LIMIT"');
+ }
+ if($('enablePppoeServer').checked){
+  lines.push('');lines.push('# ---------- PPPOE SERVER ----------');
+  lines.push('/ip pool add name=pool-PPPOE ranges='+clean($('pppoePool').value));
+  lines.push('/ppp profile add name=profile-PPPOE local-address='+clean($('pppoeLocal').value)+' remote-address=pool-PPPOE dns-server='+dns+' only-one=yes');
+  lines.push('/interface pppoe-server server add interface='+clean($('pppoeServerInterface').value)+' service-name='+q($('pppoeServiceName').value)+' default-profile=profile-PPPOE one-session-per-host=yes disabled=no');
+  lines.push('/ppp secret add name='+q($('pppoeSecretUser').value)+' password='+q($('pppoeSecretPass').value)+' service=pppoe profile=profile-PPPOE');
+ }
+ if($('enableHotspot').checked){
+  lines.push('');lines.push('# ---------- HOTSPOT ----------');
+  const hsIf=clean($('hotspotInterface').value),hsGateway=clean($('hotspotGateway').value);
+  lines.push('/ip pool add name=pool-HOTSPOT ranges='+clean($('hotspotPool').value));
+  lines.push('/ip address add address='+hsGateway+' interface='+hsIf+' comment="HOTSPOT GATEWAY"');
+  lines.push('/ip hotspot profile add name=hsprof-GENERATED hotspot-address='+gatewayAddress(hsGateway)+' dns-name='+q($('hotspotDnsName').value)+' html-directory=hotspot');
+  lines.push('/ip hotspot add name=hotspot-GENERATED interface='+hsIf+' address-pool=pool-HOTSPOT profile=hsprof-GENERATED disabled=no');
+  lines.push('/ip hotspot user add name='+q($('hotspotUser').value)+' password='+q($('hotspotPass').value)+' profile=default');
+ }
+ if($('enableFailover').checked){
+  lines.push('');lines.push('# ---------- MULTI-WAN FAILOVER ----------');
+  lines.push('/interface ethernet set [find default-name='+$('backupWan').value+'] comment="BACKUP WAN"');
+  lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');
+ }
+ if($('enableRemote').checked&&!$('disableServices').checked){
+  lines.push('');lines.push('# ---------- SECURE REMOTE ACCESS ----------');
+  lines.push('/ip service set [find name=ssh] disabled=no address='+clean($('remoteSource').value));
+  lines.push('/ip service set [find name=winbox] disabled=no address='+clean($('remoteSource').value)+' port='+$('winboxPort').value);
  }
  lines.push('');lines.push('# ---------- END ----------');lines.push(':log info "Hasan MikroTik generated configuration applied"');
  return lines.join('\n');
@@ -97,7 +134,7 @@ function renderReview(){
  if(!validate(7))return false;
  const script=buildScript();$('scriptOutput').textContent=script;$('lineCount').textContent=script.split('\n').filter(x=>x&& !x.startsWith('#')).length+' commands';renderCommandRows(script);
  $('topologyRouter').textContent=clean($('identity').value)||'Router';
- const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value:'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline':'Disabled'],['Queue',$('enableQueue').checked?clean($('queueTarget').value):'Disabled']];
+ const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value:'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline':'Disabled'],['Queue',$('enableQueue').checked?clean($('queueTarget').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?'Enabled':'Disabled'],['Remote',$('enableRemote').checked?clean($('remoteSource').value):'Disabled']];
  $('configSummary').innerHTML=values.map(v=>'<div><small>'+v[0]+'</small><b>'+v[1]+'</b></div>').join('');
  return true;
 }
@@ -111,7 +148,7 @@ function show(index){
 stepButtons.forEach((b,i)=>b.addEventListener('click',()=>{if(i>current&&!validate(current))return;show(i)}));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
-document.querySelectorAll('input[name="wanType"],#enableDhcp,#enableVlan,#enableQueue').forEach(x=>x.addEventListener('change',syncConditional));
+document.querySelectorAll('input[name="wanType"],#enableDhcp,#enableVlan,#enableQueue,#enablePppoeServer,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
 $('bridgeName').addEventListener('input',()=>{if($('vlanParent').options[0]){$('vlanParent').options[0].value=clean($('bridgeName').value);$('vlanParent').options[0].textContent=clean($('bridgeName').value)||'Bridge'}});
 $('copyScript').addEventListener('click',async function(){if(!renderReview())return;try{await navigator.clipboard.writeText($('scriptOutput').textContent);const old=this.innerHTML;this.innerHTML='<i class="bi bi-check2"></i> Copied';this.classList.add('is-success');setTimeout(()=>{this.innerHTML=old;this.classList.remove('is-success')},1600)}catch(e){alert('Copy failed. Select the script manually.')}});
 $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;const blob=new Blob([$('scriptOutput').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(clean($('identity').value)||'mikrotik-router').replace(/\s+/g,'-').toLowerCase()+'.rsc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
