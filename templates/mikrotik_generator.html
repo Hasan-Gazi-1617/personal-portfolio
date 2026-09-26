@@ -97,7 +97,7 @@
               <label><input type="radio" name="wanType" value="pppoe"><span><i class="bi bi-person-lock"></i><b>PPPoE</b><small>Username and password</small></span></label>
             </div>
             <div class="mtg-form-grid mtg-top-gap">
-              <label class="mtg-field"><span>WAN interface</span><select id="wanInterface"><option>ether1</option><option>ether2</option><option>sfp1</option><option>sfp-sfpplus1</option></select></label>
+              <label class="mtg-field"><span>WAN interface</span><select id="wanInterface"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option><option>sfp-sfpplus1</option></select></label>
               <label class="mtg-field"><span>Interface comment</span><input id="wanComment" value="ISP-UPLINK"></label>
             </div>
             <div id="staticFields" class="mtg-form-grid mtg-top-gap" hidden>
@@ -211,16 +211,21 @@
               <label class="mtg-field"><span>Client password</span><input id="hotspotClientPass" type="password" autocomplete="new-password"></label>
             </div>
             <div id="failoverFields" class="mtg-form-grid mtg-module-fields" hidden>
-              <label class="mtg-field"><span>Backup WAN type</span><select id="backupWanType"><option value="dhcp">DHCP / Dynamic</option><option value="static" selected>Static / Private</option><option value="pppoe">PPPoE</option></select></label>
-              <label class="mtg-field"><span>Backup WAN interface</span><select id="backupWan"><option>ether5</option><option>ether4</option><option>sfp1</option></select></label>
+              <label class="mtg-field mtg-span-2"><span>Failover scenario (Topic 8.6–8.11)</span><select id="failoverScenario"><option value="pppoe_pppoe">Scenario 1 — PPPoE + PPPoE</option><option value="pppoe_dhcp">Scenario 2 — PPPoE + DHCP</option><option value="pppoe_static">Scenario 3 — PPPoE + Static</option><option value="pppoe_private">Scenario 4 — PPPoE + Private</option><option value="static_dhcp">Scenario 5 — Static + Dynamic (DHCP)</option><option value="static_private">Scenario 6 — Static + Private</option></select></label>
+              <label class="mtg-field"><span>Primary WAN port (ether1–ether5)</span><select id="primaryWanPort"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
+              <label class="mtg-field"><span>Backup WAN port (ether1–ether5)</span><select id="backupWan"><option>ether1</option><option selected>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
+              <label class="mtg-field"><span>Backup WAN type</span><select id="backupWanType"><option value="dhcp">DHCP / Dynamic</option><option value="static">Static / Private</option><option value="pppoe" selected>PPPoE</option></select></label>
+              <label class="mtg-field"><span>LAN ports</span><input id="failoverLanPorts" value="ether3,ether4,ether5" readonly></label>
               <label class="mtg-field"><span>Backup IP / prefix</span><input id="backupIp" value="198.51.100.2/30"></label>
               <label class="mtg-field"><span>Backup PPPoE username</span><input id="backupUser" value="backup-user"></label>
               <label class="mtg-field"><span>Backup PPPoE password</span><input id="backupPass" type="password" autocomplete="new-password"></label>
               <label class="mtg-field"><span>Backup gateway</span><input id="backupGateway" placeholder="198.51.100.1"></label>
               <label class="mtg-field"><span>Primary distance</span><input id="primaryDistance" type="number" min="1" max="250" value="1"></label>
               <label class="mtg-field"><span>Backup distance</span><input id="backupDistance" type="number" min="2" max="250" value="2"></label>
-              <label class="mtg-switch mtg-span-2"><input id="enableNetwatch" type="checkbox"><span></span><b>Add Netwatch monitoring</b></label>
-              <label class="mtg-field mtg-span-2"><span>Netwatch target</span><input id="netwatchHost" value="8.8.8.8"></label>
+              <div class="mtg-advanced-divider mtg-span-2"><span>TOPIC 8.12 — SMART NETWATCH</span></div>
+              <label class="mtg-switch mtg-span-2"><input id="enableNetwatch" type="checkbox" checked><span></span><b>Enable Netwatch monitoring and failover alerts</b></label>
+              <label class="mtg-field"><span>Netwatch target</span><input id="netwatchHost" value="8.8.8.8"></label>
+              <label class="mtg-field"><span>Check interval</span><select id="netwatchInterval"><option>5s</option><option selected>10s</option><option>30s</option><option>1m</option></select></label>
             </div>
             <div id="wifiFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field"><span>Wireless interface</span><select id="wifiInterface"><option>wlan1</option><option>wifi1</option></select></label>

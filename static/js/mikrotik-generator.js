@@ -38,7 +38,7 @@ function validate(panelIndex=current){
  if(panelIndex>=6||panelIndex===7){
   if($('enablePppoeServer').checked){if(!ip.test(clean($('pppoeLocal').value)))add('pppoeLocal','Enter a valid PPPoE local address.');if(!poolRangeValid($('pppoePool').value))add('pppoePool','PPPoE pool must be startIP-endIP.');if(!clean($('pppoeSecretUser').value))add('pppoeSecretUser','PPPoE test username is required.');if(!clean($('pppoeSecretPass').value))add('pppoeSecretPass','PPPoE test password is required.')}
   if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
-  if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){if(!cidr.test(clean($('backupIp').value)))add('backupIp','Enter backup IP in CIDR format.');if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');}if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('wanInterface').value)add('backupWan','Backup WAN must differ from primary WAN.');}
+  if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){if(!cidr.test(clean($('backupIp').value)))add('backupIp','Enter backup IP in CIDR format.');if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');}if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('primaryWanPort').value)add('backupWan','Backup WAN must differ from primary WAN.');}
   if($('enableRemote').checked){if(!cidr.test(clean($('remoteSource').value)))add('remoteSource','Management source must use CIDR format.');const wp=+$('winboxPort').value;if(wp<1||wp>65535)add('winboxPort','Winbox port must be 1–65535.');}
  }
  const box=$('validationSummary');box.hidden=!errors.length;box.innerHTML=errors.length?'<i class="bi bi-exclamation-triangle"></i><div><strong>Please fix:</strong><ul><li>'+errors.join('</li><li>')+'</li></ul></div>':'';
@@ -149,11 +149,14 @@ function buildScript(){
  }
  if($('enableFailover').checked){
   lines.push('');lines.push('# ---------- MULTI-WAN FAILOVER ----------');
-  const backupIf=$('backupWan').value,backupType=$('backupWanType').value;lines.push('/interface ethernet set [find default-name='+backupIf+'] comment="BACKUP WAN"');
+  const scenario=$('failoverScenario').value,primaryIf=$('primaryWanPort').value,backupIf=$('backupWan').value,backupType=$('backupWanType').value;
+  lines.push('# Scenario: '+$('failoverScenario').selectedOptions[0].textContent);
+  lines.push('# 5-port design: '+primaryIf+'=PRIMARY, '+backupIf+'=BACKUP, '+clean($('failoverLanPorts').value)+'=LAN');
+  lines.push('/interface ethernet set [find default-name='+primaryIf+'] comment="PRIMARY WAN"');lines.push('/interface ethernet set [find default-name='+backupIf+'] comment="BACKUP WAN"');
   if(backupType==='dhcp')lines.push('/ip dhcp-client add interface='+backupIf+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no comment="BACKUP DHCP WAN" disabled=no');
   if(backupType==='static'){lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment="BACKUP STATIC WAN"');lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');}
   if(backupType==='pppoe')lines.push('/interface pppoe-client add name=pppoe-backup interface='+backupIf+' user='+q($('backupUser').value)+' password='+q($('backupPass').value)+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no disabled=no comment="BACKUP PPPOE WAN"');
-  if($('enableNetwatch').checked)lines.push('/tool netwatch add host='+clean($('netwatchHost').value)+' interval=10s timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="FAILOVER MONITOR"');
+  if($('enableNetwatch').checked)lines.push('/tool netwatch add host='+clean($('netwatchHost').value)+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="FAILOVER MONITOR"');
  }
  if($('enableWifi').checked){
   lines.push('');lines.push('# ---------- WI-FI ACCESS POINT ----------');
@@ -181,7 +184,7 @@ function renderReview(){
  if(!validate(7))return false;
  const script=buildScript();$('scriptOutput').textContent=script;$('lineCount').textContent=script.split('\n').filter(x=>x&& !x.startsWith('#')).length+' commands';renderCommandRows(script);
  $('topologyRouter').textContent=clean($('identity').value)||'Router';
- const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('backupWanType').value.toUpperCase()+' backup':'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
+ const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('failoverScenario').selectedOptions[0].textContent:'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
  $('configSummary').innerHTML=values.map(v=>'<div><small>'+v[0]+'</small><b>'+v[1]+'</b></div>').join('');
  return true;
 }
@@ -199,6 +202,15 @@ document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener
  if(index>current&&!validate(current))return;
  show(index);
 }));
+function syncFailoverScenario(){
+ const map={pppoe_pppoe:['pppoe','pppoe'],pppoe_dhcp:['pppoe','dhcp'],pppoe_static:['pppoe','static'],pppoe_private:['pppoe','static'],static_dhcp:['static','dhcp'],static_private:['static','static']};
+ const pair=map[$('failoverScenario').value]||map.pppoe_pppoe;
+ const radio=document.querySelector('input[name="wanType"][value="'+pair[0]+'"]');if(radio)radio.checked=true;
+ $('backupWanType').value=pair[1];$('wanInterface').value=$('primaryWanPort').value;syncConditional();
+}
+$('failoverScenario').addEventListener('change',syncFailoverScenario);
+$('primaryWanPort').addEventListener('change',()=>{$('wanInterface').value=$('primaryWanPort').value});
+$('wanInterface').addEventListener('change',()=>{if([...$('primaryWanPort').options].some(o=>o.value===$('wanInterface').value))$('primaryWanPort').value=$('wanInterface').value});
 function syncRouterVersion(version){
  $('routerOsVersion').value=version;
  const badge=$('targetVersionBadge');if(badge)badge.textContent='RouterOS v'+version;
@@ -231,5 +243,5 @@ function renderCommandRows(script){
 }
 function escapeHtml(value){const e=document.createElement('div');e.textContent=String(value||'');return e.innerHTML}
 
-syncConditional();show(0);
+syncFailoverScenario();syncConditional();show(0);
 })();
