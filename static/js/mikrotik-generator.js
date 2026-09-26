@@ -152,9 +152,20 @@ document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener
  if(index>current&&!validate(current))return;
  show(index);
 }));
-$('routerOsVersion').addEventListener('change',()=>{
- const badge=$('targetVersionBadge');if(badge)badge.textContent='RouterOS v'+$('routerOsVersion').value;
-});
+function syncRouterVersion(version){
+ $('routerOsVersion').value=version;
+ const badge=$('targetVersionBadge');if(badge)badge.textContent='RouterOS v'+version;
+ const preview=$('platformVersionText');if(preview)preview.textContent='RouterOS v'+version;
+ document.querySelectorAll('[data-router-version]').forEach(button=>{
+  const active=button.dataset.routerVersion===version;button.classList.toggle('active',active);
+  const icon=button.querySelector('i');if(icon)icon.className=active?'bi bi-check-circle-fill':'bi bi-circle';
+ });
+}
+$('routerOsVersion').addEventListener('change',()=>syncRouterVersion($('routerOsVersion').value));
+document.querySelectorAll('[data-router-version]').forEach(button=>button.addEventListener('click',()=>syncRouterVersion(button.dataset.routerVersion)));
+document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListener('click',()=>{
+ document.querySelectorAll('[data-profile]').forEach(item=>item.classList.toggle('active',item===button));
+}));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
 document.querySelectorAll('input[name="wanType"],#enableDhcp,#enableVlan,#enableQueue,#enablePppoeServer,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
