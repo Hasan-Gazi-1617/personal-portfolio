@@ -145,6 +145,9 @@
               <label class="mtg-field"><span>VLAN name</span><input id="vlanName" value="VLAN100-OFFICE"></label>
               <label class="mtg-field"><span>Parent interface</span><select id="vlanParent"><option value="bridge-LAN">bridge-LAN</option><option>ether2</option><option>sfp1</option></select></label>
               <label class="mtg-field"><span>VLAN gateway / prefix</span><input id="vlanIp" value="192.168.100.1/24"></label>
+              <label class="mtg-switch mtg-span-2"><input id="enableVlanFiltering" type="checkbox"><span></span><b>Production bridge VLAN filtering</b></label>
+              <label class="mtg-field"><span>Tagged trunk ports</span><input id="vlanTaggedPorts" value="sfp1,ether2"></label>
+              <label class="mtg-field"><span>Untagged access port</span><select id="vlanAccessPort"><option>ether3</option><option>ether4</option><option>ether5</option></select></label>
             </div>
           </section>
 
@@ -156,6 +159,7 @@
               <label><input id="disableServices" type="checkbox" checked><span><i class="bi bi-lock"></i><b>Restrict legacy services</b><small>Disable telnet, FTP and API; keep SSH and Winbox available.</small></span></label>
               <label><input id="enableIcmpProtection" type="checkbox"><span><i class="bi bi-speedometer"></i><b>ICMP flood protection</b><small>Rate-limit ping traffic and drop excessive ICMP packets.</small></span></label>
               <label><input id="enablePortScanProtection" type="checkbox"><span><i class="bi bi-radar"></i><b>Port-scan protection</b><small>Detect scanners, add them to an address list and block them.</small></span></label>
+              <label><input id="enableBogonProtection" type="checkbox"><span><i class="bi bi-ban"></i><b>Bogus / Bogon traffic protection</b><small>Build a bogon list and block invalid source networks from WAN.</small></span></label>
             </div>
           </section>
 
@@ -184,6 +188,7 @@
               <label class="mtg-module"><input id="enableFailover" type="checkbox"><span><i class="bi bi-shuffle"></i><b>Multi-WAN Failover</b><small>Primary and backup monitored routes</small></span></label>
               <label class="mtg-module"><input id="enableRemote" type="checkbox"><span><i class="bi bi-shield-lock"></i><b>Secure Remote Access</b><small>Restrict SSH and Winbox by source</small></span></label>
               <label class="mtg-module"><input id="enableWifi" type="checkbox"><span><i class="bi bi-router"></i><b>Wi-Fi / Access Point</b><small>SSID, security profile and bridge</small></span></label>
+              <label class="mtg-module"><input id="enableDiagnostics" type="checkbox" checked><span><i class="bi bi-activity"></i><b>Verify & Troubleshoot</b><small>Ping, route, PPP, Hotspot and interface checks</small></span></label>
             </div>
             <div id="pppoeServerFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field"><span>PPPoE interface</span><select id="pppoeServerInterface"><option>ether2</option><option>ether3</option><option>bridge-LAN</option></select></label>
@@ -192,6 +197,7 @@
               <label class="mtg-field"><span>Client pool</span><input id="pppoePool" value="10.10.0.10-10.10.0.254"></label>
               <label class="mtg-field"><span>Test username</span><input id="pppoeSecretUser" value="client-test"></label>
               <label class="mtg-field"><span>Test password</span><input id="pppoeSecretPass" type="password" autocomplete="new-password"></label>
+              <label class="mtg-field"><span>ISP bandwidth plan</span><select id="pppoeRateLimit"><option value="5M/10M">Starter 5M/10M</option><option value="10M/20M" selected>Business 10M/20M</option><option value="20M/50M">Premium 20M/50M</option><option value="">Unlimited</option></select></label>
             </div>
             <div id="hotspotFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field"><span>Hotspot interface</span><select id="hotspotInterface"><option value="bridge-LAN">bridge-LAN</option><option>ether3</option><option>ether4</option></select></label>
@@ -201,9 +207,15 @@
               <label class="mtg-field"><span>Admin username</span><input id="hotspotUser" value="hotspot-admin"></label>
               <label class="mtg-field"><span>Admin password</span><input id="hotspotPass" type="password" autocomplete="new-password"></label>
               <label class="mtg-field"><span>Idle timeout</span><select id="hotspotIdleTimeout"><option>5m</option><option selected>10m</option><option>30m</option><option>1h</option></select></label>
+              <label class="mtg-field"><span>Client username</span><input id="hotspotClientUser" value="client-01"></label>
+              <label class="mtg-field"><span>Client password</span><input id="hotspotClientPass" type="password" autocomplete="new-password"></label>
             </div>
             <div id="failoverFields" class="mtg-form-grid mtg-module-fields" hidden>
+              <label class="mtg-field"><span>Backup WAN type</span><select id="backupWanType"><option value="dhcp">DHCP / Dynamic</option><option value="static" selected>Static / Private</option><option value="pppoe">PPPoE</option></select></label>
               <label class="mtg-field"><span>Backup WAN interface</span><select id="backupWan"><option>ether5</option><option>ether4</option><option>sfp1</option></select></label>
+              <label class="mtg-field"><span>Backup IP / prefix</span><input id="backupIp" value="198.51.100.2/30"></label>
+              <label class="mtg-field"><span>Backup PPPoE username</span><input id="backupUser" value="backup-user"></label>
+              <label class="mtg-field"><span>Backup PPPoE password</span><input id="backupPass" type="password" autocomplete="new-password"></label>
               <label class="mtg-field"><span>Backup gateway</span><input id="backupGateway" placeholder="198.51.100.1"></label>
               <label class="mtg-field"><span>Primary distance</span><input id="primaryDistance" type="number" min="1" max="250" value="1"></label>
               <label class="mtg-field"><span>Backup distance</span><input id="backupDistance" type="number" min="2" max="250" value="2"></label>
@@ -217,6 +229,7 @@
               <label class="mtg-field"><span>Bridge</span><input id="wifiBridge" value="bridge-LAN"></label>
             </div>
             <div id="remoteFields" class="mtg-form-grid mtg-module-fields" hidden>
+              <label class="mtg-field"><span>Remote access mode</span><select id="remoteMode"><option value="private">Private IP / LAN</option><option value="public">Public IP</option><option value="pppoe">PPPoE WAN</option></select></label>
               <label class="mtg-field"><span>Allowed management source</span><input id="remoteSource" value="192.168.10.0/24"></label>
               <label class="mtg-field"><span>Winbox port</span><input id="winboxPort" type="number" min="1" max="65535" value="8291"></label>
             </div>

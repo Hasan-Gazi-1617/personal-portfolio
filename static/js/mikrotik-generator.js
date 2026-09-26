@@ -28,7 +28,7 @@ function validate(panelIndex=current){
  if(panelIndex>=2||panelIndex===7){if(!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if(!selectedPorts().length)errors.push('Select at least one LAN bridge port.');if(selectedPorts().includes($('wanInterface').value))errors.push('WAN interface cannot also be a LAN bridge port.')}
  if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
- if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.')}
+ if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.')}
  if((panelIndex>=6||panelIndex===7)&&$('enableQueue').checked){
   if(!cidr.test(clean($('queueTarget').value)))add('queueTarget','Queue target must use CIDR format.');
   if($('enableBurst').checked&&(!clean($('burstLimit').value)||!clean($('burstThreshold').value)||!clean($('burstTime').value)))errors.push('Complete all burst settings.');
@@ -38,7 +38,7 @@ function validate(panelIndex=current){
  if(panelIndex>=6||panelIndex===7){
   if($('enablePppoeServer').checked){if(!ip.test(clean($('pppoeLocal').value)))add('pppoeLocal','Enter a valid PPPoE local address.');if(!poolRangeValid($('pppoePool').value))add('pppoePool','PPPoE pool must be startIP-endIP.');if(!clean($('pppoeSecretUser').value))add('pppoeSecretUser','PPPoE test username is required.');if(!clean($('pppoeSecretPass').value))add('pppoeSecretPass','PPPoE test password is required.')}
   if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
-  if($('enableFailover').checked){if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('wanInterface').value)add('backupWan','Backup WAN must differ from primary WAN.');}
+  if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){if(!cidr.test(clean($('backupIp').value)))add('backupIp','Enter backup IP in CIDR format.');if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');}if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('wanInterface').value)add('backupWan','Backup WAN must differ from primary WAN.');}
   if($('enableRemote').checked){if(!cidr.test(clean($('remoteSource').value)))add('remoteSource','Management source must use CIDR format.');const wp=+$('winboxPort').value;if(wp<1||wp>65535)add('winboxPort','Winbox port must be 1–65535.');}
  }
  const box=$('validationSummary');box.hidden=!errors.length;box.innerHTML=errors.length?'<i class="bi bi-exclamation-triangle"></i><div><strong>Please fix:</strong><ul><li>'+errors.join('</li><li>')+'</li></ul></div>':'';
@@ -82,6 +82,7 @@ function buildScript(){
   lines.push('');lines.push('# ---------- VLAN ----------');
   const vn=clean($('vlanName').value);lines.push('/interface vlan add name='+vn+' vlan-id='+$('vlanId').value+' interface='+clean($('vlanParent').value)+' comment="TAGGED VLAN"');
   lines.push('/ip address add address='+clean($('vlanIp').value)+' interface='+vn+' comment="VLAN GATEWAY"');
+  if($('enableVlanFiltering').checked){const tagged=clean($('vlanTaggedPorts').value),access=$('vlanAccessPort').value,vid=$('vlanId').value;lines.push('/interface bridge port set [find interface='+access+'] pvid='+vid+' comment="VLAN '+vid+' ACCESS"');lines.push('/interface bridge vlan add bridge='+bridge+' vlan-ids='+vid+' tagged='+bridge+','+tagged+' untagged='+access+' comment="PRODUCTION VLAN '+vid+'"');lines.push('/interface bridge set [find name='+bridge+'] vlan-filtering=yes');}
  }
  if($('enableNat').checked){
   lines.push('');lines.push('# ---------- NAT ----------');
@@ -100,6 +101,7 @@ function buildScript(){
    lines.push('/ip firewall filter add chain=input protocol=tcp psd=21,3s,3,1 action=add-src-to-address-list address-list=port-scanners address-list-timeout=1d comment="DETECT PORT SCAN"');
    lines.push('/ip firewall filter add chain=input src-address-list=port-scanners action=drop comment="DROP PORT SCANNERS"');
   }
+  if($('enableBogonProtection').checked){['0.0.0.0/8','10.0.0.0/8','100.64.0.0/10','127.0.0.0/8','169.254.0.0/16','172.16.0.0/12','192.0.0.0/24','192.168.0.0/16','224.0.0.0/3'].forEach(net=>lines.push('/ip firewall address-list add list=BOGONS address='+net+' comment="BOGON SOURCE"'));const bogonWan=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input in-interface='+bogonWan+' src-address-list=BOGONS action=drop comment="DROP BOGON FROM WAN"');}
   if($('enableRemote').checked)lines.push('/ip firewall filter add chain=input action=accept protocol=tcp src-address='+clean($('remoteSource').value)+' dst-port=22,'+$('winboxPort').value+' comment="ALLOW RESTRICTED REMOTE MANAGEMENT"');
   const inIf=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input action=drop in-interface='+inIf+' comment="DROP UNSOLICITED WAN INPUT"');
  }
@@ -130,7 +132,7 @@ function buildScript(){
  if($('enablePppoeServer').checked){
   lines.push('');lines.push('# ---------- PPPOE SERVER ----------');
   lines.push('/ip pool add name=pool-PPPOE ranges='+clean($('pppoePool').value));
-  lines.push('/ppp profile add name=profile-PPPOE local-address='+clean($('pppoeLocal').value)+' remote-address=pool-PPPOE dns-server='+dns+' only-one=yes');
+  const pppRate=clean($('pppoeRateLimit').value);lines.push('/ppp profile add name=profile-PPPOE local-address='+clean($('pppoeLocal').value)+' remote-address=pool-PPPOE dns-server='+dns+' only-one=yes'+(pppRate?' rate-limit='+pppRate:''));
   lines.push('/interface pppoe-server server add interface='+clean($('pppoeServerInterface').value)+' service-name='+q($('pppoeServiceName').value)+' default-profile=profile-PPPOE one-session-per-host=yes disabled=no');
   lines.push('/ppp secret add name='+q($('pppoeSecretUser').value)+' password='+q($('pppoeSecretPass').value)+' service=pppoe profile=profile-PPPOE');
  }
@@ -142,12 +144,15 @@ function buildScript(){
   lines.push('/ip hotspot profile add name=hsprof-GENERATED hotspot-address='+gatewayAddress(hsGateway)+' dns-name='+q($('hotspotDnsName').value)+' html-directory=hotspot');
   lines.push('/ip hotspot add name=hotspot-GENERATED interface='+hsIf+' address-pool=pool-HOTSPOT profile=hsprof-GENERATED disabled=no');
   lines.push('/ip hotspot user profile set [find name=default] idle-timeout='+clean($('hotspotIdleTimeout').value)+' keepalive-timeout=2m');
-  lines.push('/ip hotspot user add name='+q($('hotspotUser').value)+' password='+q($('hotspotPass').value)+' profile=default');
+  lines.push('/ip hotspot user add name='+q($('hotspotUser').value)+' password='+q($('hotspotPass').value)+' profile=default comment="HOTSPOT ADMIN"');
+  lines.push('/ip hotspot user add name='+q($('hotspotClientUser').value)+' password='+q($('hotspotClientPass').value)+' profile=default comment="HOTSPOT CLIENT"');
  }
  if($('enableFailover').checked){
   lines.push('');lines.push('# ---------- MULTI-WAN FAILOVER ----------');
-  lines.push('/interface ethernet set [find default-name='+$('backupWan').value+'] comment="BACKUP WAN"');
-  lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');
+  const backupIf=$('backupWan').value,backupType=$('backupWanType').value;lines.push('/interface ethernet set [find default-name='+backupIf+'] comment="BACKUP WAN"');
+  if(backupType==='dhcp')lines.push('/ip dhcp-client add interface='+backupIf+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no comment="BACKUP DHCP WAN" disabled=no');
+  if(backupType==='static'){lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment="BACKUP STATIC WAN"');lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');}
+  if(backupType==='pppoe')lines.push('/interface pppoe-client add name=pppoe-backup interface='+backupIf+' user='+q($('backupUser').value)+' password='+q($('backupPass').value)+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no disabled=no comment="BACKUP PPPOE WAN"');
   if($('enableNetwatch').checked)lines.push('/tool netwatch add host='+clean($('netwatchHost').value)+' interval=10s timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="FAILOVER MONITOR"');
  }
  if($('enableWifi').checked){
@@ -168,6 +173,7 @@ function buildScript(){
   lines.push('/ip service set [find name=ssh] disabled=no address='+clean($('remoteSource').value));
   lines.push('/ip service set [find name=winbox] disabled=no address='+clean($('remoteSource').value)+' port='+$('winboxPort').value);
  }
+ if($('enableDiagnostics').checked){lines.push('');lines.push('# ---------- VERIFY & TROUBLESHOOT ----------');lines.push('/interface print terse');lines.push('/ip address print');lines.push('/ip route print');lines.push('/ip firewall filter print stats');if($('enablePppoeServer').checked)lines.push('/ppp active print');if($('enableHotspot').checked){lines.push('/ip hotspot active print');lines.push('/ip hotspot host print');}lines.push('/ping 8.8.8.8 count=4');lines.push('/tool traceroute 8.8.8.8');}
  lines.push('');lines.push('# ---------- END ----------');lines.push(':log info "Hasan MikroTik generated configuration applied"');
  return lines.join('\n');
 }
@@ -175,7 +181,7 @@ function renderReview(){
  if(!validate(7))return false;
  const script=buildScript();$('scriptOutput').textContent=script;$('lineCount').textContent=script.split('\n').filter(x=>x&& !x.startsWith('#')).length+' commands';renderCommandRows(script);
  $('topologyRouter').textContent=clean($('identity').value)||'Router';
- const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value:'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline':'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?'Enabled':'Disabled'],['Remote',$('enableRemote').checked?clean($('remoteSource').value):'Disabled']];
+ const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('backupWanType').value.toUpperCase()+' backup':'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
  $('configSummary').innerHTML=values.map(v=>'<div><small>'+v[0]+'</small><b>'+v[1]+'</b></div>').join('');
  return true;
 }
