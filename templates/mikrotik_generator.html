@@ -38,7 +38,7 @@
           <button data-panel="vlan"><i class="bi bi-layers"></i><span>VLAN & Switching<small>802.1Q access design</small></span></button>
           <button data-panel="firewall"><i class="bi bi-shield-check"></i><span>Firewall & Security<small>NAT and service hardening</small></span></button>
           <button data-panel="queue"><i class="bi bi-building-gear"></i><span>ISP Services & QoS<small>PPPoE, Hotspot, Failover</small></span></button>
-          <button data-panel="review"><i class="bi bi-terminal"></i><span>Validate & Execute<small>Script, backup and live result</small></span></button>
+          <button data-panel="review"><i class="bi bi-terminal"></i><span>Review & Export<small>Validate, copy and download</small></span></button>
         </nav>
       </aside>
 
@@ -50,7 +50,7 @@
           <button type="button" data-jump="queue"><i class="bi bi-people"></i><span><b>ISP Access</b><small>PPPoE Server · Hotspot</small></span></button>
           <button type="button" data-jump="firewall"><i class="bi bi-shield-lock"></i><span><b>Security</b><small>Firewall · NAT · Remote</small></span></button>
           <button type="button" data-jump="queue"><i class="bi bi-shuffle"></i><span><b>Resilience</b><small>Failover · QoS · Queue</small></span></button>
-          <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Backup · Execute</small></span></button>
+          <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Copy · Download</small></span></button>
         </section>
         <div id="validationSummary" class="mtg-alert mtg-alert-error" hidden></div>
 
@@ -203,7 +203,7 @@
           </section>
 
           <section class="mtg-panel" data-panel="review">
-            <div class="mtg-panel-head"><span>08</span><div><h2>Validate & Execute</h2><p>Review every command, export the script or run it through the cross-platform local agent.</p></div></div>
+            <div class="mtg-panel-head"><span>08</span><div><h2>Review & Export</h2><p>Review every command, export the script or run it through the cross-platform local agent.</p></div></div>
             <div class="mtg-review-grid">
               <div class="mtg-summary" id="configSummary"></div>
               <div class="mtg-topology" aria-label="Generated network topology">
@@ -212,26 +212,13 @@
                 <div class="mtg-node"><i class="bi bi-diagram-3"></i><span>LAN</span></div>
               </div>
             </div>
-            <section class="mtg-live-console">
-              <div class="mtg-live-head">
-                <div><span class="mtg-pulse" id="agentPulse"></span><div><h3>Hybrid Live Execution</h3><p>Optional local agent for real line-by-line RouterOS results.</p></div></div>
-                <span class="mtg-agent-state" id="agentState">Agent disconnected</span>
-              </div>
-              <div class="mtg-form-grid">
-                <label class="mtg-field"><span>Agent URL</span><input id="agentUrl" value="http://127.0.0.1:8765"></label>
-                <label class="mtg-field"><span>Pairing token</span><input id="agentToken" type="password" autocomplete="off" placeholder="Token printed by local agent"></label>
-                <label class="mtg-field"><span>Router IP / hostname</span><input id="routerHost" placeholder="192.168.88.1"></label>
-                <label class="mtg-field"><span>SSH port</span><input id="routerPort" type="number" min="1" max="65535" value="22"></label>
-                <label class="mtg-field"><span>Router username</span><input id="routerUser" value="admin" autocomplete="off"></label>
-                <label class="mtg-field"><span>Router password</span><input id="routerPassword" type="password" autocomplete="new-password" placeholder="Never stored by the website"></label>
-              </div>
-              <div class="mtg-live-actions">
-                <button type="button" class="mtg-btn secondary" id="testAgent"><i class="bi bi-plug"></i> Test Agent</button>
-                <label class="mtg-switch"><input id="stopOnError" type="checkbox" checked><span></span><b>Stop on first failure</b></label>
-                <button type="button" class="mtg-btn danger" id="runLive"><i class="bi bi-play-fill"></i> Backup & Execute</button>
+            <section class="mtg-offline-validation">
+              <div class="mtg-offline-head">
+                <div><i class="bi bi-shield-check"></i><div><h3>Offline Script Validation</h3><p>Commands are checked locally in your browser. Nothing connects to a router.</p></div></div>
+                <span><i class="bi bi-check2-circle"></i> Script ready</span>
               </div>
               <div class="mtg-command-results" id="commandResults">
-                <div class="mtg-result-empty">Generate the configuration to see line-by-line validation.</div>
+                <div class="mtg-result-empty">Generate the configuration to validate each command.</div>
               </div>
             </section>
 
