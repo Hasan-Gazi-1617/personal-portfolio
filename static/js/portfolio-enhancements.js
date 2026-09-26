@@ -44,7 +44,8 @@ ready(function(){
     ['bi-shield-lock','bi-router','Architecture concept'],
     ['bi-activity','bi-speedometer2','Operational workflow'],
     ['bi-hdd-network','bi-diagram-3','Troubleshooting workflow'],
-    ['bi-code-slash','bi-window','Live portfolio']
+    ['bi-code-slash','bi-window','Live portfolio'],
+    ['bi-router','bi-terminal','Live tool']
   ];
   document.querySelectorAll('#projects .project-card').forEach(function(card,index){
     if(card.dataset.enhanced)return;card.dataset.enhanced='true';
@@ -54,17 +55,20 @@ ready(function(){
     var projectIcon=card.querySelector('.project-icon');
     if(projectIcon)projectIcon.insertAdjacentElement('afterend',visual);
     var tags=card.querySelector('.project-tags');
-    var meta=el('div','project-meta');
-    var status=el('span','project-status',(projectVisuals[index]||projectVisuals[0])[2]);
-    var action;
-    if(h3&&h3.textContent.indexOf('Django Portfolio')>-1){
-      action=el('a','project-action','View repository <i class="bi bi-github"></i>');
-      action.href='https://github.com/Hasan-Gazi-1617/personal-portfolio';action.target='_blank';action.rel='noopener noreferrer';
-    }else{
-      action=el('span','project-action','Project overview <i class="bi bi-arrow-up-right"></i>');
+    var existingMeta=card.querySelector('.project-meta');
+    if(!existingMeta){
+      var meta=el('div','project-meta');
+      var status=el('span','project-status',(projectVisuals[index]||projectVisuals[0])[2]);
+      var action;
+      if(h3&&h3.textContent.indexOf('Django Portfolio')>-1){
+        action=el('a','project-action','View repository <i class="bi bi-github"></i>');
+        action.href='https://github.com/Hasan-Gazi-1617/personal-portfolio';action.target='_blank';action.rel='noopener noreferrer';
+      }else{
+        action=el('span','project-action','Project overview <i class="bi bi-arrow-up-right"></i>');
+      }
+      meta.append(status,action);
+      if(tags)tags.insertAdjacentElement('afterend',meta);else card.appendChild(meta);
     }
-    meta.append(status,action);
-    if(tags)tags.insertAdjacentElement('afterend',meta);else card.appendChild(meta);
   });
 
   document.querySelectorAll('.certifications-section .certification-card').forEach(function(card){
