@@ -176,50 +176,13 @@ $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;cons
 function executableCommands(script){
  return script.split('\n').map(x=>x.trim()).filter(x=>x&&!x.startsWith('#')&&!x.startsWith(':log'));
 }
-function renderCommandRows(script,results){
+function renderCommandRows(script){
  const commands=executableCommands(script);const box=$('commandResults');if(!box)return;
  box.innerHTML=commands.map((cmd,i)=>{
-  const r=results&&results[i];const state=r?(r.success?'success':'failed'):'ready';
-  const label=r?(r.success?'Success':'Failed'):'Ready';
-  const detail=r&&r.output?'<small class="mtg-result-detail">'+escapeHtml(r.output)+'</small>':'';
-  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+detail+'</code><span class="mtg-result-status '+state+'">'+label+'</span></div>';
+  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+'</code><span class="mtg-result-status success">Validated</span></div>';
  }).join('')||'<div class="mtg-result-empty">No executable commands generated.</div>';
 }
 function escapeHtml(value){const e=document.createElement('div');e.textContent=String(value||'');return e.innerHTML}
-function agentBase(){return clean($('agentUrl').value).replace(/\/$/,'')}
-function agentHeaders(){return {'Content-Type':'application/json','X-MTG-Token':$('agentToken').value}}
-function setAgentState(text,state){const el=$('agentState');el.textContent=text;el.className='mtg-agent-state '+(state||'')}
-async function testAgent(){
- setAgentState('Connecting…','');
- try{
-  const res=await fetch(agentBase()+'/health',{headers:agentHeaders()});const data=await res.json();
-  if(!res.ok)throw new Error(data.error||'Agent rejected connection');
-  setAgentState('Connected · '+data.platform,'connected');
- }catch(e){setAgentState('Connection failed','failed');throw e}
-}
-$('testAgent')?.addEventListener('click',async function(){
- try{await testAgent()}catch(e){alert('Local agent connection failed: '+e.message)}
-});
-$('runLive')?.addEventListener('click',async function(){
- if(!renderReview())return;
- const commands=executableCommands($('scriptOutput').textContent);
- if(!clean($('routerHost').value)||!clean($('routerUser').value)||!$('routerPassword').value){alert('Enter router host, username and password.');return}
- if(!confirm('A timestamped backup will be requested first. Execute '+commands.length+' commands on '+clean($('routerHost').value)+'?'))return;
- this.disabled=true;this.innerHTML='<i class="bi bi-hourglass-split"></i> Running…';
- try{
-  await testAgent();
-  $('commandResults').querySelectorAll('.mtg-result-status').forEach(x=>{x.className='mtg-result-status queued';x.textContent='Queued'});
-  const res=await fetch(agentBase()+'/execute',{method:'POST',headers:agentHeaders(),body:JSON.stringify({
-   router:{host:clean($('routerHost').value),port:Number($('routerPort').value),username:clean($('routerUser').value),password:$('routerPassword').value},
-   routeros_version:$('routerOsVersion').value,commands:commands,stop_on_error:$('stopOnError').checked,create_backup:true
-  })});
-  const data=await res.json();if(!res.ok)throw new Error(data.error||'Execution failed');
-  renderCommandRows($('scriptOutput').textContent,data.results||[]);
-  const failed=(data.results||[]).filter(x=>!x.success).length;
-  setAgentState(failed?failed+' command failed':'All commands successful',failed?'failed':'connected');
- }catch(e){setAgentState('Execution failed','failed');alert('Execution stopped: '+e.message)}
- finally{this.disabled=false;this.innerHTML='<i class="bi bi-play-fill"></i> Backup & Execute'}
-});
 
 syncConditional();show(0);
 })();
