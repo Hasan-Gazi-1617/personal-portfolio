@@ -37,3 +37,18 @@
 .mtg-capability-map small{overflow:hidden;color:var(--mtg-muted);font-size:.66rem;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:900px){.mtg-capability-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.mtg-capability-map{grid-template-columns:1fr 1fr;gap:8px}.mtg-capability-map button{padding:10px}.mtg-capability-map i{display:none}.mtg-capability-map small{font-size:.62rem}}
+
+
+/* Sticky compact workflow for scaled desktops, tablets and phones */
+@media(max-width:767.98px){
+ .mtg-layout{display:block}
+ .mtg-sidebar{position:sticky;top:74px;z-index:35;margin:0 0 12px;padding:9px 10px;border-radius:14px;background:color-mix(in srgb,var(--mtg-surface) 96%,transparent);box-shadow:0 12px 30px rgba(2,8,23,.22);backdrop-filter:blur(16px)}
+ .mtg-progress-head{display:none}
+ .mtg-progress{height:2px;margin:0 4px 8px}
+ .mtg-steps{display:flex;grid-template-columns:none;gap:6px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;padding:1px 1px 3px}
+ .mtg-steps::-webkit-scrollbar{display:none}
+ .mtg-steps button{flex:0 0 50px;min-width:50px;justify-content:center;scroll-snap-align:start;padding:6px;border-radius:10px}
+ .mtg-steps button>i{width:36px;height:36px}
+ .mtg-steps button span{display:none}
+ .mtg-main{min-width:0}
+}
