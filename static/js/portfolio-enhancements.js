@@ -50,7 +50,13 @@ ready(function(){
   document.querySelectorAll('#projects .project-card').forEach(function(card,index){
     if(card.dataset.enhanced)return;card.dataset.enhanced='true';
     var h3=card.querySelector('h3');
-    var iconA=(projectVisuals[index]||projectVisuals[0])[0],iconB=(projectVisuals[index]||projectVisuals[0])[1];
+    var title=h3?h3.textContent.trim():'';
+    var preset=title.indexOf('MikroTik Configuration')>-1
+      ? ['bi-router','bi-terminal','Live tool']
+      : title.indexOf('Django Portfolio')>-1
+        ? ['bi-code-slash','bi-window','Live portfolio']
+        : (projectVisuals[index]||projectVisuals[0]);
+    var iconA=preset[0],iconB=preset[1];
     var visual=el('div','project-visual','<i class="bi '+iconA+'"></i><span class="project-flow-line"></span><i class="bi '+iconB+'"></i>');
     var projectIcon=card.querySelector('.project-icon');
     if(projectIcon)projectIcon.insertAdjacentElement('afterend',visual);
@@ -58,7 +64,7 @@ ready(function(){
     var existingMeta=card.querySelector('.project-meta');
     if(!existingMeta){
       var meta=el('div','project-meta');
-      var status=el('span','project-status',(projectVisuals[index]||projectVisuals[0])[2]);
+      var status=el('span','project-status',preset[2]);
       var action;
       if(h3&&h3.textContent.indexOf('Django Portfolio')>-1){
         action=el('a','project-action','View repository <i class="bi bi-github"></i>');
