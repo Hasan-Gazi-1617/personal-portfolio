@@ -730,3 +730,15 @@ html[data-theme="light"] .navbar-custom .navbar-toggler:focus .navbar-toggler-ic
     -webkit-line-clamp:4;
   }
 }
+
+
+/* ===== NAVBAR TOGGLER BREAKPOINT FIX =====
+   The hamburger is a mobile/tablet control only. */
+.navbar-custom .navbar-toggler{
+  display:none!important;
+}
+@media(max-width:991.98px){
+  .navbar-custom .navbar-toggler{
+    display:grid!important;
+  }
+}
