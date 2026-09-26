@@ -13,13 +13,13 @@
       <div class="mtg-hero-grid">
         <div>
           <span class="mtg-kicker"><i class="bi bi-router"></i> ROUTEROS AUTOMATION TOOL</span>
-          <h1>MikroTik Configuration <span>Generator</span></h1>
-          <p>Build a validated RouterOS configuration visually, review every command, then copy or download a ready-to-import <code>.rsc</code> script.</p>
+          <h1>MikroTik Automation <span>Studio</span></h1>
+          <p>Design complete ISP-ready RouterOS v6/v7 configurations with visual modules, validation and optional line-by-line live execution.</p>
         </div>
         <div class="mtg-status-card">
           <div><span class="mtg-pulse"></span><strong>Client-side only</strong></div>
           <small>No router credentials or configuration values are sent to the server.</small>
-          <div class="mtg-version"><span>Target</span><b>RouterOS v7</b></div>
+          <div class="mtg-version"><span>Target platform</span><b id="targetVersionBadge">RouterOS v7</b><small>Windows · Linux · macOS agent</small></div>
         </div>
       </div>
     </div>
@@ -28,27 +28,35 @@
   <section class="mtg-workspace">
     <div class="mtg-shell mtg-layout">
       <aside class="mtg-sidebar" aria-label="Configuration modules">
-        <div class="mtg-progress-head"><span>Configuration</span><strong id="progressText">1 / 8</strong></div>
+        <div class="mtg-progress-head"><span>Automation workflow</span><strong id="progressText">1 / 8</strong></div>
         <div class="mtg-progress"><span id="progressBar"></span></div>
         <nav class="mtg-steps" id="generatorSteps">
-          <button class="active" data-panel="identity"><i class="bi bi-router"></i><span>System Identity<small>Router name & notes</small></span></button>
-          <button data-panel="wan"><i class="bi bi-globe2"></i><span>WAN Internet<small>DHCP, Static or PPPoE</small></span></button>
-          <button data-panel="lan"><i class="bi bi-diagram-3"></i><span>Bridge & LAN<small>Ports and gateway</small></span></button>
+          <button class="active" data-panel="identity"><i class="bi bi-cpu"></i><span>Router & Platform<small>Identity, RouterOS v6/v7</small></span></button>
+          <button data-panel="wan"><i class="bi bi-globe2"></i><span>WAN & Internet<small>DHCP, Static, PPPoE client</small></span></button>
+          <button data-panel="lan"><i class="bi bi-diagram-3"></i><span>LAN & Bridge<small>Ports, gateway and RSTP</small></span></button>
           <button data-panel="dhcp"><i class="bi bi-hdd-network"></i><span>DHCP & DNS<small>Pool, lease and resolvers</small></span></button>
-          <button data-panel="vlan"><i class="bi bi-layers"></i><span>VLAN<small>802.1Q interface</small></span></button>
-          <button data-panel="firewall"><i class="bi bi-shield-check"></i><span>Firewall & NAT<small>Safe baseline rules</small></span></button>
-          <button data-panel="queue"><i class="bi bi-speedometer2"></i><span>Bandwidth<small>Simple queue</small></span></button>
-          <button data-panel="review"><i class="bi bi-terminal"></i><span>Review Script<small>Validate and export</small></span></button>
+          <button data-panel="vlan"><i class="bi bi-layers"></i><span>VLAN & Switching<small>802.1Q access design</small></span></button>
+          <button data-panel="firewall"><i class="bi bi-shield-check"></i><span>Firewall & Security<small>NAT and service hardening</small></span></button>
+          <button data-panel="queue"><i class="bi bi-building-gear"></i><span>ISP Services & QoS<small>PPPoE, Hotspot, Failover</small></span></button>
+          <button data-panel="review"><i class="bi bi-terminal"></i><span>Validate & Execute<small>Script, backup and live result</small></span></button>
         </nav>
       </aside>
 
       <div class="mtg-main">
         <div class="mtg-alert mtg-alert-info"><i class="bi bi-info-circle"></i><span>Use this on a lab or maintenance window first. Always export/backup the current router configuration before applying generated commands.</span></div>
+        <section class="mtg-capability-map" aria-label="Configuration capabilities">
+          <button type="button" data-jump="wan"><i class="bi bi-globe2"></i><span><b>Internet</b><small>DHCP · Static · PPPoE</small></span></button>
+          <button type="button" data-jump="vlan"><i class="bi bi-layers"></i><span><b>Switching</b><small>Bridge · VLAN · LAN</small></span></button>
+          <button type="button" data-jump="queue"><i class="bi bi-people"></i><span><b>ISP Access</b><small>PPPoE Server · Hotspot</small></span></button>
+          <button type="button" data-jump="firewall"><i class="bi bi-shield-lock"></i><span><b>Security</b><small>Firewall · NAT · Remote</small></span></button>
+          <button type="button" data-jump="queue"><i class="bi bi-shuffle"></i><span><b>Resilience</b><small>Failover · QoS · Queue</small></span></button>
+          <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Backup · Execute</small></span></button>
+        </section>
         <div id="validationSummary" class="mtg-alert mtg-alert-error" hidden></div>
 
         <form id="mtgForm" novalidate>
           <section class="mtg-panel active" data-panel="identity">
-            <div class="mtg-panel-head"><span>01</span><div><h2>System Identity</h2><p>Name the router and label this configuration.</p></div></div>
+            <div class="mtg-panel-head"><span>01</span><div><h2>Router & Platform</h2><p>Choose RouterOS v6 or v7, then identify this deployment.</p></div></div>
             <div class="mtg-form-grid">
               <label class="mtg-field"><span>Router identity</span><input id="identity" value="HASAN-NOC-RTR" maxlength="63" required><small>Letters, numbers, dash and underscore.</small></label>
               <label class="mtg-field"><span>Configuration label</span><input id="configLabel" value="Generated by Hasan MikroTik Configurator" maxlength="100"></label>
@@ -126,7 +134,7 @@
           </section>
 
           <section class="mtg-panel" data-panel="queue">
-            <div class="mtg-panel-head"><span>07</span><div><h2>Bandwidth Control</h2><p>Create an optional simple queue for a client or subnet.</p></div></div>
+            <div class="mtg-panel-head"><span>07</span><div><h2>ISP Services & QoS</h2><p>Configure bandwidth, PPPoE Server, Hotspot, Multi-WAN failover and secure remote access.</p></div></div>
             <label class="mtg-switch"><input id="enableQueue" type="checkbox"><span></span><b>Add simple queue</b></label>
             <div id="queueFields" class="mtg-form-grid mtg-top-gap" hidden>
               <label class="mtg-field"><span>Queue name</span><input id="queueName" value="CLIENT-LIMIT"></label>
@@ -171,7 +179,7 @@
           </section>
 
           <section class="mtg-panel" data-panel="review">
-            <div class="mtg-panel-head"><span>08</span><div><h2>Review & Export</h2><p>Validate the design and export the RouterOS script.</p></div></div>
+            <div class="mtg-panel-head"><span>08</span><div><h2>Validate & Execute</h2><p>Review every command, export the script or run it through the cross-platform local agent.</p></div></div>
             <div class="mtg-review-grid">
               <div class="mtg-summary" id="configSummary"></div>
               <div class="mtg-topology" aria-label="Generated network topology">
