@@ -38,7 +38,7 @@
           <button data-panel="vlan"><i class="bi bi-layers"></i><span>VLAN & Switching<small>802.1Q access design</small></span></button>
           <button data-panel="firewall"><i class="bi bi-shield-check"></i><span>Firewall & Security<small>NAT and service hardening</small></span></button>
           <button data-panel="queue"><i class="bi bi-building-gear"></i><span>ISP Services & QoS<small>PPPoE, Hotspot, Failover</small></span></button>
-          <button data-panel="review"><i class="bi bi-terminal"></i><span>Validate & Execute<small>Script, backup and live result</small></span></button>
+          <button data-panel="review"><i class="bi bi-terminal"></i><span>Review & Export<small>Validate, copy and download</small></span></button>
         </nav>
       </aside>
 
@@ -50,18 +50,42 @@
           <button type="button" data-jump="queue"><i class="bi bi-people"></i><span><b>ISP Access</b><small>PPPoE Server · Hotspot</small></span></button>
           <button type="button" data-jump="firewall"><i class="bi bi-shield-lock"></i><span><b>Security</b><small>Firewall · NAT · Remote</small></span></button>
           <button type="button" data-jump="queue"><i class="bi bi-shuffle"></i><span><b>Resilience</b><small>Failover · QoS · Queue</small></span></button>
-          <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Backup · Execute</small></span></button>
+          <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Copy · Download</small></span></button>
         </section>
         <div id="validationSummary" class="mtg-alert mtg-alert-error" hidden></div>
 
         <form id="mtgForm" novalidate>
-          <section class="mtg-panel active" data-panel="identity">
-            <div class="mtg-panel-head"><span>01</span><div><h2>Router & Platform</h2><p>Choose RouterOS v6 or v7, then identify this deployment.</p></div></div>
-            <div class="mtg-form-grid">
+          <section class="mtg-panel active mtg-platform-panel" data-panel="identity">
+            <div class="mtg-panel-head"><span>01</span><div><h2>Start a RouterOS Deployment</h2><p>Select a platform and deployment profile. The studio will build the configuration module by module.</p></div></div>
+            <div class="mtg-platform-grid">
+              <div class="mtg-platform-builder">
+                <div class="mtg-block-label"><span>01</span><div><b>RouterOS generation</b><small>Both versions use a compatible command engine.</small></div></div>
+                <div class="mtg-version-cards" id="versionCards">
+                  <button type="button" class="active" data-router-version="7"><span class="mtg-version-mark">7</span><span><b>RouterOS v7</b><small>Modern routing stack · Recommended</small></span><i class="bi bi-check-circle-fill"></i></button>
+                  <button type="button" data-router-version="6"><span class="mtg-version-mark">6</span><span><b>RouterOS v6</b><small>Legacy and long-running deployments</small></span><i class="bi bi-circle"></i></button>
+                </div>
+                <label class="mtg-visually-hidden"><span>RouterOS target</span><select id="routerOsVersion"><option value="7" selected>RouterOS v7</option><option value="6">RouterOS v6</option></select></label>
+
+                <div class="mtg-block-label mtg-top-gap"><span>02</span><div><b>Deployment profile</b><small>Choose the closest starting point.</small></div></div>
+                <div class="mtg-profile-cards" id="profileCards">
+                  <button type="button" class="active" data-profile="isp"><i class="bi bi-building-gear"></i><span><b>ISP Edge</b><small>WAN, NAT, PPPoE, failover</small></span></button>
+                  <button type="button" data-profile="office"><i class="bi bi-buildings"></i><span><b>Office</b><small>LAN, DHCP, VLAN, security</small></span></button>
+                  <button type="button" data-profile="lab"><i class="bi bi-bezier2"></i><span><b>Training Lab</b><small>Safe practice configuration</small></span></button>
+                </div>
+              </div>
+
+              <aside class="mtg-platform-preview">
+                <div class="mtg-preview-top"><span class="mtg-pulse"></span><small>CONFIGURATION ENGINE</small><b id="platformVersionText">RouterOS v7</b></div>
+                <div class="mtg-router-visual"><i class="bi bi-router"></i><span></span><span></span><span></span><span></span><em>READY</em></div>
+                <div class="mtg-preview-flow"><span>ISP</span><i class="bi bi-arrow-right"></i><strong>Router</strong><i class="bi bi-arrow-right"></i><span>LAN</span></div>
+                <ul><li><i class="bi bi-check2"></i> Offline script validation</li><li><i class="bi bi-check2"></i> Cross-platform local agent</li><li><i class="bi bi-check2"></i> Line-by-line execution status</li></ul>
+              </aside>
+            </div>
+
+            <div class="mtg-settings-strip">
               <label class="mtg-field"><span>Router identity</span><input id="identity" value="HASAN-NOC-RTR" maxlength="63" required><small>Letters, numbers, dash and underscore.</small></label>
               <label class="mtg-field"><span>Configuration label</span><input id="configLabel" value="Generated by Hasan MikroTik Configurator" maxlength="100"></label>
               <label class="mtg-field"><span>Timezone</span><select id="timezone"><option value="Asia/Dhaka" selected>Asia/Dhaka (UTC+6)</option><option value="UTC">UTC</option><option value="Asia/Kolkata">Asia/Kolkata</option><option value="Asia/Singapore">Asia/Singapore</option></select></label>
-              <label class="mtg-field"><span>RouterOS target</span><select id="routerOsVersion"><option value="7" selected>RouterOS v7</option><option value="6">RouterOS v6</option></select><small>Commands are generated for the selected major version.</small></label>
             </div>
           </section>
 
@@ -179,7 +203,7 @@
           </section>
 
           <section class="mtg-panel" data-panel="review">
-            <div class="mtg-panel-head"><span>08</span><div><h2>Validate & Execute</h2><p>Review every command, export the script or run it through the cross-platform local agent.</p></div></div>
+            <div class="mtg-panel-head"><span>08</span><div><h2>Review & Export</h2><p>Review every command, export the script or run it through the cross-platform local agent.</p></div></div>
             <div class="mtg-review-grid">
               <div class="mtg-summary" id="configSummary"></div>
               <div class="mtg-topology" aria-label="Generated network topology">
@@ -188,26 +212,13 @@
                 <div class="mtg-node"><i class="bi bi-diagram-3"></i><span>LAN</span></div>
               </div>
             </div>
-            <section class="mtg-live-console">
-              <div class="mtg-live-head">
-                <div><span class="mtg-pulse" id="agentPulse"></span><div><h3>Hybrid Live Execution</h3><p>Optional local agent for real line-by-line RouterOS results.</p></div></div>
-                <span class="mtg-agent-state" id="agentState">Agent disconnected</span>
-              </div>
-              <div class="mtg-form-grid">
-                <label class="mtg-field"><span>Agent URL</span><input id="agentUrl" value="http://127.0.0.1:8765"></label>
-                <label class="mtg-field"><span>Pairing token</span><input id="agentToken" type="password" autocomplete="off" placeholder="Token printed by local agent"></label>
-                <label class="mtg-field"><span>Router IP / hostname</span><input id="routerHost" placeholder="192.168.88.1"></label>
-                <label class="mtg-field"><span>SSH port</span><input id="routerPort" type="number" min="1" max="65535" value="22"></label>
-                <label class="mtg-field"><span>Router username</span><input id="routerUser" value="admin" autocomplete="off"></label>
-                <label class="mtg-field"><span>Router password</span><input id="routerPassword" type="password" autocomplete="new-password" placeholder="Never stored by the website"></label>
-              </div>
-              <div class="mtg-live-actions">
-                <button type="button" class="mtg-btn secondary" id="testAgent"><i class="bi bi-plug"></i> Test Agent</button>
-                <label class="mtg-switch"><input id="stopOnError" type="checkbox" checked><span></span><b>Stop on first failure</b></label>
-                <button type="button" class="mtg-btn danger" id="runLive"><i class="bi bi-play-fill"></i> Backup & Execute</button>
+            <section class="mtg-offline-validation">
+              <div class="mtg-offline-head">
+                <div><i class="bi bi-shield-check"></i><div><h3>Offline Script Validation</h3><p>Commands are checked locally in your browser. Nothing connects to a router.</p></div></div>
+                <span><i class="bi bi-check2-circle"></i> Script ready</span>
               </div>
               <div class="mtg-command-results" id="commandResults">
-                <div class="mtg-result-empty">Generate the configuration to see line-by-line validation.</div>
+                <div class="mtg-result-empty">Generate the configuration to validate each command.</div>
               </div>
             </section>
 

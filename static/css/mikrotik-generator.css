@@ -52,3 +52,37 @@
  .mtg-steps button span{display:none}
  .mtg-main{min-width:0}
 }
+
+
+/* Visual Router & Platform builder */
+.mtg-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.mtg-platform-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(250px,.75fr);gap:18px}
+.mtg-platform-builder,.mtg-platform-preview{border:1px solid var(--mtg-border);border-radius:16px;background:color-mix(in srgb,var(--mtg-input) 82%,transparent)}
+.mtg-platform-builder{padding:18px}
+.mtg-block-label{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.mtg-block-label>span{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:color-mix(in srgb,var(--mtg-accent) 13%,transparent);color:var(--mtg-accent);font:800 .65rem/1 var(--mtg-mono)}
+.mtg-block-label div{display:grid;gap:2px}.mtg-block-label b{color:var(--mtg-text);font-size:.82rem}.mtg-block-label small{color:var(--mtg-muted);font-size:.67rem}
+.mtg-version-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mtg-version-cards button,.mtg-profile-cards button{display:flex;align-items:center;gap:11px;border:1px solid var(--mtg-border);border-radius:13px;background:var(--mtg-surface);color:var(--mtg-text);text-align:left;cursor:pointer;transition:.2s ease}
+.mtg-version-cards button{min-height:76px;padding:12px}.mtg-version-cards button>span:nth-child(2){display:grid;gap:3px;flex:1}.mtg-version-cards b,.mtg-profile-cards b{font-size:.78rem}.mtg-version-cards small,.mtg-profile-cards small{color:var(--mtg-muted);font-size:.64rem}.mtg-version-cards button>i{color:var(--mtg-muted)}
+.mtg-version-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--mtg-accent) 10%,transparent);color:var(--mtg-accent);font:800 1rem/1 var(--mtg-mono)}
+.mtg-version-cards button.active,.mtg-profile-cards button.active{border-color:var(--mtg-accent);background:color-mix(in srgb,var(--mtg-accent) 9%,var(--mtg-surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--mtg-accent) 9%,transparent)}
+.mtg-version-cards button.active>i{color:var(--mtg-accent)}
+.mtg-version-cards button:hover,.mtg-profile-cards button:hover{transform:translateY(-2px);border-color:var(--mtg-accent)}
+.mtg-profile-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.mtg-profile-cards button{min-height:70px;padding:10px}.mtg-profile-cards i{color:var(--mtg-accent);font-size:1rem}.mtg-profile-cards span{display:grid;gap:3px}
+.mtg-platform-preview{position:relative;overflow:hidden;padding:18px;background:linear-gradient(145deg,color-mix(in srgb,var(--mtg-accent) 12%,var(--mtg-surface)),var(--mtg-surface))}
+.mtg-platform-preview::after{content:"";position:absolute;right:-45px;bottom:-55px;width:150px;height:150px;border:1px solid color-mix(in srgb,var(--mtg-accent) 25%,transparent);border-radius:50%}
+.mtg-preview-top{display:grid;grid-template-columns:10px 1fr;gap:4px 9px;align-items:center}.mtg-preview-top small{color:var(--mtg-muted);font:700 .58rem/1 var(--mtg-mono);letter-spacing:.12em}.mtg-preview-top b{grid-column:2;color:var(--mtg-text);font-size:1rem}
+.mtg-router-visual{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;height:92px;margin:16px 0;border:1px solid var(--mtg-border);border-radius:14px;background:var(--mtg-input)}.mtg-router-visual>i{margin-right:8px;color:var(--mtg-accent);font-size:1.55rem}.mtg-router-visual>span{width:9px;height:9px;border-radius:3px;background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.7)}.mtg-router-visual em{position:absolute;right:10px;top:9px;color:#22c55e;font:800 .52rem/1 var(--mtg-mono);font-style:normal}
+.mtg-preview-flow{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--mtg-muted);font-size:.65rem}.mtg-preview-flow strong{padding:5px 9px;border-radius:7px;background:color-mix(in srgb,var(--mtg-accent) 12%,transparent);color:var(--mtg-text)}
+.mtg-platform-preview ul{position:relative;z-index:1;display:grid;gap:7px;margin:16px 0 0;padding:0;list-style:none}.mtg-platform-preview li{color:var(--mtg-muted);font-size:.67rem}.mtg-platform-preview li i{margin-right:6px;color:var(--mtg-accent)}
+.mtg-settings-strip{display:grid;grid-template-columns:1fr 1.25fr .85fr;gap:12px;margin-top:16px;padding:15px;border:1px solid var(--mtg-border);border-radius:15px;background:color-mix(in srgb,var(--mtg-surface) 75%,transparent)}
+@media(max-width:1100px){.mtg-platform-grid{grid-template-columns:1fr}.mtg-platform-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mtg-router-visual{margin:0}.mtg-preview-flow,.mtg-platform-preview ul{display:none}.mtg-settings-strip{grid-template-columns:1fr 1fr}.mtg-settings-strip .mtg-field:last-child{grid-column:1/-1}}
+@media(max-width:600px){.mtg-version-cards,.mtg-profile-cards,.mtg-settings-strip{grid-template-columns:1fr}.mtg-settings-strip .mtg-field:last-child{grid-column:auto}.mtg-platform-preview{display:block}.mtg-router-visual{margin-top:14px}.mtg-platform-panel{padding-inline:14px}}
+
+
+/* Offline-only script validation */
+.mtg-offline-validation{margin:0 0 24px;padding:18px;border:1px solid var(--mtg-border);border-radius:15px;background:color-mix(in srgb,var(--mtg-surface) 92%,transparent)}
+.mtg-offline-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.mtg-offline-head>div{display:flex;align-items:center;gap:12px}.mtg-offline-head>div>i{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--mtg-accent) 12%,transparent);color:var(--mtg-accent);font-size:1rem}.mtg-offline-head h3{margin:0;color:var(--mtg-text);font-size:.95rem}.mtg-offline-head p{margin:3px 0 0;color:var(--mtg-muted);font-size:.68rem}.mtg-offline-head>span{padding:7px 10px;border-radius:999px;background:rgba(34,197,94,.12);color:#22c55e;font-size:.65rem;font-weight:800;white-space:nowrap}.mtg-offline-validation .mtg-command-results{margin-top:0}
+@media(max-width:620px){.mtg-offline-head{align-items:flex-start;flex-direction:column}.mtg-offline-head>span{margin-left:50px}}
