@@ -98,7 +98,7 @@
             </div>
             <div class="mtg-form-grid mtg-top-gap">
               <label class="mtg-field"><span>WAN interface</span><select id="wanInterface"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option><option>sfp-sfpplus1</option></select></label>
-              <label class="mtg-field"><span>Interface comment</span><input id="wanComment" value="ISP-UPLINK"></label>
+              <label class="mtg-field"><span>Primary ISP name / comment</span><input id="wanComment" value="PRIMARY ISP" maxlength="80" placeholder="e.g. Link3"></label>
             </div>
             <div id="staticFields" class="mtg-form-grid mtg-top-gap" hidden>
               <label class="mtg-field"><span>WAN IP / prefix</span><input id="wanIp" placeholder="203.0.113.2/30"></label>
@@ -225,6 +225,7 @@
               <label class="mtg-field"><span>Primary WAN port (ether1–ether5)</span><select id="primaryWanPort"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
               <label class="mtg-field"><span>Backup WAN port (ether1–ether5)</span><select id="backupWan"><option>ether1</option><option selected>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
               <label class="mtg-field"><span>Backup WAN type</span><select id="backupWanType"><option value="dhcp">DHCP / Dynamic</option><option value="static">Static / Private</option><option value="pppoe" selected>PPPoE</option></select></label>
+              <label class="mtg-field"><span>Backup ISP name / comment</span><input id="backupIspComment" value="BACKUP ISP" maxlength="80" placeholder="e.g. Amber IT"></label>
               <label class="mtg-field"><span>LAN ports</span><input id="failoverLanPorts" value="ether3,ether4,ether5" readonly></label>
               <div id="backupStaticFields" class="mtg-form-grid mtg-span-2" hidden><label class="mtg-field"><span>Backup IP / prefix</span><input id="backupIp" value="198.51.100.2/30"></label><label class="mtg-field"><span>Backup gateway</span><input id="backupGateway" value="198.51.100.1"></label></div>
               <div id="backupPppoeFields" class="mtg-form-grid mtg-span-2"><label class="mtg-field"><span>Backup PPPoE username</span><input id="backupUser" value="backup-user"></label><label class="mtg-field"><span>Backup PPPoE password</span><input id="backupPass" type="password" autocomplete="new-password"></label></div>
