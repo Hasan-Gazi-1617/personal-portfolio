@@ -24,7 +24,12 @@ function validate(panelIndex=current){
  const add=(id,msg)=>{errors.push(msg);$(id)?.classList.add('invalid')};
  const name=clean($('identity').value);if(!name||!/^[A-Za-z0-9_. -]+$/.test(name))add('identity','Enter a valid router identity.');
  if(panelIndex>=1||panelIndex===7){
-  if(wanType()==='static'){if(!cidr.test(clean($('wanIp').value)))add('wanIp','Enter WAN IP in CIDR format.');if(!ip.test(clean($('gateway').value)))add('gateway','Enter a valid WAN gateway.')}
+  if(wanType()==='static'){
+   const wanAddress=clean($('wanIp').value),wanGateway=clean($('gateway').value);
+   if(!cidr.test(wanAddress))add('wanIp','Enter WAN IP in CIDR format.');
+   if(!ip.test(wanGateway))add('gateway','Enter a valid WAN gateway.');
+   if(cidr.test(wanAddress)&&ip.test(wanGateway))staticLinkErrors(wanAddress,wanGateway,'Primary WAN').forEach(error=>add(error.field==='address'?'wanIp':'gateway',error.message));
+  }
   if(wanType()==='pppoe'){if(!clean($('pppoeUser').value))add('pppoeUser','PPPoE username is required.');if(!clean($('pppoePass').value))add('pppoePass','PPPoE password is required.')}
  }
  if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('Primary WAN interface cannot also be used as LAN.');if($('enableFailover').checked&&lanChosen.includes($('backupWan').value))errors.push('Backup WAN interface cannot also be used as LAN.')}
@@ -41,7 +46,12 @@ function validate(panelIndex=current){
  if(panelIndex>=6||panelIndex===7){
   if($('enablePppoeServer').checked){if(!ip.test(clean($('pppoeLocal').value)))add('pppoeLocal','Enter a valid PPPoE local address.');if(!poolRangeValid($('pppoePool').value))add('pppoePool','PPPoE pool must be startIP-endIP.');if(!clean($('pppoeSecretUser').value))add('pppoeSecretUser','PPPoE test username is required.');if(!clean($('pppoeSecretPass').value))add('pppoeSecretPass','PPPoE test password is required.')}
   if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
-  if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){if(!cidr.test(clean($('backupIp').value)))add('backupIp','Enter backup IP in CIDR format.');if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');}if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('primaryWanPort').value)add('backupWan','Backup WAN must differ from primary WAN.');}
+  if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){
+    const backupAddress=clean($('backupIp').value),backupGateway=clean($('backupGateway').value);
+    if(!cidr.test(backupAddress))add('backupIp','Enter backup IP in CIDR format.');
+    if(!ip.test(backupGateway))add('backupGateway','Enter a valid backup gateway.');
+    if(cidr.test(backupAddress)&&ip.test(backupGateway))staticLinkErrors(backupAddress,backupGateway,'Backup WAN').forEach(error=>add(error.field==='address'?'backupIp':'backupGateway',error.message));
+   }if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('primaryWanPort').value)add('backupWan','Backup WAN must differ from primary WAN.');}
   if($('enableRemote').checked){if(!cidr.test(clean($('remoteSource').value)))add('remoteSource','Management source must use CIDR format.');const wp=+$('winboxPort').value;if(wp<1||wp>65535)add('winboxPort','Winbox port must be 1–65535.');}
   if($('enableRouting').checked){const rm=$('routingMode').value;if(rm==='static'){if(!cidr.test(clean($('staticRouteDestination').value)))add('staticRouteDestination','Static destination must use CIDR format.');if(!ip.test(clean($('staticRouteGateway').value)))add('staticRouteGateway','Enter a valid next-hop gateway.');}if(rm==='ospf'){if(!ip.test(clean($('ospfRouterId').value)))add('ospfRouterId','Enter a valid OSPF Router ID.');if(!cidr.test(clean($('ospfNetwork').value)))add('ospfNetwork','OSPF network must use CIDR format.');}if(rm==='bgp'){if(!ip.test(clean($('bgpRouterId').value)))add('bgpRouterId','Enter a valid BGP Router ID.');if(!ip.test(clean($('bgpNeighbor').value)))add('bgpNeighbor','Enter a valid BGP neighbor IP.');if(!cidr.test(clean($('bgpNetwork').value)))add('bgpNetwork','BGP network must use CIDR format.');}}
  }
@@ -51,6 +61,31 @@ function validate(panelIndex=current){
 function networkFromCidr(v){return clean(v).split('/')[0]}
 function poolRangeValid(v){const p=clean(v).split('-');return p.length===2&&ip.test(p[0])&&ip.test(p[1])}
 function gatewayAddress(v){return networkFromCidr(v)}
+function ipv4Number(v){
+ const parts=clean(v).split('.').map(Number);
+ if(parts.length!==4||parts.some(n=>!Number.isInteger(n)||n<0||n>255))return null;
+ return (((parts[0]<<24)>>>0)+(parts[1]<<16)+(parts[2]<<8)+parts[3])>>>0;
+}
+function cidrDetails(v){
+ const parts=clean(v).split('/');
+ if(parts.length!==2||!ip.test(parts[0]))return null;
+ const prefix=Number(parts[1]);if(!Number.isInteger(prefix)||prefix<0||prefix>32)return null;
+ const address=ipv4Number(parts[0]);
+ const mask=prefix===0?0:(0xffffffff<<(32-prefix))>>>0;
+ const network=(address&mask)>>>0;
+ const broadcast=(network|(~mask>>>0))>>>0;
+ return {address,prefix,mask,network,broadcast};
+}
+function staticLinkErrors(addressValue,gatewayValue,label){
+ const result=[],details=cidrDetails(addressValue),gateway=ipv4Number(gatewayValue);
+ if(!details||gateway===null)return result;
+ if(details.prefix<31&&details.address===details.network)result.push({field:'address',message:label+' IP is the subnet network address and cannot be assigned to the router.'});
+ if(details.prefix<31&&details.address===details.broadcast)result.push({field:'address',message:label+' IP is the subnet broadcast address and cannot be assigned to the router.'});
+ if((gateway&details.mask)!==details.network)result.push({field:'gateway',message:label+' gateway must be inside the same subnet as the WAN IP.'});
+ if(gateway===details.address)result.push({field:'gateway',message:label+' gateway cannot be the same as the router WAN IP.'});
+ if(details.prefix<31&&(gateway===details.network||gateway===details.broadcast))result.push({field:'gateway',message:label+' gateway cannot be a network or broadcast address.'});
+ return result;
+}
 function buildScript(){
  const lines=[];const wan=$('wanInterface').value;const bridge=clean($('bridgeName').value);const lanInterface=$('lanMode').value==='bridge'?bridge:$('directLanInterface').value;const w=wanType();
  lines.push('# MikroTik RouterOS v'+$('routerOsVersion').value+' configuration');
