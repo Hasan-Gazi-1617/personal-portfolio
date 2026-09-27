@@ -64,7 +64,14 @@ function buildScript(){
  lines.push('');
  lines.push('# ---------- WAN ----------');
  if(w==='dhcp'){const distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no comment="PRIMARY ISP DHCP"');}
- if(w==='static'){lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');const routeOptions=$('enableFailover').checked?' distance='+$('primaryDistance').value+' check-gateway=ping':'';lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');}
+ if(w==='static'){
+   lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');
+   const recursiveStaticFailover=$('enableFailover').checked&&$('backupWanType').value==='static';
+   if(!recursiveStaticFailover){
+    const routeOptions=$('enableFailover').checked?' distance='+$('primaryDistance').value+' check-gateway=ping':'';
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');
+   }
+  }
  if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'',distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no'+mtu+' comment="PRIMARY ISP PPPOE"');}
  lines.push('');
  lines.push('# ---------- LAN DEPLOYMENT ----------');
@@ -90,8 +97,14 @@ function buildScript(){
  }
  if($('enableNat').checked){
   lines.push('');lines.push('# ---------- NAT FOR ALL ACTIVE WANS ----------');
-  const out=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall nat add chain=srcnat out-interface='+out+' action=masquerade comment="PRIMARY WAN NAT"');
-  if($('enableFailover').checked){const backupOut=$('backupWanType').value==='pppoe'?'pppoe-backup':$('backupWan').value;lines.push('/ip firewall nat add chain=srcnat out-interface='+backupOut+' action=masquerade comment="BACKUP WAN NAT"');}
+  const out=w==='pppoe'?'pppoe-out1':wan;
+  if(w==='static')lines.push('/ip firewall nat add chain=srcnat out-interface='+out+' action=src-nat to-addresses='+networkFromCidr($('wanIp').value)+' comment="PRIMARY STATIC WAN NAT"');
+  else lines.push('/ip firewall nat add chain=srcnat out-interface='+out+' action=masquerade comment="PRIMARY DYNAMIC WAN NAT"');
+  if($('enableFailover').checked){
+   const backupType=$('backupWanType').value,backupOut=backupType==='pppoe'?'pppoe-backup':$('backupWan').value;
+   if(backupType==='static')lines.push('/ip firewall nat add chain=srcnat out-interface='+backupOut+' action=src-nat to-addresses='+networkFromCidr($('backupIp').value)+' comment="BACKUP STATIC WAN NAT"');
+   else lines.push('/ip firewall nat add chain=srcnat out-interface='+backupOut+' action=masquerade comment="BACKUP DYNAMIC WAN NAT"');
+  }
  }
  if($('enableFirewall').checked){
   lines.push('');lines.push('# ---------- BASELINE FIREWALL ----------');
@@ -109,7 +122,17 @@ function buildScript(){
   }
   if($('enableBogonProtection').checked){['0.0.0.0/8','10.0.0.0/8','100.64.0.0/10','127.0.0.0/8','169.254.0.0/16','172.16.0.0/12','192.0.0.0/24','192.168.0.0/16','224.0.0.0/3'].forEach(net=>lines.push('/ip firewall address-list add list=BOGONS address='+net+' comment="BOGON SOURCE"'));const bogonWan=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input in-interface='+bogonWan+' src-address-list=BOGONS action=drop comment="DROP BOGON FROM WAN"');}
   if($('enableRemote').checked)lines.push('/ip firewall filter add chain=input action=accept protocol=tcp src-address='+clean($('remoteSource').value)+' dst-port=22,'+$('winboxPort').value+' comment="ALLOW RESTRICTED REMOTE MANAGEMENT"');
-  const inIf=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input action=drop in-interface='+inIf+' comment="DROP UNSOLICITED WAN INPUT"');
+  const inIf=w==='pppoe'?'pppoe-out1':wan;
+  lines.push('/ip firewall filter add chain=input action=drop in-interface='+inIf+' comment="DROP PRIMARY WAN INPUT"');
+  if($('enableFailover').checked){
+   const backupIn=$('backupWanType').value==='pppoe'?'pppoe-backup':$('backupWan').value;
+   lines.push('/ip firewall filter add chain=input action=drop in-interface='+backupIn+' comment="DROP BACKUP WAN INPUT"');
+  }
+  lines.push('/ip firewall filter add chain=input action=drop comment="DROP OTHER ROUTER INPUT"');
+  lines.push('/ip firewall filter add chain=forward action=accept connection-state=established,related,untracked comment="ACCEPT ESTABLISHED FORWARD"');
+  lines.push('/ip firewall filter add chain=forward action=drop connection-state=invalid comment="DROP INVALID FORWARD"');
+  lines.push('/ip firewall filter add chain=forward action=accept in-interface='+lanInterface+' comment="ALLOW LAN FORWARD"');
+  lines.push('/ip firewall filter add chain=forward action=drop comment="DROP OTHER FORWARD"');
  }
  if($('disableServices').checked){
   lines.push('');lines.push('# ---------- MANAGEMENT SERVICES ----------');
@@ -161,9 +184,26 @@ function buildScript(){
   lines.push('# 5-port design: '+primaryIf+'=PRIMARY, '+backupIf+'=BACKUP, '+clean($('failoverLanPorts').value)+'=LAN');
   lines.push('/interface ethernet set [find default-name='+primaryIf+'] comment="PRIMARY WAN"');lines.push('/interface ethernet set [find default-name='+backupIf+'] comment="BACKUP WAN"');
   if(backupType==='dhcp')lines.push('/ip dhcp-client add interface='+backupIf+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no comment="BACKUP DHCP WAN" disabled=no');
-  if(backupType==='static'){lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment="BACKUP STATIC WAN"');lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');}
+  if(backupType==='static'){
+   lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment="BACKUP STATIC WAN"');
+   if(w==='static'){
+    const primaryProbe=clean($('netwatchHost').value)||'1.1.1.1';
+    const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
+    lines.push('# Recursive routes test Internet reachability beyond each ISP gateway');
+    lines.push('/ip route add dst-address='+primaryProbe+'/32 gateway='+clean($('gateway').value)+' scope=10 comment="PRIMARY INTERNET PROBE"');
+    lines.push('/ip route add dst-address='+backupProbe+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP INTERNET PROBE"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE DEFAULT"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE DEFAULT"');
+   }else{
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');
+   }
+  }
   if(backupType==='pppoe')lines.push('/interface pppoe-client add name=pppoe-backup interface='+backupIf+' user='+q($('backupUser').value)+' password='+q($('backupPass').value)+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no disabled=no comment="BACKUP PPPOE WAN"');
-  if($('enableNetwatch').checked)lines.push('/tool netwatch add host='+clean($('netwatchHost').value)+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="FAILOVER MONITOR"');
+  if($('enableNetwatch').checked){
+   const monitorHost=clean($('netwatchHost').value);
+   lines.push('# Netwatch provides status logs; route failover is handled by check-gateway');
+   lines.push('/tool netwatch add host='+monitorHost+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="WAN STATUS MONITOR"');
+  }
  }
  if($('enableRouting').checked){
   lines.push('');lines.push('# ---------- ROUTING GENERATOR ----------');const mode=$('routingMode').value,version=$('routerOsVersion').value;
