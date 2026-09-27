@@ -27,7 +27,7 @@ function validate(panelIndex=current){
   if(wanType()==='static'){if(!cidr.test(clean($('wanIp').value)))add('wanIp','Enter WAN IP in CIDR format.');if(!ip.test(clean($('gateway').value)))add('gateway','Enter a valid WAN gateway.')}
   if(wanType()==='pppoe'){if(!clean($('pppoeUser').value))add('pppoeUser','PPPoE username is required.');if(!clean($('pppoePass').value))add('pppoePass','PPPoE password is required.')}
  }
- if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('WAN interface cannot also be used as LAN.')}
+ if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('Primary WAN interface cannot also be used as LAN.');if($('enableFailover').checked&&lanChosen.includes($('backupWan').value))errors.push('Backup WAN interface cannot also be used as LAN.')}
  if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
  if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.');if($('enableSecondVlan').checked){const second=+$('secondVlanId').value;if(second<1||second>4094||second===id)add('secondVlanId','Second VLAN ID must be unique and between 1–4094.');if(!cidr.test(clean($('secondVlanIp').value)))add('secondVlanIp','Enter second VLAN gateway in CIDR format.');}}
@@ -63,7 +63,7 @@ function buildScript(){
  lines.push('/interface ethernet set [find default-name='+wan+'] comment='+q($('wanComment').value));
  lines.push('');
  lines.push('# ---------- WAN ----------');
- if(w==='dhcp'){const distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no comment="PRIMARY ISP DHCP"');}
+ if(w==='dhcp'){const distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes'+distance+' check-gateway=ping use-peer-dns=no disabled=no comment="PRIMARY ISP DHCP"');}
  if(w==='static'){
    lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');
    const recursiveStaticFailover=$('enableFailover').checked&&$('backupWanType').value==='static';
@@ -183,7 +183,7 @@ function buildScript(){
   lines.push('# Scenario: '+$('failoverScenario').selectedOptions[0].textContent);
   lines.push('# 5-port design: '+primaryIf+'=PRIMARY, '+backupIf+'=BACKUP, '+clean($('failoverLanPorts').value)+'=LAN');
   lines.push('/interface ethernet set [find default-name='+primaryIf+'] comment="PRIMARY WAN"');lines.push('/interface ethernet set [find default-name='+backupIf+'] comment="BACKUP WAN"');
-  if(backupType==='dhcp')lines.push('/ip dhcp-client add interface='+backupIf+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no comment="BACKUP DHCP WAN" disabled=no');
+  if(backupType==='dhcp')lines.push('/ip dhcp-client add interface='+backupIf+' add-default-route=yes default-route-distance='+$('backupDistance').value+' check-gateway=ping use-peer-dns=no comment="BACKUP DHCP WAN" disabled=no');
   if(backupType==='static'){
    lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment="BACKUP STATIC WAN"');
    if(w==='static'){
@@ -257,15 +257,39 @@ document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener
  if(index>current&&!validate(current))return;
  show(index);
 }));
+function syncFailoverPorts(){
+ const primary=$('primaryWanPort').value,backup=$('backupWan').value;
+ document.querySelectorAll('#lanPorts input').forEach(port=>{
+  if(port.value===primary||port.value===backup)port.checked=false;
+  else if(['ether3','ether4','ether5'].includes(port.value))port.checked=true;
+ });
+ const activeLan=selectedPorts();
+ $('failoverLanPorts').value=activeLan.length?activeLan.join(','):'Select LAN ports';
+}
 function syncFailoverScenario(){
- const map={pppoe_pppoe:['pppoe','pppoe'],pppoe_dhcp:['pppoe','dhcp'],pppoe_static:['pppoe','static'],pppoe_private:['pppoe','static'],static_dhcp:['static','dhcp'],static_private:['static','static'],static_static:['static','static']};
- const pair=map[$('failoverScenario').value]||map.pppoe_pppoe;
+ const map={
+  static_static:['static','static'],
+  static_dhcp:['static','dhcp'],
+  static_pppoe:['static','pppoe'],
+  dhcp_static:['dhcp','static'],
+  dhcp_dhcp:['dhcp','dhcp'],
+  dhcp_pppoe:['dhcp','pppoe'],
+  pppoe_static:['pppoe','static'],
+  pppoe_dhcp:['pppoe','dhcp'],
+  pppoe_pppoe:['pppoe','pppoe']
+ };
+ const pair=map[$('failoverScenario').value]||map.static_static;
  const radio=document.querySelector('input[name="wanType"][value="'+pair[0]+'"]');if(radio)radio.checked=true;
- $('backupWanType').value=pair[1];$('wanInterface').value=$('primaryWanPort').value;syncConditional();
+ $('backupWanType').value=pair[1];
+ $('wanInterface').value=$('primaryWanPort').value;
+ syncFailoverPorts();
+ syncConditional();
 }
 $('failoverScenario').addEventListener('change',syncFailoverScenario);
-$('primaryWanPort').addEventListener('change',()=>{$('wanInterface').value=$('primaryWanPort').value});
-$('wanInterface').addEventListener('change',()=>{if([...$('primaryWanPort').options].some(o=>o.value===$('wanInterface').value))$('primaryWanPort').value=$('wanInterface').value});
+$('backupWan').addEventListener('change',()=>{syncFailoverPorts();syncConditional()});
+$('primaryWanPort').addEventListener('change',()=>{$('wanInterface').value=$('primaryWanPort').value;syncFailoverPorts()});
+$('wanInterface').addEventListener('change',()=>{if([...$('primaryWanPort').options].some(o=>o.value===$('wanInterface').value)){$('primaryWanPort').value=$('wanInterface').value;syncFailoverPorts()}});
+document.querySelectorAll('#lanPorts input').forEach(port=>port.addEventListener('change',()=>{$('failoverLanPorts').value=selectedPorts().join(',')}));
 function syncRouterVersion(version){
  $('routerOsVersion').value=version;
  const badge=$('targetVersionBadge');if(badge)badge.textContent='RouterOS v'+version;
