@@ -114,11 +114,13 @@
           <section class="mtg-panel" data-panel="lan">
             <div class="mtg-panel-head"><span>03</span><div><h2>Bridge & LAN</h2><p>Create the LAN bridge, add ports and assign the gateway address.</p></div></div>
             <div class="mtg-form-grid">
+              <label class="mtg-field mtg-span-2"><span>LAN deployment mode</span><select id="lanMode"><option value="bridge" selected>Bridge LAN (multiple ports)</option><option value="direct">Direct LAN port — no bridge</option></select></label>
               <label class="mtg-field"><span>Bridge name</span><input id="bridgeName" value="bridge-LAN" required></label>
               <label class="mtg-field"><span>LAN gateway / prefix</span><input id="lanIp" value="192.168.10.1/24" required></label>
               <fieldset class="mtg-field mtg-span-2"><legend>Bridge ports</legend><div class="mtg-port-grid" id="lanPorts">
                 <label><input type="checkbox" value="ether2" checked><span>ether2</span></label><label><input type="checkbox" value="ether3" checked><span>ether3</span></label><label><input type="checkbox" value="ether4" checked><span>ether4</span></label><label><input type="checkbox" value="ether5" checked><span>ether5</span></label><label><input type="checkbox" value="sfp1"><span>sfp1</span></label>
               </div></fieldset>
+              <label id="directLanFields" class="mtg-field mtg-span-2" hidden><span>Direct LAN interface</span><select id="directLanInterface"><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
             </div>
           </section>
 
@@ -134,6 +136,7 @@
             <div class="mtg-form-grid mtg-top-gap">
               <label class="mtg-field"><span>Primary DNS</span><input id="dns1" value="1.1.1.1"></label>
               <label class="mtg-field"><span>Secondary DNS</span><input id="dns2" value="8.8.8.8"></label>
+              <label class="mtg-field mtg-span-2"><span>Connectivity test target</span><input id="diagnosticTarget" value="8.8.8.8"></label>
             </div>
           </section>
 
@@ -148,6 +151,8 @@
               <label class="mtg-switch mtg-span-2"><input id="enableVlanFiltering" type="checkbox"><span></span><b>Production bridge VLAN filtering</b></label>
               <label class="mtg-field"><span>Tagged trunk ports</span><input id="vlanTaggedPorts" value="sfp1,ether2"></label>
               <label class="mtg-field"><span>Untagged access port</span><select id="vlanAccessPort"><option>ether3</option><option>ether4</option><option>ether5</option></select></label>
+              <label class="mtg-switch mtg-span-2"><input id="enableSecondVlan" type="checkbox"><span></span><b>Add second ISP VLAN</b></label>
+              <div id="secondVlanFields" class="mtg-form-grid mtg-span-2" hidden><label class="mtg-field"><span>Second VLAN ID</span><input id="secondVlanId" type="number" min="1" max="4094" value="200"></label><label class="mtg-field"><span>Second VLAN name</span><input id="secondVlanName" value="VLAN200-CUSTOMER"></label><label class="mtg-field"><span>Second VLAN gateway</span><input id="secondVlanIp" value="192.168.200.1/24"></label><label class="mtg-field"><span>Second access port</span><select id="secondVlanAccessPort"><option>ether4</option><option>ether5</option><option>ether3</option></select></label></div>
             </div>
           </section>
 
@@ -160,6 +165,7 @@
               <label><input id="enableIcmpProtection" type="checkbox"><span><i class="bi bi-speedometer"></i><b>ICMP flood protection</b><small>Rate-limit ping traffic and drop excessive ICMP packets.</small></span></label>
               <label><input id="enablePortScanProtection" type="checkbox"><span><i class="bi bi-radar"></i><b>Port-scan protection</b><small>Detect scanners, add them to an address list and block them.</small></span></label>
               <label><input id="enableBogonProtection" type="checkbox"><span><i class="bi bi-ban"></i><b>Bogus / Bogon traffic protection</b><small>Build a bogon list and block invalid source networks from WAN.</small></span></label>
+              <label><input id="enableChainGuide" type="checkbox" checked><span><i class="bi bi-signpost-split"></i><b>Firewall chain guide</b><small>Add INPUT, FORWARD and OUTPUT explanations to the generated script.</small></span></label>
             </div>
           </section>
 
@@ -192,6 +198,8 @@
             </div>
             <div id="pppoeServerFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field"><span>PPPoE interface</span><select id="pppoeServerInterface"><option>ether2</option><option>ether3</option><option>bridge-LAN</option></select></label>
+              <label class="mtg-switch"><input id="enablePppoeVlan" type="checkbox"><span></span><b>Subscriber VLAN</b></label>
+              <div id="pppoeVlanFields" class="mtg-form-grid mtg-span-2" hidden><label class="mtg-field"><span>PPPoE VLAN ID</span><input id="pppoeVlanId" type="number" min="1" max="4094" value="500"></label><label class="mtg-field"><span>VLAN parent port</span><select id="pppoeVlanParent"><option>ether2</option><option>ether3</option><option>sfp1</option></select></label></div>
               <label class="mtg-field"><span>Service name</span><input id="pppoeServiceName" value="HASAN-ISP"></label>
               <label class="mtg-field"><span>Local address</span><input id="pppoeLocal" value="10.10.0.1"></label>
               <label class="mtg-field"><span>Client pool</span><input id="pppoePool" value="10.10.0.10-10.10.0.254"></label>
@@ -209,6 +217,7 @@
               <label class="mtg-field"><span>Idle timeout</span><select id="hotspotIdleTimeout"><option>5m</option><option selected>10m</option><option>30m</option><option>1h</option></select></label>
               <label class="mtg-field"><span>Client username</span><input id="hotspotClientUser" value="client-01"></label>
               <label class="mtg-field"><span>Client password</span><input id="hotspotClientPass" type="password" autocomplete="new-password"></label>
+              <label class="mtg-switch mtg-span-2"><input id="hotspotWifiRedirect" type="checkbox" checked><span></span><b>Bind Hotspot to Wi‑Fi SSID redirect</b></label>
             </div>
             <div id="failoverFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field mtg-span-2"><span>Failover scenario (Topic 8.6–8.11)</span><select id="failoverScenario"><option value="pppoe_pppoe">Scenario 1 — PPPoE + PPPoE</option><option value="pppoe_dhcp">Scenario 2 — PPPoE + DHCP</option><option value="pppoe_static">Scenario 3 — PPPoE + Static</option><option value="pppoe_private">Scenario 4 — PPPoE + Private</option><option value="static_dhcp">Scenario 5 — Static + Dynamic (DHCP)</option><option value="static_private">Scenario 6 — Static + Private</option></select></label>
