@@ -13,9 +13,9 @@ function selectedPorts(){return [...document.querySelectorAll('#lanPorts input:c
 function setVisible(id,on){$(id).hidden=!on}
 function syncConditional(){
  const w=wanType();setVisible('staticFields',w==='static');setVisible('pppoeFields',w==='pppoe');
- setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('queueFields',$('enableQueue').checked);
+ setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('directLanFields',$('lanMode').value==='direct');setVisible('secondVlanFields',$('enableVlan').checked&&$('enableSecondVlan').checked);setVisible('queueFields',$('enableQueue').checked);
  setVisible('burstFields',$('enableQueue').checked&&$('enableBurst').checked);setVisible('wifiFields',$('enableWifi').checked);
- setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);
+ setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);
 }
 function validate(panelIndex=current){
  const errors=[];document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));
@@ -25,14 +25,15 @@ function validate(panelIndex=current){
   if(wanType()==='static'){if(!cidr.test(clean($('wanIp').value)))add('wanIp','Enter WAN IP in CIDR format.');if(!ip.test(clean($('gateway').value)))add('gateway','Enter a valid WAN gateway.')}
   if(wanType()==='pppoe'){if(!clean($('pppoeUser').value))add('pppoeUser','PPPoE username is required.');if(!clean($('pppoePass').value))add('pppoePass','PPPoE password is required.')}
  }
- if(panelIndex>=2||panelIndex===7){if(!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if(!selectedPorts().length)errors.push('Select at least one LAN bridge port.');if(selectedPorts().includes($('wanInterface').value))errors.push('WAN interface cannot also be a LAN bridge port.')}
+ if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('WAN interface cannot also be used as LAN.')}
  if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
- if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.')}
+ if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.');if($('enableSecondVlan').checked){const second=+$('secondVlanId').value;if(second<1||second>4094||second===id)add('secondVlanId','Second VLAN ID must be unique and between 1–4094.');if(!cidr.test(clean($('secondVlanIp').value)))add('secondVlanIp','Enter second VLAN gateway in CIDR format.');}}
  if((panelIndex>=6||panelIndex===7)&&$('enableQueue').checked){
   if(!cidr.test(clean($('queueTarget').value)))add('queueTarget','Queue target must use CIDR format.');
   if($('enableBurst').checked&&(!clean($('burstLimit').value)||!clean($('burstThreshold').value)||!clean($('burstTime').value)))errors.push('Complete all burst settings.');
  }
+ if((panelIndex>=6||panelIndex===7)&&$('enablePppoeServer').checked&&$('enablePppoeVlan').checked){const pv=+$('pppoeVlanId').value;if(pv<1||pv>4094)add('pppoeVlanId','PPPoE VLAN ID must be 1–4094.');}
  if((panelIndex>=6||panelIndex===7)&&$('enableWifi').checked){if(!clean($('wifiSsid').value))add('wifiSsid','Wi-Fi SSID is required.');if(clean($('wifiPassword').value).length<8)add('wifiPassword','Wi-Fi password must be at least 8 characters.');}
  if((panelIndex>=6||panelIndex===7)&&$('enableFailover').checked&&$('enableNetwatch').checked&&!ip.test(clean($('netwatchHost').value)))add('netwatchHost','Enter a valid Netwatch host IP.');
  if(panelIndex>=6||panelIndex===7){
@@ -48,7 +49,7 @@ function networkFromCidr(v){return clean(v).split('/')[0]}
 function poolRangeValid(v){const p=clean(v).split('-');return p.length===2&&ip.test(p[0])&&ip.test(p[1])}
 function gatewayAddress(v){return networkFromCidr(v)}
 function buildScript(){
- const lines=[];const wan=$('wanInterface').value;const bridge=clean($('bridgeName').value);const w=wanType();
+ const lines=[];const wan=$('wanInterface').value;const bridge=clean($('bridgeName').value);const lanInterface=$('lanMode').value==='bridge'?bridge:$('directLanInterface').value;const w=wanType();
  lines.push('# MikroTik RouterOS v'+$('routerOsVersion').value+' configuration');
  lines.push('# '+clean($('configLabel').value));
  lines.push('# Review before import. Existing configuration is not removed.');
@@ -63,10 +64,9 @@ function buildScript(){
  if(w==='static'){lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');const routeOptions=$('enableFailover').checked?' distance='+$('primaryDistance').value+' check-gateway=ping':'';lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');}
  if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes use-peer-dns=no disabled=no'+mtu+' comment="ISP PPPOE"');}
  lines.push('');
- lines.push('# ---------- BRIDGE & LAN ----------');
- lines.push('/interface bridge add name='+bridge+' protocol-mode=rstp comment="LAN BRIDGE"');
- selectedPorts().forEach(p=>lines.push('/interface bridge port add bridge='+bridge+' interface='+p+' comment="LAN PORT"'));
- lines.push('/ip address add address='+clean($('lanIp').value)+' interface='+bridge+' comment="LAN GATEWAY"');
+ lines.push('# ---------- LAN DEPLOYMENT ----------');
+ if($('lanMode').value==='bridge'){lines.push('/interface bridge add name='+bridge+' protocol-mode=rstp comment="LAN BRIDGE"');selectedPorts().forEach(p=>lines.push('/interface bridge port add bridge='+bridge+' interface='+p+' comment="LAN PORT"'));}else lines.push('# Direct-port LAN selected: no bridge will be created');
+ lines.push('/ip address add address='+clean($('lanIp').value)+' interface='+lanInterface+' comment="LAN GATEWAY"');
  lines.push('');
  lines.push('# ---------- DNS ----------');
  const dns=[clean($('dns1').value),clean($('dns2').value)].filter(Boolean).join(',');
@@ -75,7 +75,7 @@ function buildScript(){
   lines.push('');
   lines.push('# ---------- DHCP SERVER ----------');
   lines.push('/ip pool add name=pool-LAN ranges='+clean($('poolStart').value)+'-'+clean($('poolEnd').value));
-  lines.push('/ip dhcp-server add name=dhcp-LAN interface='+bridge+' address-pool=pool-LAN lease-time='+$('leaseTime').value+' disabled=no');
+  lines.push('/ip dhcp-server add name=dhcp-LAN interface='+lanInterface+' address-pool=pool-LAN lease-time='+$('leaseTime').value+' disabled=no');
   lines.push('/ip dhcp-server network add address='+clean($('dhcpNetwork').value)+' gateway='+networkFromCidr($('lanIp').value)+' dns-server='+dns);
  }
  if($('enableVlan').checked){
@@ -83,6 +83,7 @@ function buildScript(){
   const vn=clean($('vlanName').value);lines.push('/interface vlan add name='+vn+' vlan-id='+$('vlanId').value+' interface='+clean($('vlanParent').value)+' comment="TAGGED VLAN"');
   lines.push('/ip address add address='+clean($('vlanIp').value)+' interface='+vn+' comment="VLAN GATEWAY"');
   if($('enableVlanFiltering').checked){const tagged=clean($('vlanTaggedPorts').value),access=$('vlanAccessPort').value,vid=$('vlanId').value;lines.push('/interface bridge port set [find interface='+access+'] pvid='+vid+' comment="VLAN '+vid+' ACCESS"');lines.push('/interface bridge vlan add bridge='+bridge+' vlan-ids='+vid+' tagged='+bridge+','+tagged+' untagged='+access+' comment="PRODUCTION VLAN '+vid+'"');lines.push('/interface bridge set [find name='+bridge+'] vlan-filtering=yes');}
+  if($('enableSecondVlan').checked){const id2=$('secondVlanId').value,name2=clean($('secondVlanName').value),access2=$('secondVlanAccessPort').value;lines.push('/interface vlan add name='+name2+' vlan-id='+id2+' interface='+clean($('vlanParent').value)+' comment="SECOND ISP VLAN"');lines.push('/ip address add address='+clean($('secondVlanIp').value)+' interface='+name2+' comment="SECOND VLAN GATEWAY"');if($('enableVlanFiltering').checked){lines.push('/interface bridge port set [find interface='+access2+'] pvid='+id2);lines.push('/interface bridge vlan add bridge='+bridge+' vlan-ids='+id2+' tagged='+bridge+','+clean($('vlanTaggedPorts').value)+' untagged='+access2+' comment="SECOND PRODUCTION VLAN"');}}
  }
  if($('enableNat').checked){
   lines.push('');lines.push('# ---------- NAT ----------');
@@ -90,13 +91,14 @@ function buildScript(){
  }
  if($('enableFirewall').checked){
   lines.push('');lines.push('# ---------- BASELINE FIREWALL ----------');
+  if($('enableChainGuide').checked){lines.push('# INPUT = traffic addressed to the router');lines.push('# FORWARD = traffic passing through the router');lines.push('# OUTPUT = traffic created by the router');}
   lines.push('/ip firewall filter add chain=input action=accept connection-state=established,related,untracked comment="ACCEPT ESTABLISHED"');
   lines.push('/ip firewall filter add chain=input action=drop connection-state=invalid comment="DROP INVALID"');
   if($('enableIcmpProtection').checked){
    lines.push('/ip firewall filter add chain=input protocol=icmp limit=10,20:packet action=accept comment="LIMIT ICMP"');
    lines.push('/ip firewall filter add chain=input protocol=icmp action=drop comment="DROP ICMP FLOOD"');
   }else lines.push('/ip firewall filter add chain=input action=accept protocol=icmp comment="ALLOW ICMP"');
-  lines.push('/ip firewall filter add chain=input action=accept in-interface='+bridge+' comment="ALLOW LAN MANAGEMENT"');
+  lines.push('/ip firewall filter add chain=input action=accept in-interface='+lanInterface+' comment="ALLOW LAN MANAGEMENT"');
   if($('enablePortScanProtection').checked){
    lines.push('/ip firewall filter add chain=input protocol=tcp psd=21,3s,3,1 action=add-src-to-address-list address-list=port-scanners address-list-timeout=1d comment="DETECT PORT SCAN"');
    lines.push('/ip firewall filter add chain=input src-address-list=port-scanners action=drop comment="DROP PORT SCANNERS"');
@@ -133,12 +135,13 @@ function buildScript(){
   lines.push('');lines.push('# ---------- PPPOE SERVER ----------');
   lines.push('/ip pool add name=pool-PPPOE ranges='+clean($('pppoePool').value));
   const pppRate=clean($('pppoeRateLimit').value);lines.push('/ppp profile add name=profile-PPPOE local-address='+clean($('pppoeLocal').value)+' remote-address=pool-PPPOE dns-server='+dns+' only-one=yes'+(pppRate?' rate-limit='+pppRate:''));
-  lines.push('/interface pppoe-server server add interface='+clean($('pppoeServerInterface').value)+' service-name='+q($('pppoeServiceName').value)+' default-profile=profile-PPPOE one-session-per-host=yes disabled=no');
+  let pppServerIf=clean($('pppoeServerInterface').value);if($('enablePppoeVlan').checked){pppServerIf='pppoe-vlan'+$('pppoeVlanId').value;lines.push('/interface vlan add name='+pppServerIf+' vlan-id='+$('pppoeVlanId').value+' interface='+$('pppoeVlanParent').value+' comment="PPPOE SUBSCRIBER VLAN"');}
+  lines.push('/interface pppoe-server server add interface='+pppServerIf+' service-name='+q($('pppoeServiceName').value)+' default-profile=profile-PPPOE one-session-per-host=yes disabled=no');
   lines.push('/ppp secret add name='+q($('pppoeSecretUser').value)+' password='+q($('pppoeSecretPass').value)+' service=pppoe profile=profile-PPPOE');
  }
  if($('enableHotspot').checked){
   lines.push('');lines.push('# ---------- HOTSPOT ----------');
-  const hsIf=clean($('hotspotInterface').value),hsGateway=clean($('hotspotGateway').value);
+  const hsIf=$('hotspotWifiRedirect').checked&&$('enableWifi').checked?clean($('wifiBridge').value):clean($('hotspotInterface').value),hsGateway=clean($('hotspotGateway').value);
   lines.push('/ip pool add name=pool-HOTSPOT ranges='+clean($('hotspotPool').value));
   lines.push('/ip address add address='+hsGateway+' interface='+hsIf+' comment="HOTSPOT GATEWAY"');
   lines.push('/ip hotspot profile add name=hsprof-GENERATED hotspot-address='+gatewayAddress(hsGateway)+' dns-name='+q($('hotspotDnsName').value)+' html-directory=hotspot');
@@ -176,7 +179,7 @@ function buildScript(){
   lines.push('/ip service set [find name=ssh] disabled=no address='+clean($('remoteSource').value));
   lines.push('/ip service set [find name=winbox] disabled=no address='+clean($('remoteSource').value)+' port='+$('winboxPort').value);
  }
- if($('enableDiagnostics').checked){lines.push('');lines.push('# ---------- VERIFY & TROUBLESHOOT ----------');lines.push('/interface print terse');lines.push('/ip address print');lines.push('/ip route print');lines.push('/ip firewall filter print stats');if($('enablePppoeServer').checked)lines.push('/ppp active print');if($('enableHotspot').checked){lines.push('/ip hotspot active print');lines.push('/ip hotspot host print');}lines.push('/ping 8.8.8.8 count=4');lines.push('/tool traceroute 8.8.8.8');}
+ if($('enableDiagnostics').checked){lines.push('');lines.push('# ---------- VERIFY & TROUBLESHOOT ----------');lines.push('/interface print terse');lines.push('/ip address print');lines.push('/ip route print');lines.push('/ip firewall filter print stats');if($('enablePppoeServer').checked)lines.push('/ppp active print');if($('enableHotspot').checked){lines.push('/ip hotspot active print');lines.push('/ip hotspot host print');}const target=clean($('diagnosticTarget').value);lines.push('/ping '+target+' count=4');lines.push('/tool traceroute '+target);}
  lines.push('');lines.push('# ---------- END ----------');lines.push(':log info "Hasan MikroTik generated configuration applied"');
  return lines.join('\n');
 }
@@ -184,7 +187,7 @@ function renderReview(){
  if(!validate(7))return false;
  const script=buildScript();$('scriptOutput').textContent=script;$('lineCount').textContent=script.split('\n').filter(x=>x&& !x.startsWith('#')).length+' commands';renderCommandRows(script);
  $('topologyRouter').textContent=clean($('identity').value)||'Router';
- const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['Bridge ports',selectedPorts().join(', ')],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('failoverScenario').selectedOptions[0].textContent:'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
+ const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['LAN mode',$('lanMode').value==='bridge'?'Bridge / '+selectedPorts().join(', '):'Direct / '+$('directLanInterface').value],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('failoverScenario').selectedOptions[0].textContent:'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
  $('configSummary').innerHTML=values.map(v=>'<div><small>'+v[0]+'</small><b>'+v[1]+'</b></div>').join('');
  return true;
 }
@@ -227,7 +230,7 @@ document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListe
 }));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
-document.querySelectorAll('input[name="wanType"],#enableDhcp,#enableVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
+document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
 $('bridgeName').addEventListener('input',()=>{if($('vlanParent').options[0]){$('vlanParent').options[0].value=clean($('bridgeName').value);$('vlanParent').options[0].textContent=clean($('bridgeName').value)||'Bridge'}});
 $('copyScript').addEventListener('click',async function(){if(!renderReview())return;try{await navigator.clipboard.writeText($('scriptOutput').textContent);const old=this.innerHTML;this.innerHTML='<i class="bi bi-check2"></i> Copied';this.classList.add('is-success');setTimeout(()=>{this.innerHTML=old;this.classList.remove('is-success')},1600)}catch(e){alert('Copy failed. Select the script manually.')}});
 $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;const blob=new Blob([$('scriptOutput').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(clean($('identity').value)||'mikrotik-router').replace(/\s+/g,'-').toLowerCase()+'.rsc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
