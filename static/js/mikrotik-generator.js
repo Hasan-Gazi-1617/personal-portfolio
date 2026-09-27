@@ -15,7 +15,9 @@ function syncConditional(){
  const w=wanType();setVisible('staticFields',w==='static');setVisible('pppoeFields',w==='pppoe');
  setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('directLanFields',$('lanMode').value==='direct');setVisible('secondVlanFields',$('enableVlan').checked&&$('enableSecondVlan').checked);setVisible('queueFields',$('enableQueue').checked);
  setVisible('burstFields',$('enableQueue').checked&&$('enableBurst').checked);setVisible('wifiFields',$('enableWifi').checked);
- setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);
+ setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);
+ const bt=$('backupWanType').value;setVisible('backupStaticFields',$('enableFailover').checked&&bt==='static');setVisible('backupPppoeFields',$('enableFailover').checked&&bt==='pppoe');setVisible('backupDhcpFields',$('enableFailover').checked&&bt==='dhcp');
+ const rm=$('routingMode').value;setVisible('staticRoutingFields',$('enableRouting').checked&&rm==='static');setVisible('ospfRoutingFields',$('enableRouting').checked&&rm==='ospf');setVisible('bgpRoutingFields',$('enableRouting').checked&&rm==='bgp');
 }
 function validate(panelIndex=current){
  const errors=[];document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));
@@ -41,6 +43,7 @@ function validate(panelIndex=current){
   if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
   if($('enableFailover').checked){const bt=$('backupWanType').value;if(bt==='static'){if(!cidr.test(clean($('backupIp').value)))add('backupIp','Enter backup IP in CIDR format.');if(!ip.test(clean($('backupGateway').value)))add('backupGateway','Enter a valid backup gateway.');}if(bt==='pppoe'&&(!clean($('backupUser').value)||!clean($('backupPass').value)))errors.push('Backup PPPoE username and password are required.');const pd=+$('primaryDistance').value,bd=+$('backupDistance').value;if(pd<1||pd>250)add('primaryDistance','Primary distance must be 1–250.');if(bd<2||bd>250||bd<=pd)add('backupDistance','Backup distance must be greater than primary distance.');if($('backupWan').value===$('primaryWanPort').value)add('backupWan','Backup WAN must differ from primary WAN.');}
   if($('enableRemote').checked){if(!cidr.test(clean($('remoteSource').value)))add('remoteSource','Management source must use CIDR format.');const wp=+$('winboxPort').value;if(wp<1||wp>65535)add('winboxPort','Winbox port must be 1–65535.');}
+  if($('enableRouting').checked){const rm=$('routingMode').value;if(rm==='static'){if(!cidr.test(clean($('staticRouteDestination').value)))add('staticRouteDestination','Static destination must use CIDR format.');if(!ip.test(clean($('staticRouteGateway').value)))add('staticRouteGateway','Enter a valid next-hop gateway.');}if(rm==='ospf'){if(!ip.test(clean($('ospfRouterId').value)))add('ospfRouterId','Enter a valid OSPF Router ID.');if(!cidr.test(clean($('ospfNetwork').value)))add('ospfNetwork','OSPF network must use CIDR format.');}if(rm==='bgp'){if(!ip.test(clean($('bgpRouterId').value)))add('bgpRouterId','Enter a valid BGP Router ID.');if(!ip.test(clean($('bgpNeighbor').value)))add('bgpNeighbor','Enter a valid BGP neighbor IP.');if(!cidr.test(clean($('bgpNetwork').value)))add('bgpNetwork','BGP network must use CIDR format.');}}
  }
  const box=$('validationSummary');box.hidden=!errors.length;box.innerHTML=errors.length?'<i class="bi bi-exclamation-triangle"></i><div><strong>Please fix:</strong><ul><li>'+errors.join('</li><li>')+'</li></ul></div>':'';
  return !errors.length;
@@ -60,9 +63,9 @@ function buildScript(){
  lines.push('/interface ethernet set [find default-name='+wan+'] comment='+q($('wanComment').value));
  lines.push('');
  lines.push('# ---------- WAN ----------');
- if(w==='dhcp')lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes use-peer-dns=no disabled=no comment="ISP DHCP"');
+ if(w==='dhcp'){const distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/ip dhcp-client add interface='+wan+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no comment="PRIMARY ISP DHCP"');}
  if(w==='static'){lines.push('/ip address add address='+clean($('wanIp').value)+' interface='+wan+' comment="ISP STATIC"');const routeOptions=$('enableFailover').checked?' distance='+$('primaryDistance').value+' check-gateway=ping':'';lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');}
- if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes use-peer-dns=no disabled=no'+mtu+' comment="ISP PPPOE"');}
+ if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'',distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no'+mtu+' comment="PRIMARY ISP PPPOE"');}
  lines.push('');
  lines.push('# ---------- LAN DEPLOYMENT ----------');
  if($('lanMode').value==='bridge'){lines.push('/interface bridge add name='+bridge+' protocol-mode=rstp comment="LAN BRIDGE"');selectedPorts().forEach(p=>lines.push('/interface bridge port add bridge='+bridge+' interface='+p+' comment="LAN PORT"'));}else lines.push('# Direct-port LAN selected: no bridge will be created');
@@ -86,8 +89,9 @@ function buildScript(){
   if($('enableSecondVlan').checked){const id2=$('secondVlanId').value,name2=clean($('secondVlanName').value),access2=$('secondVlanAccessPort').value;lines.push('/interface vlan add name='+name2+' vlan-id='+id2+' interface='+clean($('vlanParent').value)+' comment="SECOND ISP VLAN"');lines.push('/ip address add address='+clean($('secondVlanIp').value)+' interface='+name2+' comment="SECOND VLAN GATEWAY"');if($('enableVlanFiltering').checked){lines.push('/interface bridge port set [find interface='+access2+'] pvid='+id2);lines.push('/interface bridge vlan add bridge='+bridge+' vlan-ids='+id2+' tagged='+bridge+','+clean($('vlanTaggedPorts').value)+' untagged='+access2+' comment="SECOND PRODUCTION VLAN"');}}
  }
  if($('enableNat').checked){
-  lines.push('');lines.push('# ---------- NAT ----------');
-  const out=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall nat add chain=srcnat out-interface='+out+' action=masquerade comment="LAN TO INTERNET"');
+  lines.push('');lines.push('# ---------- NAT FOR ALL ACTIVE WANS ----------');
+  const out=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall nat add chain=srcnat out-interface='+out+' action=masquerade comment="PRIMARY WAN NAT"');
+  if($('enableFailover').checked){const backupOut=$('backupWanType').value==='pppoe'?'pppoe-backup':$('backupWan').value;lines.push('/ip firewall nat add chain=srcnat out-interface='+backupOut+' action=masquerade comment="BACKUP WAN NAT"');}
  }
  if($('enableFirewall').checked){
   lines.push('');lines.push('# ---------- BASELINE FIREWALL ----------');
@@ -161,6 +165,14 @@ function buildScript(){
   if(backupType==='pppoe')lines.push('/interface pppoe-client add name=pppoe-backup interface='+backupIf+' user='+q($('backupUser').value)+' password='+q($('backupPass').value)+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no disabled=no comment="BACKUP PPPOE WAN"');
   if($('enableNetwatch').checked)lines.push('/tool netwatch add host='+clean($('netwatchHost').value)+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="FAILOVER MONITOR"');
  }
+ if($('enableRouting').checked){
+  lines.push('');lines.push('# ---------- ROUTING GENERATOR ----------');const mode=$('routingMode').value,version=$('routerOsVersion').value;
+  if(mode==='static')lines.push('/ip route add dst-address='+clean($('staticRouteDestination').value)+' gateway='+clean($('staticRouteGateway').value)+' distance='+$('staticRouteDistance').value+' comment="GENERATED STATIC ROUTE"');
+  if(mode==='ospf'&&version==='7'){lines.push('/routing ospf instance add name=ospf-instance router-id='+clean($('ospfRouterId').value));lines.push('/routing ospf area add name=backbone area-id=0.0.0.0 instance=ospf-instance');lines.push('/routing ospf interface-template add area=backbone networks='+clean($('ospfNetwork').value));}
+  if(mode==='ospf'&&version==='6'){lines.push('/routing ospf instance set [find default=yes] router-id='+clean($('ospfRouterId').value));lines.push('/routing ospf network add network='+clean($('ospfNetwork').value)+' area=backbone');}
+  if(mode==='bgp'&&version==='7'){lines.push('/ip firewall address-list add list=bgp-networks address='+clean($('bgpNetwork').value));lines.push('/routing bgp template add name=bgp-template as='+$('bgpLocalAs').value+' router-id='+clean($('bgpRouterId').value));lines.push('/routing bgp connection add name=bgp-peer remote.address='+clean($('bgpNeighbor').value)+' remote.as='+$('bgpRemoteAs').value+' templates=bgp-template output.network=bgp-networks');}
+  if(mode==='bgp'&&version==='6'){lines.push('/routing bgp instance set default as='+$('bgpLocalAs').value+' router-id='+clean($('bgpRouterId').value));lines.push('/routing bgp peer add name=bgp-peer remote-address='+clean($('bgpNeighbor').value)+' remote-as='+$('bgpRemoteAs').value);lines.push('/routing bgp network add network='+clean($('bgpNetwork').value));}
+ }
  if($('enableWifi').checked){
   lines.push('');lines.push('# ---------- WI-FI ACCESS POINT ----------');
   const wifiIf=clean($('wifiInterface').value),wifiBridge=clean($('wifiBridge').value),ssid=q($('wifiSsid').value),wifiPass=q($('wifiPassword').value);
@@ -187,7 +199,7 @@ function renderReview(){
  if(!validate(7))return false;
  const script=buildScript();$('scriptOutput').textContent=script;$('lineCount').textContent=script.split('\n').filter(x=>x&& !x.startsWith('#')).length+' commands';renderCommandRows(script);
  $('topologyRouter').textContent=clean($('identity').value)||'Router';
- const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['LAN mode',$('lanMode').value==='bridge'?'Bridge / '+selectedPorts().join(', '):'Direct / '+$('directLanInterface').value],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('failoverScenario').selectedOptions[0].textContent:'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
+ const values=[['RouterOS','v'+$('routerOsVersion').value],['WAN',wanType().toUpperCase()],['Uplink',$('wanInterface').value],['LAN',clean($('lanIp').value)],['LAN mode',$('lanMode').value==='bridge'?'Bridge / '+selectedPorts().join(', '):'Direct / '+$('directLanInterface').value],['DHCP',$('enableDhcp').checked?'Enabled':'Disabled'],['VLAN',$('enableVlan').checked?'VLAN '+$('vlanId').value+($('enableVlanFiltering').checked?' / Production':' / Interface'):'Disabled'],['Firewall',$('enableFirewall').checked?'Baseline'+($('enableBogonProtection').checked?' + Bogon':''):'Disabled'],['Queue',$('enableQueue').checked?$('queueMode').value+' / '+clean($('queueTarget').value):'Disabled'],['Wi-Fi',$('enableWifi').checked?clean($('wifiSsid').value):'Disabled'],['PPPoE Server',$('enablePppoeServer').checked?'Enabled':'Disabled'],['Hotspot',$('enableHotspot').checked?'Enabled':'Disabled'],['Failover',$('enableFailover').checked?$('failoverScenario').selectedOptions[0].textContent:'Disabled'],['Remote',$('enableRemote').checked?$('remoteMode').value+' / '+clean($('remoteSource').value):'Disabled'],['Routing',$('enableRouting').checked?$('routingMode').value.toUpperCase():'Disabled'],['Diagnostics',$('enableDiagnostics').checked?'Included':'Disabled']];
  $('configSummary').innerHTML=values.map(v=>'<div><small>'+v[0]+'</small><b>'+v[1]+'</b></div>').join('');
  return true;
 }
@@ -206,7 +218,7 @@ document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener
  show(index);
 }));
 function syncFailoverScenario(){
- const map={pppoe_pppoe:['pppoe','pppoe'],pppoe_dhcp:['pppoe','dhcp'],pppoe_static:['pppoe','static'],pppoe_private:['pppoe','static'],static_dhcp:['static','dhcp'],static_private:['static','static']};
+ const map={pppoe_pppoe:['pppoe','pppoe'],pppoe_dhcp:['pppoe','dhcp'],pppoe_static:['pppoe','static'],pppoe_private:['pppoe','static'],static_dhcp:['static','dhcp'],static_private:['static','static'],static_static:['static','static']};
  const pair=map[$('failoverScenario').value]||map.pppoe_pppoe;
  const radio=document.querySelector('input[name="wanType"][value="'+pair[0]+'"]');if(radio)radio.checked=true;
  $('backupWanType').value=pair[1];$('wanInterface').value=$('primaryWanPort').value;syncConditional();
@@ -230,7 +242,7 @@ document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListe
 }));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
-document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#enableRemote').forEach(x=>x.addEventListener('change',syncConditional));
+document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode').forEach(x=>x.addEventListener('change',syncConditional));
 $('bridgeName').addEventListener('input',()=>{if($('vlanParent').options[0]){$('vlanParent').options[0].value=clean($('bridgeName').value);$('vlanParent').options[0].textContent=clean($('bridgeName').value)||'Bridge'}});
 $('copyScript').addEventListener('click',async function(){if(!renderReview())return;try{await navigator.clipboard.writeText($('scriptOutput').textContent);const old=this.innerHTML;this.innerHTML='<i class="bi bi-check2"></i> Copied';this.classList.add('is-success');setTimeout(()=>{this.innerHTML=old;this.classList.remove('is-success')},1600)}catch(e){alert('Copy failed. Select the script manually.')}});
 $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;const blob=new Blob([$('scriptOutput').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(clean($('identity').value)||'mikrotik-router').replace(/\s+/g,'-').toLowerCase()+'.rsc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
