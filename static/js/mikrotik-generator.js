@@ -266,7 +266,26 @@ function buildScript(){
   lines.push('/ip service set [find name=ssh] disabled=no address='+clean($('remoteSource').value));
   lines.push('/ip service set [find name=winbox] disabled=no address='+clean($('remoteSource').value)+' port='+$('winboxPort').value);
  }
- if($('enableDiagnostics').checked){lines.push('');lines.push('# ---------- VERIFY & TROUBLESHOOT ----------');lines.push('/interface print terse');lines.push('/ip address print');lines.push('/ip route print');lines.push('/ip firewall filter print stats');if($('enablePppoeServer').checked)lines.push('/ppp active print');if($('enableHotspot').checked){lines.push('/ip hotspot active print');lines.push('/ip hotspot host print');}const target=clean($('diagnosticTarget').value);lines.push('/ping '+target+' count=4');lines.push('/tool traceroute '+target);}
+ if($('enableDiagnostics').checked){
+  lines.push('');lines.push('# ---------- VERIFY & TROUBLESHOOT ----------');
+  lines.push('/interface print terse');lines.push('/ip address print');lines.push('/ip route print');lines.push('/ip firewall filter print stats');
+  if($('enablePppoeServer').checked)lines.push('/ppp active print');
+  if($('enableHotspot').checked){lines.push('/ip hotspot active print');lines.push('/ip hotspot host print');}
+  let target=clean($('diagnosticTarget').value);
+  const staticPair=$('enableFailover').checked&&w==='static'&&$('backupWanType').value==='static';
+  if(staticPair){
+   const primaryProbe=clean($('netwatchHost').value)||'8.8.8.8';
+   const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
+   if(target===primaryProbe||target===backupProbe)target='1.1.1.1';
+   lines.push('# Primary WAN probe test (pinned to primary)');
+   lines.push('/ping '+primaryProbe+' count=4');
+   lines.push('# Backup WAN probe test (pinned to backup)');
+   lines.push('/ping '+backupProbe+' count=4');
+   lines.push('# Active default-route Internet test');
+  }
+  lines.push('/ping '+target+' count=4');
+  lines.push('/tool traceroute '+target);
+ }
  lines.push('');lines.push('# ---------- END ----------');lines.push(':log info "Hasan MikroTik generated configuration applied"');
  return lines.join('\n');
 }
