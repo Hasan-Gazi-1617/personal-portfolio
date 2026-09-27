@@ -81,7 +81,7 @@ function staticLinkErrors(addressValue,gatewayValue,label){
  if(!details||gateway===null)return result;
  if(details.prefix<31&&details.address===details.network)result.push({field:'address',message:label+' IP is the subnet network address and cannot be assigned to the router.'});
  if(details.prefix<31&&details.address===details.broadcast)result.push({field:'address',message:label+' IP is the subnet broadcast address and cannot be assigned to the router.'});
- if((gateway&details.mask)!==details.network)result.push({field:'gateway',message:label+' gateway must be inside the same subnet as the WAN IP.'});
+ if(((gateway&details.mask)>>>0)!==details.network)result.push({field:'gateway',message:label+' gateway must be inside the same subnet as the WAN IP.'});
  if(gateway===details.address)result.push({field:'gateway',message:label+' gateway cannot be the same as the router WAN IP.'});
  if(details.prefix<31&&(gateway===details.network||gateway===details.broadcast))result.push({field:'gateway',message:label+' gateway cannot be a network or broadcast address.'});
  return result;
