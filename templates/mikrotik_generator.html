@@ -250,8 +250,14 @@
               <label class="mtg-field"><span>Backup distance</span><input id="backupDistance" type="number" min="2" max="250" value="2"></label>
               <div class="mtg-advanced-divider mtg-span-2"><span>TOPIC 8.12 — SMART NETWATCH</span></div>
               <label class="mtg-switch mtg-span-2"><input id="enableNetwatch" type="checkbox" checked><span></span><b>Enable Netwatch monitoring and failover alerts</b></label>
-              <label class="mtg-field"><span>Netwatch target</span><input id="netwatchHost" value="8.8.8.8"></label>
+              <label class="mtg-field"><span>Probe mode</span><select id="probeMode"><option value="automatic" selected>Automatic — Recommended</option><option value="custom">Custom probe IPs</option></select><small>Automatic mode keeps probe IPs separate from the DNS fields.</small></label>
               <label class="mtg-field"><span>Check interval</span><select id="netwatchInterval"><option>5s</option><option selected>10s</option><option>30s</option><option>1m</option></select></label>
+              <div id="customProbeFields" class="mtg-form-grid mtg-span-2" hidden>
+                <label class="mtg-field"><span>Primary probe 1</span><input id="netwatchHost" value="208.67.222.222"></label>
+                <label class="mtg-field"><span>Primary probe 2</span><input id="primaryProbe2" value="9.9.9.9"></label>
+                <label class="mtg-field"><span>Backup probe 1</span><input id="backupProbe1" value="208.67.220.220"></label>
+                <label class="mtg-field"><span>Backup probe 2</span><input id="backupProbe2" value="149.112.112.112"></label>
+              </div>
             </div>
             <div id="routingFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field mtg-span-2"><span>Routing protocol</span><select id="routingMode"><option value="static">Static Route</option><option value="ospf">OSPF</option><option value="bgp">BGP</option></select></label>
