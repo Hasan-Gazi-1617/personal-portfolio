@@ -86,7 +86,10 @@ stack:{python:`class Stack:
     def peek(self): return self.data[-1] if self.data else None`,cpp:`class Stack{vector<int> a;public:void push(int x){a.push_back(x);}int pop(){if(a.empty())throw runtime_error("empty");int x=a.back();a.pop_back();return x;}int top()const{return a.back();}};`,java:`class IntStack { private final ArrayDeque<Integer> a=new ArrayDeque<>(); void push(int x){a.push(x);} int pop(){return a.pop();} int peek(){return a.peek();} }`,ruby:`class Stack
   def initialize = @data = []
   def push(value) = @data.push(value)
-  def pop = raise("empty stack") if @data.empty? then @data.pop end
+  def pop
+    raise "empty stack" if @data.empty?
+    @data.pop
+  end
   def peek = @data.last
 end`},
 queue:{python:`from collections import deque
