@@ -54,8 +54,12 @@ ready(function(){
     var preset=title.indexOf('MikroTik Configuration')>-1
       ? ['bi-router','bi-terminal','Live tool']
       : title.indexOf('Django Portfolio')>-1
-        ? ['bi-code-slash','bi-window','Live portfolio']
-        : (projectVisuals[index]||projectVisuals[0]);
+        ? ['bi-code-slash','bi-window-stack','Live portfolio']
+        : title.indexOf('Algorithm Visual Studio')>-1
+          ? ['bi-code-slash','bi-diagram-3','Interactive visualizer']
+          : title.indexOf('MikroLab Studio')>-1
+            ? ['bi-router','bi-bezier2','Planned simulator']
+            : (projectVisuals[index]||projectVisuals[0]);
     var iconA=preset[0],iconB=preset[1];
     var visual=el('div','project-visual','<i class="bi '+iconA+'"></i><span class="project-flow-line"></span><i class="bi '+iconB+'"></i>');
     var projectIcon=card.querySelector('.project-icon');

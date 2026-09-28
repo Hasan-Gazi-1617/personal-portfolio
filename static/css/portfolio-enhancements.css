@@ -350,6 +350,42 @@ html:not([data-theme="light"]) section [class*="topology-background"]{opacity:.4
   main small{font-size:12px}
 }
 
+/* ===== CLEAR FEATURED PROJECT INTERACTIONS ===== */
+#projects .project-card-link{cursor:pointer}
+#projects .featured-tool-card .project-visual{color:#0891b2}
+#projects .featured-tool-card .project-visual i{font-size:16px}
+#projects .project-status{font-size:10.5px!important;font-weight:800;letter-spacing:.065em;white-space:nowrap}
+#projects .project-action{
+  min-height:34px;
+  padding:9px 12px;
+  border:1px solid rgba(45,212,191,.38);
+  border-radius:9px;
+  background:rgba(45,212,191,.1);
+  color:#5eead4;
+  font-size:11.5px!important;
+  font-weight:800;
+  letter-spacing:.02em;
+  cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+}
+#projects .project-action i{font-size:14px;transition:transform .2s ease}
+#projects .project-card-link:hover .project-action,
+#projects .project-action:hover{background:#14b8a6;border-color:#2dd4bf;color:#062a25!important;transform:translateY(-1px)}
+#projects .project-card-link:hover .project-action i,
+#projects .project-action:hover i{transform:translateX(2px)}
+#projects .project-action-disabled{cursor:not-allowed;opacity:.72;background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.24);color:#94a3b8}
+#projects .project-action-disabled:hover{transform:none!important;background:rgba(148,163,184,.08)!important;color:#94a3b8!important}
+html[data-theme="light"] #projects .featured-tool-card .project-visual{color:#087f6a}
+html[data-theme="light"] #projects .project-status{color:#12643c}
+html[data-theme="light"] #projects .project-action{background:#e8f8f0;border-color:#72cfa8;color:#075f4c!important}
+html[data-theme="light"] #projects .project-card-link:hover .project-action,
+html[data-theme="light"] #projects .project-action:hover{background:#168b69;border-color:#168b69;color:#fff!important}
+html[data-theme="light"] #projects .project-action-disabled{background:#f1f5f3;border-color:#cbd9d2;color:#60766b!important}
+@media(max-width:480px){
+  #projects .project-meta{gap:10px}
+  #projects .project-action{width:100%;justify-content:center}
+}
+
 
 /* =====================================================
    SIGNATURE THEMES
