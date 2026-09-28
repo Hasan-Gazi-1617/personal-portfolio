@@ -119,7 +119,13 @@ function buildScript(){
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('gateway').value)+routeOptions+' comment="DEFAULT ROUTE"');
    }
   }
- if(w==='pppoe'){const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'',distance=$('enableFailover').checked?' default-route-distance='+$('primaryDistance').value:'';lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route=yes'+distance+' use-peer-dns=no disabled=no'+mtu+' comment='+q($('wanComment').value));}
+ if(w==='pppoe'){
+  const mtu=$('pppoeMru').checked?' max-mtu=1480 max-mru=1480':'';
+  const recursivePppoeFailover=$('enableFailover').checked&&$('backupWanType').value==='static';
+  const addDefault=recursivePppoeFailover?'no':'yes';
+  const distance=$('enableFailover').checked&&!recursivePppoeFailover?' default-route-distance='+$('primaryDistance').value:'';
+  lines.push('/interface pppoe-client add name=pppoe-out1 interface='+wan+' user='+q($('pppoeUser').value)+' password='+q($('pppoePass').value)+' add-default-route='+addDefault+distance+' use-peer-dns=no disabled=no'+mtu+' comment='+q($('wanComment').value));
+ }
  lines.push('');
  lines.push('# ---------- LAN DEPLOYMENT ----------');
  if($('lanMode').value==='bridge'){lines.push('/interface bridge add name='+bridge+' protocol-mode=rstp comment="LAN BRIDGE"');selectedPorts().forEach(p=>lines.push('/interface bridge port add bridge='+bridge+' interface='+p+' comment="LAN PORT"'));}else lines.push('# Direct-port LAN selected: no bridge will be created');
@@ -260,6 +266,14 @@ function buildScript(){
     lines.push('/ip route add dst-address='+backupProbe+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP INTERNET PROBE"');
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE DEFAULT"');
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE DEFAULT"');
+   }else if(w==='pppoe'){
+    const primaryProbe=clean($('netwatchHost').value)||'8.8.8.8';
+    const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
+    lines.push('# Internet-aware PPPoE + Static failover using ISP-pinned recursive probes');
+    lines.push('/ip route add dst-address='+primaryProbe+'/32 gateway=pppoe-out1 scope=10 comment="PRIMARY PPPOE INTERNET PROBE"');
+    lines.push('/ip route add dst-address='+backupProbe+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP STATIC INTERNET PROBE"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY PPPOE RECURSIVE DEFAULT"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP STATIC RECURSIVE DEFAULT"');
    }else{
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');
    }
@@ -289,7 +303,7 @@ function buildScript(){
   }
   if($('enableNetwatch').checked){
    const monitorHost=clean($('netwatchHost').value);
-   if(w==='static'&&backupType==='static')lines.push('# Netwatch logs status; recursive check-gateway routes perform Internet-aware failover.');
+   if((w==='static'||w==='pppoe')&&backupType==='static')lines.push('# Netwatch logs primary ISP status; recursive check-gateway routes perform upstream-aware automatic failover and recovery.');
    else if(w==='pppoe')lines.push('# Netwatch logs status only; PPPoE session failure activates the distance-'+$('backupDistance').value+' backup route.');
    else lines.push('# Netwatch provides status logs only; route availability follows the configured WAN clients.');
    lines.push('/tool netwatch add host='+monitorHost+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="WAN STATUS MONITOR"');
