@@ -17,7 +17,7 @@ function syncConditional(){
  setVisible('burstFields',$('enableQueue').checked&&$('enableBurst').checked);setVisible('wifiFields',$('enableWifi').checked);
  setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);setVisible('managementServiceFields',$('disableServices').checked);setVisible('publicManagementFields',$('disableServices').checked&&$('managementMode').value==='public');
  const bt=$('backupWanType').value;setVisible('backupStaticFields',$('enableFailover').checked&&bt==='static');setVisible('backupPppoeFields',$('enableFailover').checked&&bt==='pppoe');setVisible('backupDhcpFields',$('enableFailover').checked&&bt==='dhcp');
- const rm=$('routingMode').value;setVisible('staticRoutingFields',$('enableRouting').checked&&rm==='static');setVisible('ospfRoutingFields',$('enableRouting').checked&&rm==='ospf');setVisible('bgpRoutingFields',$('enableRouting').checked&&rm==='bgp');
+ const rm=$('routingMode').value;setVisible('staticRoutingFields',$('enableRouting').checked&&rm==='static');setVisible('ospfRoutingFields',$('enableRouting').checked&&rm==='ospf');setVisible('bgpRoutingFields',$('enableRouting').checked&&rm==='bgp');setVisible('customProbeFields',$('enableFailover').checked&&$('enableNetwatch').checked&&$('probeMode').value==='custom');
 }
 function validate(panelIndex=current){
  const errors=[];document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));
@@ -54,7 +54,14 @@ function validate(panelIndex=current){
  }
  if((panelIndex>=6||panelIndex===7)&&$('enablePppoeServer').checked&&$('enablePppoeVlan').checked){const pv=+$('pppoeVlanId').value;if(pv<1||pv>4094)add('pppoeVlanId','PPPoE VLAN ID must be 1–4094.');}
  if((panelIndex>=6||panelIndex===7)&&$('enableWifi').checked){if(!clean($('wifiSsid').value))add('wifiSsid','Wi-Fi SSID is required.');if(clean($('wifiPassword').value).length<8)add('wifiPassword','Wi-Fi password must be at least 8 characters.');}
- if((panelIndex>=6||panelIndex===7)&&$('enableFailover').checked&&$('enableNetwatch').checked&&!ip.test(clean($('netwatchHost').value)))add('netwatchHost','Enter a valid Netwatch host IP.');
+ if((panelIndex>=6||panelIndex===7)&&$('enableFailover').checked&&$('enableNetwatch').checked){
+  const probes=getFailoverProbes();
+  const probeFields=['netwatchHost','primaryProbe2','backupProbe1','backupProbe2'];
+  if($('probeMode').value==='custom')probeFields.forEach((field,index)=>{if(!ip.test(probes[index]))add(field,'Enter a valid probe IP.');});
+  if(new Set(probes).size!==probes.length)errors.push('All four failover probe IPs must be unique.');
+  const dnsServers=[clean($('dns1').value),clean($('dns2').value)].filter(Boolean);
+  probes.forEach((probe,index)=>{if(dnsServers.includes(probe))add($('probeMode').value==='custom'?probeFields[index]:'probeMode','Failover probes must be different from DNS server IPs.');});
+ }
  if(panelIndex>=6||panelIndex===7){
   if($('enablePppoeServer').checked){if(!ip.test(clean($('pppoeLocal').value)))add('pppoeLocal','Enter a valid PPPoE local address.');if(!poolRangeValid($('pppoePool').value))add('pppoePool','PPPoE pool must be startIP-endIP.');if(!clean($('pppoeSecretUser').value))add('pppoeSecretUser','PPPoE test username is required.');if(!clean($('pppoeSecretPass').value))add('pppoeSecretPass','PPPoE test password is required.')}
   if($('enableHotspot').checked){if(!cidr.test(clean($('hotspotGateway').value)))add('hotspotGateway','Hotspot gateway must use CIDR format.');if(!poolRangeValid($('hotspotPool').value))add('hotspotPool','Hotspot pool must be startIP-endIP.');if(!clean($('hotspotDnsName').value))add('hotspotDnsName','Hotspot DNS name is required.');if(!clean($('hotspotUser').value))add('hotspotUser','Hotspot admin username is required.');if(!clean($('hotspotPass').value))add('hotspotPass','Hotspot admin password is required.')}
@@ -97,6 +104,15 @@ function staticLinkErrors(addressValue,gatewayValue,label){
  if(gateway===details.address)result.push({field:'gateway',message:label+' gateway cannot be the same as the router WAN IP.'});
  if(details.prefix<31&&(gateway===details.network||gateway===details.broadcast))result.push({field:'gateway',message:label+' gateway cannot be a network or broadcast address.'});
  return result;
+}
+function getFailoverProbes(){
+ if($('probeMode').value==='custom')return [
+  clean($('netwatchHost').value),
+  clean($('primaryProbe2').value),
+  clean($('backupProbe1').value),
+  clean($('backupProbe2').value)
+ ];
+ return ['208.67.222.222','9.9.9.9','208.67.220.220','149.112.112.112'];
 }
 function buildScript(){
  const lines=[];const wan=$('wanInterface').value;const bridge=clean($('bridgeName').value);const lanInterface=$('lanMode').value==='bridge'?bridge:$('directLanInterface').value;const w=wanType();
@@ -259,20 +275,14 @@ function buildScript(){
   if(backupType==='static'){
    lines.push('/ip address add address='+clean($('backupIp').value)+' interface='+backupIf+' comment='+q($('backupIspComment').value));
    if(w==='static'){
-    const primaryProbe=clean($('netwatchHost').value)||'1.1.1.1';
-    const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
+    const [primaryProbe,,backupProbe]=getFailoverProbes();
     lines.push('# Recursive routes test Internet reachability beyond each ISP gateway');
     lines.push('/ip route add dst-address='+primaryProbe+'/32 gateway='+clean($('gateway').value)+' scope=10 comment="PRIMARY INTERNET PROBE"');
     lines.push('/ip route add dst-address='+backupProbe+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP INTERNET PROBE"');
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE DEFAULT"');
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE DEFAULT"');
    }else if(w==='pppoe'){
-    const primaryProbe1=clean($('netwatchHost').value)||'8.8.8.8';
-    const usedProbes=[primaryProbe1];
-    const takeProbe=candidates=>{const selected=candidates.find(candidate=>!usedProbes.includes(candidate));usedProbes.push(selected);return selected};
-    const primaryProbe2=takeProbe(['9.9.9.9','208.67.222.222']);
-    const backupProbe1=takeProbe(['1.0.0.1','8.8.4.4']);
-    const backupProbe2=takeProbe(['149.112.112.112','208.67.220.220']);
+    const [primaryProbe1,primaryProbe2,backupProbe1,backupProbe2]=getFailoverProbes();
     lines.push('# Resilient PPPoE + Static failover: two ISP-pinned probes per WAN');
     lines.push('# One failed probe does not switch the ISP; both primary probes must fail before backup takes over');
     lines.push('/ip route add dst-address='+primaryProbe1+'/32 gateway=pppoe-out1 scope=10 comment="PRIMARY PROBE 1 VIA PPPOE"');
@@ -313,14 +323,10 @@ function buildScript(){
   if($('enableNetwatch').checked){
    const monitorHost=clean($('netwatchHost').value);
    if(w==='pppoe'&&backupType==='static'){
-    const usedMonitors=[monitorHost];
-    const takeMonitor=candidates=>{const selected=candidates.find(candidate=>!usedMonitors.includes(candidate));usedMonitors.push(selected);return selected};
-    const primaryMonitor2=takeMonitor(['9.9.9.9','208.67.222.222']);
-    const backupMonitor1=takeMonitor(['1.0.0.1','8.8.4.4']);
-    const backupMonitor2=takeMonitor(['149.112.112.112','208.67.220.220']);
+    const [primaryMonitor1,primaryMonitor2,backupMonitor1,backupMonitor2]=getFailoverProbes();
     const interval=$('netwatchInterval').value;
     lines.push('# Netwatch logs every pinned probe; recursive routes perform automatic failover and recovery.');
-    lines.push('/tool netwatch add host='+monitorHost+' interval='+interval+' timeout=3s up-script=":log info PRIMARY-PROBE-1-UP" down-script=":log warning PRIMARY-PROBE-1-DOWN" comment="PRIMARY WAN PROBE 1"');
+    lines.push('/tool netwatch add host='+primaryMonitor1+' interval='+interval+' timeout=3s up-script=":log info PRIMARY-PROBE-1-UP" down-script=":log warning PRIMARY-PROBE-1-DOWN" comment="PRIMARY WAN PROBE 1"');
     lines.push('/tool netwatch add host='+primaryMonitor2+' interval='+interval+' timeout=3s up-script=":log info PRIMARY-PROBE-2-UP" down-script=":log warning PRIMARY-PROBE-2-DOWN" comment="PRIMARY WAN PROBE 2"');
     lines.push('/tool netwatch add host='+backupMonitor1+' interval='+interval+' timeout=3s up-script=":log info BACKUP-PROBE-1-UP" down-script=":log warning BACKUP-PROBE-1-DOWN" comment="BACKUP WAN PROBE 1"');
     lines.push('/tool netwatch add host='+backupMonitor2+' interval='+interval+' timeout=3s up-script=":log info BACKUP-PROBE-2-UP" down-script=":log warning BACKUP-PROBE-2-DOWN" comment="BACKUP WAN PROBE 2"');
@@ -366,8 +372,7 @@ function buildScript(){
   let target=clean($('diagnosticTarget').value);
   const staticPair=$('enableFailover').checked&&w==='static'&&$('backupWanType').value==='static';
   if(staticPair){
-   const primaryProbe=clean($('netwatchHost').value)||'8.8.8.8';
-   const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
+   const [primaryProbe,,backupProbe]=getFailoverProbes();
    if(target===primaryProbe||target===backupProbe)target='1.1.1.1';
    lines.push('# Primary WAN probe test (pinned to primary)');
    lines.push('/ping '+primaryProbe+' count=4');
@@ -452,7 +457,7 @@ document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListe
 }));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
-document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode,#disableServices').forEach(x=>x.addEventListener('change',syncConditional));
+document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode,#disableServices,#enableNetwatch,#probeMode').forEach(x=>x.addEventListener('change',syncConditional));
 function syncManagementMode(){
  const publicMode=$('managementMode').value==='public';
  if(publicMode&&$('managementSource').value==='192.168.10.0/24')$('managementSource').value='0.0.0.0/0';
