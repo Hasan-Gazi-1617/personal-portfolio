@@ -16,16 +16,22 @@
 
   <section class="avs-workspace">
     <aside class="avs-sidebar">
+      <div class="avs-sidebar-head"><strong>Topic Library</strong><button id="avsSidebarClose" type="button" aria-label="Close topics"><i class="bi bi-x-lg"></i></button></div>
       <div class="avs-search"><i class="bi bi-search"></i><input id="avsSearch" placeholder="Search topics..."></div>
       <div class="avs-tabs"><button class="active" data-kind="all">All</button><button data-kind="structure">Data Structures</button><button data-kind="algorithm">Algorithms</button></div>
+      <div class="avs-progress-summary"><span><b id="avsCompletedCount">0</b>/20 completed</span><div><i id="avsProgressFill"></i></div></div>
       <div id="avsTopicList" class="avs-topic-list"></div>
     </aside>
 
     <section class="avs-main">
       <div class="avs-toolbar">
-        <div><span class="avs-eyebrow" id="avsCategory">ALGORITHM</span><h2 id="avsTitle">Bubble Sort</h2></div>
+        <button id="avsSidebarOpen" class="avs-mobile-topics" type="button"><i class="bi bi-list"></i> Topics</button>
+        <div class="avs-title-block"><span class="avs-eyebrow" id="avsCategory">ALGORITHM</span><h2 id="avsTitle">Bubble Sort</h2></div>
+        <button id="avsBookmark" class="avs-bookmark" type="button" title="Bookmark topic"><i class="bi bi-bookmark"></i></button>
         <label>Language<select id="avsLanguage"><option value="cpp">C++</option><option value="python" selected>Python</option><option value="java">Java</option><option value="ruby">Ruby</option></select></label>
       </div>
+
+      <div class="avs-mobile-views"><button class="active" data-view="visual">Visualizer</button><button data-view="code">Implementation</button></div>
 
       <div class="avs-metrics">
         <div><small>Best</small><strong id="avsBest">O(n)</strong></div>
@@ -39,7 +45,9 @@
           <div class="avs-card-head"><div><span>LIVE VISUALIZER</span><p id="avsDescription"></p></div><span id="avsStepCount">Step 1 / 1</span></div>
           <div class="avs-input-wrap">
             <div class="avs-input-row"><input id="avsInput" value="8, 3, 5, 1, 9, 2" aria-label="Visualization values"><input id="avsAuxInput" class="avs-aux-input" type="number" hidden><button id="avsApply">Apply</button><button id="avsRandom">Random</button></div>
+            <div id="avsGraphInputWrap" class="avs-graph-input" hidden><textarea id="avsGraphInput" rows="3" aria-label="Graph edges" placeholder="A-B:4, A-C:1, C-B:2, B-D:1"></textarea><small>Format: FROM-TO:WEIGHT. Weight is optional for BFS/DFS.</small></div>
             <small id="avsInputHint">Enter comma or space separated integers.</small>
+            <div id="avsInputError" class="avs-input-error" role="alert" hidden></div>
           </div>
           <div id="avsCanvas" class="avs-canvas"></div>
           <div id="avsNarration" class="avs-narration"><i class="bi bi-lightbulb"></i><span>Ready.</span></div>
@@ -48,6 +56,7 @@
             <button id="avsPrev" title="Previous"><i class="bi bi-chevron-left"></i></button>
             <button id="avsPlay" class="primary"><i class="bi bi-play-fill"></i><span>Play</span></button>
             <button id="avsNext" title="Next"><i class="bi bi-chevron-right"></i></button>
+            <input id="avsTimeline" class="avs-timeline" type="range" min="0" max="0" value="0" aria-label="Animation timeline">
             <label>Speed<input id="avsSpeed" type="range" min="200" max="1400" step="100" value="700"></label>
           </div>
         </article>
@@ -60,6 +69,7 @@
             <div><span>PROGRAM OUTPUT</span><button id="avsClearOutput" type="button">Clear</button></div>
             <pre id="avsOutput">Click “Run Code” to see the result.</pre>
           </div>
+          <div class="avs-sample-panel"><div><span>SAMPLE INPUT</span><code id="avsSampleInput"></code></div><div><span>EXPECTED OUTPUT</span><code id="avsExpectedOutput"></code></div></div>
           <div class="avs-notes"><h3>How it works</h3><ol id="avsExplanation"></ol></div>
         </article>
       </div>
