@@ -45,13 +45,13 @@
 @media(max-width:650px){.avs-toolbar{display:grid;grid-template-columns:auto 1fr auto}.avs-toolbar label{grid-column:1/-1}.avs-title-block h2{font-size:1.55rem}.avs-bookmark{align-self:start}.avs-controls{flex-wrap:wrap}.avs-timeline{order:5;flex-basis:100%}.avs-sample-panel{grid-template-columns:1fr}.avs-sample-panel>div+div{border-left:0;border-top:1px solid var(--avs-line)}.avs-code-card pre.avs-code-view{font-size:11px;max-height:480px}.avs-code-line{padding:0 8px}.avs-code-line::before{width:24px;margin-right:8px}}
 
 /* High-contrast light theme */
-[data-theme="light"] .avs-hero-badge{background:#ffffff;border-color:#a9cbbd;box-shadow:0 18px 42px rgba(18,55,43,.12)}
-[data-theme="light"] .avs-hero-badge b{color:#102f25}[data-theme="light"] .avs-hero-badge span{color:#3f6658}
+html[data-theme="light"] .avs-shell .avs-hero-badge{background:#ffffff!important;border-color:#a9cbbd;box-shadow:0 18px 42px rgba(18,55,43,.12)}
+html[data-theme="light"] .avs-shell .avs-hero-badge b{color:#102f25!important}html[data-theme="light"] .avs-shell .avs-hero-badge span{color:#3f6658!important}
 [data-theme="light"] .avs-kicker,[data-theme="light"] .avs-eyebrow{color:#007f68}
 [data-theme="light"] .avs-line-explain{background:#e6f7f1}[data-theme="light"] .avs-line-explain p{color:#294f42}
 [data-theme="light"] .avs-output-panel{background:#eaf7f1!important;border-color:#afd2c3}
 [data-theme="light"] .avs-output-panel>div{background:#def2e9;border-color:#afd2c3}
 [data-theme="light"] .avs-output-panel span{color:#08775f}[data-theme="light"] .avs-output-panel button{color:#244d3f;font-weight:750}
-[data-theme="light"] .avs-output-panel pre{background:#f5fcf8!important;color:#082f23!important;font-weight:650;text-shadow:none!important}
+html[data-theme="light"] .avs-code-card .avs-output-panel pre{background:#f5fcf8!important;color:#082f23!important;font-weight:650;text-shadow:none!important}
 [data-theme="light"] .avs-sample-panel{background:#f7fcf9}[data-theme="light"] .avs-sample-panel span{color:#315e4e}[data-theme="light"] .avs-sample-panel code{color:#102f25;font-weight:650}
 [data-theme="light"] .avs-narration,[data-theme="light"] .avs-input-wrap>small,[data-theme="light"] .avs-card-head p{color:#3d6456}
