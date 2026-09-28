@@ -265,9 +265,33 @@ function buildScript(){
    }
   }
   if(backupType==='pppoe')lines.push('/interface pppoe-client add name=pppoe-backup interface='+backupIf+' user='+q($('backupUser').value)+' password='+q($('backupPass').value)+' add-default-route=yes default-route-distance='+$('backupDistance').value+' use-peer-dns=no disabled=no comment='+q($('backupIspComment').value));
+  if($('disableServices').checked&&$('managementMode').value==='public'){
+   const managementIf=$('managementWanInterface').value;
+   let managementGateway='';
+   if(w==='static'&&managementIf===wan)managementGateway=clean($('gateway').value);
+   if(backupType==='static'&&managementIf===backupIf)managementGateway=clean($('backupGateway').value);
+   if(managementGateway){
+    const publicIp=clean($('managementPublicIp').value);
+    lines.push('');
+    lines.push('# ---------- PUBLIC MANAGEMENT RETURN PATH ----------');
+    lines.push('# Keep replies to public management sessions on the same ISP link');
+    if($('routerOsVersion').value==='7'){
+     lines.push('/routing table add fib name=via-PUBLIC-MGMT');
+     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+managementGateway+'@main routing-table=via-PUBLIC-MGMT comment="PUBLIC MANAGEMENT RETURN ROUTE"');
+     lines.push('/routing rule add src-address='+publicIp+'/32 action=lookup-only-in-table table=via-PUBLIC-MGMT comment="RETURN MANAGEMENT VIA PUBLIC WAN"');
+    }else{
+     lines.push('/ip firewall mangle add chain=output src-address='+publicIp+' action=mark-routing new-routing-mark=via-PUBLIC-MGMT passthrough=no comment="MARK PUBLIC MANAGEMENT REPLIES"');
+     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+managementGateway+' routing-mark=via-PUBLIC-MGMT comment="PUBLIC MANAGEMENT RETURN ROUTE"');
+    }
+   }else{
+    lines.push('# WARNING: Public management return-path rule was not generated because the selected WAN has no static gateway.');
+   }
+  }
   if($('enableNetwatch').checked){
    const monitorHost=clean($('netwatchHost').value);
-   lines.push('# Netwatch provides status logs; route failover is handled by check-gateway');
+   if(w==='static'&&backupType==='static')lines.push('# Netwatch logs status; recursive check-gateway routes perform Internet-aware failover.');
+   else if(w==='pppoe')lines.push('# Netwatch logs status only; PPPoE session failure activates the distance-'+$('backupDistance').value+' backup route.');
+   else lines.push('# Netwatch provides status logs only; route availability follows the configured WAN clients.');
    lines.push('/tool netwatch add host='+monitorHost+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="WAN STATUS MONITOR"');
   }
  }
