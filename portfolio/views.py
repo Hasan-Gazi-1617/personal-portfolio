@@ -15,6 +15,11 @@ def mikrotik_generator(request):
     return render(request, "mikrotik_generator.html")
 
 
+def algorithm_studio(request):
+    """Interactive data structure and algorithm learning studio."""
+    return render(request, "algorithm_studio.html")
+
+
 @require_http_methods(["GET", "POST"])
 def owner_login(request):
     if request.session.get("owner_access"):
