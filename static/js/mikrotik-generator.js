@@ -15,7 +15,7 @@ function syncConditional(){
  const w=wanType();setVisible('staticFields',w==='static');setVisible('pppoeFields',w==='pppoe');
  setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('directLanFields',$('lanMode').value==='direct');setVisible('secondVlanFields',$('enableVlan').checked&&$('enableSecondVlan').checked);setVisible('queueFields',$('enableQueue').checked);
  setVisible('burstFields',$('enableQueue').checked&&$('enableBurst').checked);setVisible('wifiFields',$('enableWifi').checked);
- setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);
+ setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);setVisible('managementServiceFields',$('disableServices').checked);
  const bt=$('backupWanType').value;setVisible('backupStaticFields',$('enableFailover').checked&&bt==='static');setVisible('backupPppoeFields',$('enableFailover').checked&&bt==='pppoe');setVisible('backupDhcpFields',$('enableFailover').checked&&bt==='dhcp');
  const rm=$('routingMode').value;setVisible('staticRoutingFields',$('enableRouting').checked&&rm==='static');setVisible('ospfRoutingFields',$('enableRouting').checked&&rm==='ospf');setVisible('bgpRoutingFields',$('enableRouting').checked&&rm==='bgp');
 }
@@ -35,6 +35,7 @@ function validate(panelIndex=current){
  if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('Primary WAN interface cannot also be used as LAN.');if($('enableFailover').checked&&lanChosen.includes($('backupWan').value))errors.push('Backup WAN interface cannot also be used as LAN.')}
  if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
+ if((panelIndex>=5||panelIndex===7)&&$('disableServices').checked&&!cidr.test(clean($('managementSource').value)))add('managementSource','Management source must use CIDR format.')
  if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.');if($('enableSecondVlan').checked){const second=+$('secondVlanId').value;if(second<1||second>4094||second===id)add('secondVlanId','Second VLAN ID must be unique and between 1–4094.');if(!cidr.test(clean($('secondVlanIp').value)))add('secondVlanIp','Enter second VLAN gateway in CIDR format.');}}
  if((panelIndex>=6||panelIndex===7)&&$('enableQueue').checked){
   if(!cidr.test(clean($('queueTarget').value)))add('queueTarget','Queue target must use CIDR format.');
@@ -171,10 +172,20 @@ function buildScript(){
  }
  if($('disableServices').checked){
   lines.push('');lines.push('# ---------- MANAGEMENT SERVICES ----------');
-  ['telnet','ftp','api','api-ssl'].forEach(service=>lines.push('/ip service set [find name='+service+'] disabled=yes'));
-  const managementSource=$('enableRemote').checked?clean($('remoteSource').value):clean($('dhcpNetwork').value);
-  lines.push('/ip service set [find name=ssh] disabled=no address='+managementSource);
-  lines.push('/ip service set [find name=winbox] disabled=no address='+managementSource+($('enableRemote').checked?' port='+$('winboxPort').value:''));
+  const managementSources=[clean($('managementSource').value)];
+  if($('enableRemote').checked)managementSources.push(clean($('remoteSource').value));
+  const allowedSources=managementSources.filter(Boolean).join(',');
+  ['ftp','api','api-ssl'].forEach(service=>lines.push('/ip service set [find name='+service+'] disabled=yes'));
+  if($('enableTelnetService').checked)lines.push('/ip service set [find name=telnet] disabled=no address='+allowedSources+' port=23');
+  else lines.push('/ip service set [find name=telnet] disabled=yes');
+  if($('enableSshService').checked){lines.push('/ip service set [find name=ssh] disabled=no address='+allowedSources+' port=22');lines.push('/ip ssh set strong-crypto=yes');}
+  else lines.push('/ip service set [find name=ssh] disabled=yes');
+  const winboxPort=$('enableRemote').checked?$('winboxPort').value:'8291';
+  if($('enableWinboxService').checked)lines.push('/ip service set [find name=winbox] disabled=no address='+allowedSources+' port='+winboxPort);
+  else lines.push('/ip service set [find name=winbox] disabled=yes');
+  if($('enableWebfigService').checked)lines.push('/ip service set [find name=www] disabled=no address='+allowedSources+' port=80');
+  else lines.push('/ip service set [find name=www] disabled=yes');
+  lines.push('/ip service set [find name=www-ssl] disabled=yes');
  }
  if($('enableQueue').checked){
   const queueMode=$('queueMode').value,priority=$('queuePriority').value,target=clean($('queueTarget').value);
@@ -360,7 +371,7 @@ document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListe
 }));
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
-document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode').forEach(x=>x.addEventListener('change',syncConditional));
+document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode,#disableServices').forEach(x=>x.addEventListener('change',syncConditional));
 $('bridgeName').addEventListener('input',()=>{if($('vlanParent').options[0]){$('vlanParent').options[0].value=clean($('bridgeName').value);$('vlanParent').options[0].textContent=clean($('bridgeName').value)||'Bridge'}});
 $('copyScript').addEventListener('click',async function(){if(!renderReview())return;try{await navigator.clipboard.writeText($('scriptOutput').textContent);const old=this.innerHTML;this.innerHTML='<i class="bi bi-check2"></i> Copied';this.classList.add('is-success');setTimeout(()=>{this.innerHTML=old;this.classList.remove('is-success')},1600)}catch(e){alert('Copy failed. Select the script manually.')}});
 $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;const blob=new Blob([$('scriptOutput').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(clean($('identity').value)||'mikrotik-router').replace(/\s+/g,'-').toLowerCase()+'.rsc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
