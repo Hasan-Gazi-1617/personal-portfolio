@@ -20,6 +20,20 @@ const topics=[
 {id:'dijkstra',name:"Dijkstra's Algorithm",kind:'algorithm',group:'Graphs',icon:'bi-bezier2',best:'O((V+E) log V)',avg:'O((V+E) log V)',worst:'O((V+E) log V)',space:'O(V)',desc:'Find shortest paths with non-negative weights.',steps:['Set the source distance to zero.','Extract the closest unsettled vertex.','Relax each outgoing edge.']},
 {id:'dp',name:'Dynamic Programming',kind:'algorithm',group:'Optimization',icon:'bi-table',best:'O(n)',avg:'O(n)',worst:'O(n)',space:'O(n)',desc:'Store overlapping subproblem results and reuse them.',steps:['Define the state.','Write the transition.','Build answers from smaller states.']}
 ];
+topics.push(
+{id:'deque',name:'Deque',kind:'structure',group:'Linear',icon:'bi-arrow-left-right',best:'O(1)',avg:'O(1)',worst:'O(1)',space:'O(n)',desc:'Insert and remove values efficiently at both ends.',steps:['Maintain front and rear ends.','Push at either end.','Pop from either end.']},
+{id:'trie',name:'Trie',kind:'structure',group:'Trees',icon:'bi-diagram-3',best:'O(L)',avg:'O(L)',worst:'O(L)',space:'O(total characters)',desc:'Prefix tree for fast word insertion and lookup.',steps:['Start at the root.','Follow or create one edge per character.','Mark complete words.']},
+{id:'unionfind',name:'Disjoint Set Union',kind:'structure',group:'Graphs',icon:'bi-share',best:'O(α(n))',avg:'O(α(n))',worst:'O(α(n))',space:'O(n)',desc:'Track connected components with path compression and union by size.',steps:['Create one parent per item.','Compress paths during find.','Join smaller roots under larger roots.']},
+{id:'counting',name:'Counting Sort',kind:'algorithm',group:'Sorting',icon:'bi-bar-chart',best:'O(n+k)',avg:'O(n+k)',worst:'O(n+k)',space:'O(k)',desc:'Count bounded integer keys and rebuild them in order.',steps:['Count every value.','Scan counts from low to high.','Write each value by its frequency.']},
+{id:'heapsort',name:'Heap Sort',kind:'algorithm',group:'Sorting',icon:'bi-triangle',best:'O(n log n)',avg:'O(n log n)',worst:'O(n log n)',space:'O(1)',desc:'Build a max heap and repeatedly move its root to the sorted suffix.',steps:['Build a max heap.','Swap the root with the last item.','Restore the heap on the remaining prefix.']},
+{id:'bellman',name:'Bellman–Ford',kind:'algorithm',group:'Graphs',icon:'bi-signpost',best:'O(VE)',avg:'O(VE)',worst:'O(VE)',space:'O(V)',desc:'Shortest paths with negative edges and cycle detection.',steps:['Initialize source distance.','Relax every edge V−1 times.','Check once more for a negative cycle.']},
+{id:'kruskal',name:"Kruskal's MST",kind:'algorithm',group:'Graphs',icon:'bi-bezier',best:'O(E log E)',avg:'O(E log E)',worst:'O(E log E)',space:'O(V)',desc:'Build a minimum spanning tree by accepting the lightest safe edges.',steps:['Sort edges by weight.','Use DSU to reject cycles.','Stop after V−1 accepted edges.']},
+{id:'lcs',name:'Longest Common Subsequence',kind:'algorithm',group:'Dynamic Programming',icon:'bi-grid',best:'O(mn)',avg:'O(mn)',worst:'O(mn)',space:'O(mn)',desc:'Find the longest ordered subsequence shared by two sequences.',steps:['Create a DP table.','Extend matching characters.','Otherwise keep the best neighboring state.']},
+{id:'knapsack',name:'0/1 Knapsack',kind:'algorithm',group:'Dynamic Programming',icon:'bi-backpack',best:'O(nW)',avg:'O(nW)',worst:'O(nW)',space:'O(W)',desc:'Maximize value under a capacity when each item is used at most once.',steps:['Create capacity states.','Process capacities backwards.','Choose between taking and skipping.']},
+{id:'kmp',name:'KMP String Search',kind:'algorithm',group:'Strings',icon:'bi-fonts',best:'O(n+m)',avg:'O(n+m)',worst:'O(n+m)',space:'O(m)',desc:'Search text without rechecking matched characters.',steps:['Build the prefix table.','Advance on a match.','Fall back using the table on mismatch.']},
+{id:'nqueens',name:'N-Queens Backtracking',kind:'algorithm',group:'Backtracking',icon:'bi-grid-3x3',best:'O(n!)',avg:'O(n!)',worst:'O(n!)',space:'O(n)',desc:'Place queens row by row while pruning attacked columns and diagonals.',steps:['Try a safe column.','Mark its column and diagonals.','Backtrack after exploring the choice.']},
+{id:'sliding',name:'Sliding Window',kind:'algorithm',group:'Patterns',icon:'bi-layout-three-columns',best:'O(n)',avg:'O(n)',worst:'O(n)',space:'O(1)',desc:'Update a fixed-size range without recomputing every element.',steps:['Build the first window.','Remove the outgoing value.','Add the incoming value and update the answer.']}
+);
 const code={
 bubble:{python:`def bubble_sort(a):
     for end in range(len(a)-1, 0, -1):
@@ -114,19 +128,197 @@ def bfs(graph, start):
 end`}
 };
 const generic={
-python:t=>`# ${t.name}\ndef solve(values):\n    # Implement ${t.name} using the steps below\n    result = list(values)\n    return result`,
-cpp:t=>`// ${t.name}\nvector<int> solve(const vector<int>& values) {\n    vector<int> result = values;\n    return result;\n}`,
-java:t=>`// ${t.name}\nstatic int[] solve(int[] values) {\n    int[] result = values.clone();\n    return result;\n}`,
-ruby:t=>`# ${t.name}\ndef solve(values)\n  result = values.dup\n  result\nend`
+python:t=>`# ${t.name} — operation walkthrough\ndef ${t.id}_walkthrough(values):\n    data = list(values)\n    steps = [\n        "${t.steps[0]}",\n        "${t.steps[1]}",\n        "${t.steps[2]}"\n    ]\n    return {"data": data, "steps": steps}`,
+cpp:t=>`// ${t.name} — operation walkthrough\npair<vector<int>, vector<string>> ${t.id}Walkthrough(vector<int> data) {\n    vector<string> steps = {\n        "${t.steps[0]}",\n        "${t.steps[1]}",\n        "${t.steps[2]}"\n    };\n    return {data, steps};\n}`,
+java:t=>`// ${t.name} — operation walkthrough\nstatic List<String> ${t.id}Walkthrough(int[] values) {\n    return List.of(\n        "${t.steps[0]}",\n        "${t.steps[1]}",\n        "${t.steps[2]}"\n    );\n}`,
+ruby:t=>`# ${t.name} — operation walkthrough\ndef ${t.id}_walkthrough(values)\n  { data: values.dup, steps: [\n    "${t.steps[0]}",\n    "${t.steps[1]}",\n    "${t.steps[2]}"\n  ] }\nend`
 };
-let selected=topics[0],filter='all',values=[8,3,5,1,9,2],frames=[],index=0,timer=null;
+Object.assign(code,{
+selection:{python:`def selection_sort(a):
+    for i in range(len(a)):
+        minimum = i
+        for j in range(i + 1, len(a)):
+            if a[j] < a[minimum]: minimum = j
+        a[i], a[minimum] = a[minimum], a[i]
+    return a`,cpp:`void selectionSort(vector<int>& a){
+    for(int i=0;i<(int)a.size();++i){
+        int mn=i;
+        for(int j=i+1;j<(int)a.size();++j) if(a[j]<a[mn]) mn=j;
+        swap(a[i],a[mn]);
+    }
+}`,java:`static void selectionSort(int[] a){
+    for(int i=0;i<a.length;i++){
+        int min=i;
+        for(int j=i+1;j<a.length;j++) if(a[j]<a[min]) min=j;
+        int t=a[i]; a[i]=a[min]; a[min]=t;
+    }
+}`,ruby:`def selection_sort(a)
+  a.each_index do |i|
+    min = (i...a.length).min_by { |j| a[j] }
+    a[i], a[min] = a[min], a[i]
+  end
+  a
+end`},
+insertion:{python:`def insertion_sort(a):
+    for i in range(1, len(a)):
+        key, j = a[i], i - 1
+        while j >= 0 and a[j] > key:
+            a[j + 1] = a[j]; j -= 1
+        a[j + 1] = key
+    return a`,cpp:`void insertionSort(vector<int>& a){
+    for(int i=1;i<(int)a.size();++i){
+        int key=a[i],j=i-1;
+        while(j>=0&&a[j]>key){a[j+1]=a[j];--j;}
+        a[j+1]=key;
+    }
+}`,java:`static void insertionSort(int[] a){
+    for(int i=1;i<a.length;i++){
+        int key=a[i],j=i-1;
+        while(j>=0&&a[j]>key){a[j+1]=a[j--];}
+        a[j+1]=key;
+    }
+}`,ruby:`def insertion_sort(a)
+  (1...a.length).each do |i|
+    key, j = a[i], i - 1
+    while j >= 0 && a[j] > key
+      a[j + 1] = a[j]; j -= 1
+    end
+    a[j + 1] = key
+  end
+  a
+end`},
+merge:{python:`def merge_sort(a):
+    return a if len(a) < 2
+    mid = len(a) // 2
+    left, right = merge_sort(a[:mid]), merge_sort(a[mid:])
+    out = []
+    while left and right:
+        out.append((left if left[0] <= right[0] else right).pop(0))
+    return out + left + right`,cpp:`vector<int> mergeSort(vector<int> a){
+    if(a.size()<2) return a;
+    int m=a.size()/2;
+    vector<int> l(a.begin(),a.begin()+m),r(a.begin()+m,a.end()),out;
+    l=mergeSort(l); r=mergeSort(r);
+    merge(l.begin(),l.end(),r.begin(),r.end(),back_inserter(out));
+    return out;
+}`,java:`static int[] mergeSort(int[] a){
+    if(a.length<2) return a;
+    int m=a.length/2;
+    int[] l=mergeSort(Arrays.copyOfRange(a,0,m));
+    int[] r=mergeSort(Arrays.copyOfRange(a,m,a.length));
+    int[] out=new int[a.length]; int i=0,j=0,k=0;
+    while(i<l.length||j<r.length) out[k++]=j==r.length||(i<l.length&&l[i]<=r[j])?l[i++]:r[j++];
+    return out;
+}`,ruby:`def merge_sort(a)
+  return a if a.length < 2
+  mid = a.length / 2
+  left, right = merge_sort(a[...mid]), merge_sort(a[mid..])
+  left.zip(right).flatten.compact.sort
+end`},
+quick:{python:`def quick_sort(a):
+    if len(a) < 2: return a
+    pivot = a[len(a) // 2]
+    return quick_sort([x for x in a if x < pivot]) + \\
+           [x for x in a if x == pivot] + \\
+           quick_sort([x for x in a if x > pivot])`,cpp:`void quickSort(vector<int>& a,int lo,int hi){
+    if(lo>=hi) return;
+    int i=lo,j=hi,p=a[lo+(hi-lo)/2];
+    while(i<=j){while(a[i]<p)i++;while(a[j]>p)j--;if(i<=j)swap(a[i++],a[j--]);}
+    quickSort(a,lo,j); quickSort(a,i,hi);
+}`,java:`static void quickSort(int[] a,int lo,int hi){
+    if(lo>=hi)return;
+    int i=lo,j=hi,p=a[lo+(hi-lo)/2];
+    while(i<=j){while(a[i]<p)i++;while(a[j]>p)j--;if(i<=j){int t=a[i];a[i++]=a[j];a[j--]=t;}}
+    quickSort(a,lo,j); quickSort(a,i,hi);
+}`,ruby:`def quick_sort(a)
+  return a if a.length < 2
+  pivot = a[a.length / 2]
+  quick_sort(a.select { |x| x < pivot }) +
+    a.select { |x| x == pivot } +
+    quick_sort(a.select { |x| x > pivot })
+end`},
+linear:{python:`def linear_search(a, target):
+    for i, value in enumerate(a):
+        return i if value == target
+    return -1`,cpp:`int linearSearch(const vector<int>& a,int target){
+    for(int i=0;i<(int)a.size();++i) if(a[i]==target) return i;
+    return -1;
+}`,java:`static int linearSearch(int[] a,int target){
+    for(int i=0;i<a.length;i++) if(a[i]==target) return i;
+    return -1;
+}`,ruby:`def linear_search(a, target)
+  a.each_with_index { |value, i| return i if value == target }
+  -1
+end`},
+dfs:{python:`def dfs(graph, start):
+    seen, order = set(), []
+    def visit(u):
+        seen.add(u); order.append(u)
+        for v in graph[u]:
+            if v not in seen: visit(v)
+    visit(start)
+    return order`,cpp:`void dfs(int u,const vector<vector<int>>& g,vector<int>& seen,vector<int>& out){
+    seen[u]=1; out.push_back(u);
+    for(int v:g[u]) if(!seen[v]) dfs(v,g,seen,out);
+}`,java:`static void dfs(int u,List<List<Integer>> g,boolean[] seen,List<Integer> out){
+    seen[u]=true; out.add(u);
+    for(int v:g.get(u)) if(!seen[v]) dfs(v,g,seen,out);
+}`,ruby:`def dfs(g, u, seen = {}, order = [])
+  seen[u] = true; order << u
+  g[u].each { |v| dfs(g, v, seen, order) unless seen[v] }
+  order
+end`},
+counting:{python:`def counting_sort(a):
+    if not a: return []
+    count = [0] * (max(a) + 1)
+    for x in a: count[x] += 1
+    return [x for x, n in enumerate(count) for _ in range(n)]`,cpp:`vector<int> countingSort(const vector<int>& a){
+    if(a.empty())return {};
+    vector<int> c(*max_element(a.begin(),a.end())+1),out;
+    for(int x:a)c[x]++;
+    for(int x=0;x<(int)c.size();x++)while(c[x]--)out.push_back(x);
+    return out;
+}`,java:`static int[] countingSort(int[] a){
+    int max=Arrays.stream(a).max().orElse(0),k=0; int[] c=new int[max+1],out=new int[a.length];
+    for(int x:a)c[x]++;
+    for(int x=0;x<c.length;x++)while(c[x]-->0)out[k++]=x;
+    return out;
+}`,ruby:`def counting_sort(a)
+  counts = Array.new(a.max.to_i + 1, 0)
+  a.each { |x| counts[x] += 1 }
+  counts.each_index.flat_map { |x| [x] * counts[x] }
+end`},
+sliding:{python:`def max_window_sum(a, k):
+    window = sum(a[:k]); best = window
+    for i in range(k, len(a)):
+        window += a[i] - a[i-k]
+        best = max(best, window)
+    return best`,cpp:`long long maxWindowSum(const vector<int>& a,int k){
+    long long window=accumulate(a.begin(),a.begin()+k,0LL),best=window;
+    for(int i=k;i<(int)a.size();++i){window+=a[i]-a[i-k];best=max(best,window);}
+    return best;
+}`,java:`static long maxWindowSum(int[] a,int k){
+    long window=0; for(int i=0;i<k;i++)window+=a[i]; long best=window;
+    for(int i=k;i<a.length;i++){window+=a[i]-a[i-k];best=Math.max(best,window);}
+    return best;
+}`,ruby:`def max_window_sum(a, k)
+  window = a.first(k).sum
+  best = window
+  (k...a.length).each { |i| window += a[i] - a[i-k]; best = [best, window].max }
+  best
+end`}
+});
+let selected=topics[0],filter='all',values=[8,3,5,1,9,2],frames=[],index=0,timer=null,currentCode='';
 function sortFrames(arr,type){const a=[...arr],out=[{a:[...a],active:[],text:'Initial array'}];if(type==='selection'){for(let i=0;i<a.length;i++){let m=i;for(let j=i+1;j<a.length;j++){out.push({a:[...a],active:[m,j],text:`Compare minimum ${a[m]} with ${a[j]}`});if(a[j]<a[m])m=j;}[a[i],a[m]]=[a[m],a[i]];out.push({a:[...a],active:[i],done:i+1,text:`Place ${a[i]} at index ${i}`});}}else if(type==='insertion'){for(let i=1;i<a.length;i++){let j=i;while(j>0&&a[j-1]>a[j]){out.push({a:[...a],active:[j-1,j],text:'Shift the larger value right'});[a[j-1],a[j]]=[a[j],a[j-1]];j--;}out.push({a:[...a],active:[j],done:i+1,text:'Key inserted into sorted prefix'});}}else{for(let end=a.length-1;end>0;end--)for(let i=0;i<end;i++){out.push({a:[...a],active:[i,i+1],text:`Compare ${a[i]} and ${a[i+1]}`});if(a[i]>a[i+1]){[a[i],a[i+1]]=[a[i+1],a[i]];out.push({a:[...a],active:[i,i+1],text:'Swap the out-of-order pair'});}}}out.push({a:[...a],active:[],done:a.length,text:'Complete'});return out}
 function simpleFrames(arr){return arr.map((_,i)=>({a:[...arr],active:[i],done:i,text:`Inspect index ${i}: value ${arr[i]}`})).concat({a:[...arr],active:[],done:arr.length,text:'Traversal complete'})}
 function buildFrames(){const visual=['bubble','selection','insertion'].includes(selected.id)?sortFrames(values,selected.id):simpleFrames(selected.id==='binary'?[...values].sort((a,b)=>a-b):values);frames=visual;index=0;renderFrame()}
-function renderFrame(){const f=frames[index]||{a:values,active:[]};$('avsCanvas').innerHTML=f.a.map((v,i)=>`<div class="${selected.kind==='structure'?'avs-node':'avs-bar'} ${f.active.includes(i)?'active':''} ${i<(f.done||0)?'done':''}" style="--v:${Math.max(1,Math.min(10,Math.abs(v)))}"><span>${v}</span></div>`).join('');$('avsNarration').querySelector('span').textContent=f.text;$('avsStepCount').textContent=`Step ${index+1} / ${frames.length}`}
+function traceLine(text){const lines=currentCode.split('\n'),q=(text||'').toLowerCase();let keys=q.includes('swap')?['swap','a[i], a[i + 1]','a[i],a[i+1]']:q.includes('compare')?['if ','while ','<','>']:q.includes('queue')||q.includes('enqueue')?['queue','append','offer','push']:q.includes('distance')||q.includes('relax')?['dist','distance']:q.includes('insert')?['insert','push','add']:q.includes('complete')?['return']:['for ','while ','each'];let found=-1;for(const key of keys){found=lines.findIndex(line=>line.toLowerCase().includes(key.toLowerCase()));if(found>=0)break}return found<0?Math.min(1,lines.length-1):found}
+function explainLine(line){const s=line.trim();if(!s)return 'Blank line separates logical parts of the implementation.';if(/^(#|\/\/)/.test(s))return 'This comment describes the purpose of the next operation.';if(/\b(for|each)\b/.test(s))return 'This loop visits the required elements or neighbors.';if(/\bwhile\b/.test(s))return 'The loop continues while the algorithm condition remains true.';if(/\bif\b/.test(s))return 'This condition decides which operation or branch is valid.';if(/return\b/.test(s))return 'This returns the completed result to the caller.';if(/swap|a\[.*\],/.test(s))return 'This line swaps the selected values in the data set.';if(/append|push|offer|add\(/.test(s))return 'This line adds the current value to the working data structure.';if(/pop|remove|popleft|shift/.test(s))return 'This line removes the next value according to the structure rules.';if(/dist|distance/.test(s))return 'This line reads or updates a shortest-path distance.';return 'This highlighted statement performs the operation currently represented by the visualizer.'}
+function highlightCode(n){document.querySelectorAll('.avs-code-line').forEach((el,i)=>el.classList.toggle('active',i===n));const lines=currentCode.split('\n');$('avsActiveLine').textContent=`Line ${n+1}`;$('avsLineMeaning').textContent=explainLine(lines[n]||'');const active=document.querySelector('.avs-code-line.active');if(active)active.scrollIntoView({block:'nearest'})}
+function renderFrame(){const f=frames[index]||{a:values,active:[]};$('avsCanvas').innerHTML=f.a.map((v,i)=>`<div class="${selected.kind==='structure'?'avs-node':'avs-bar'} ${f.active.includes(i)?'active':''} ${i<(f.done||0)?'done':''}" style="--v:${Math.max(1,Math.min(10,Math.abs(v)))}"><span>${v}</span></div>`).join('');$('avsNarration').querySelector('span').textContent=f.text;$('avsStepCount').textContent=`Step ${index+1} / ${frames.length}`;highlightCode(traceLine(f.text))}
 function renderTopics(){const q=$('avsSearch').value.toLowerCase();$('avsTopicList').innerHTML=topics.filter(t=>(filter==='all'||t.kind===filter)&&t.name.toLowerCase().includes(q)).map(t=>`<button class="avs-topic-item ${t.id===selected.id?'active':''}" data-id="${t.id}"><i class="bi ${t.icon}"></i><span>${t.name}</span><small>${t.group}</small></button>`).join('');document.querySelectorAll('.avs-topic-item').forEach(b=>b.onclick=()=>selectTopic(b.dataset.id))}
 function selectTopic(id){selected=topics.find(t=>t.id===id)||topics[0];$('avsCategory').textContent=(selected.kind==='structure'?'DATA STRUCTURE':'ALGORITHM')+' · '+selected.group.toUpperCase();$('avsTitle').textContent=selected.name;$('avsDescription').textContent=selected.desc;$('avsBest').textContent=selected.best;$('avsAverage').textContent=selected.avg;$('avsWorst').textContent=selected.worst;$('avsSpace').textContent=selected.space;$('avsExplanation').innerHTML=selected.steps.map(x=>`<li>${x}</li>`).join('');renderTopics();renderCode();buildFrames()}
-function renderCode(){const lang=$('avsLanguage').value;const template=(code[selected.id]&&code[selected.id][lang])||generic[lang](selected);$('avsCode').textContent=template;$('avsLanguageLabel').textContent=({cpp:'C++',python:'Python',java:'Java',ruby:'Ruby'})[lang]+' · Clean implementation'}
+function renderCode(){const lang=$('avsLanguage').value,complete=Boolean(code[selected.id]&&code[selected.id][lang]);currentCode=complete?code[selected.id][lang]:generic[lang](selected);$('avsCode').innerHTML=currentCode.split('\n').map((line,i)=>`<span class="avs-code-line" data-line="${i+1}">${line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`).join('');$('avsLanguageLabel').textContent=({cpp:'C++',python:'Python',java:'Java',ruby:'Ruby'})[lang]+(complete?' · Line-by-line implementation':' · Guided operation walkthrough');highlightCode(0)}
 function parseValues(){const a=$('avsInput').value.split(/[ ,]+/).map(Number).filter(Number.isFinite).slice(0,14);if(a.length)values=a;buildFrames()}
 function stop(){clearInterval(timer);timer=null;$('avsPlay').innerHTML='<i class="bi bi-play-fill"></i><span>Play</span>'}
 $('avsPlay').onclick=()=>{if(timer){stop();return}$('avsPlay').innerHTML='<i class="bi bi-pause-fill"></i><span>Pause</span>';timer=setInterval(()=>{if(index>=frames.length-1){stop();return}index++;renderFrame()},1500-+$('avsSpeed').value)};
