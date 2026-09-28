@@ -37,7 +37,10 @@
       <div class="avs-grid">
         <article class="avs-visual-card">
           <div class="avs-card-head"><div><span>LIVE VISUALIZER</span><p id="avsDescription"></p></div><span id="avsStepCount">Step 1 / 1</span></div>
-          <div class="avs-input-row"><input id="avsInput" value="8, 3, 5, 1, 9, 2" aria-label="Visualization values"><button id="avsApply">Apply</button><button id="avsRandom">Random</button></div>
+          <div class="avs-input-wrap">
+            <div class="avs-input-row"><input id="avsInput" value="8, 3, 5, 1, 9, 2" aria-label="Visualization values"><input id="avsAuxInput" class="avs-aux-input" type="number" hidden><button id="avsApply">Apply</button><button id="avsRandom">Random</button></div>
+            <small id="avsInputHint">Enter comma or space separated integers.</small>
+          </div>
           <div id="avsCanvas" class="avs-canvas"></div>
           <div id="avsNarration" class="avs-narration"><i class="bi bi-lightbulb"></i><span>Ready.</span></div>
           <div class="avs-controls">
