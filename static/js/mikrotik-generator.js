@@ -15,7 +15,7 @@ function syncConditional(){
  const w=wanType();setVisible('staticFields',w==='static');setVisible('pppoeFields',w==='pppoe');
  setVisible('dhcpFields',$('enableDhcp').checked);setVisible('vlanFields',$('enableVlan').checked);setVisible('directLanFields',$('lanMode').value==='direct');setVisible('secondVlanFields',$('enableVlan').checked&&$('enableSecondVlan').checked);setVisible('queueFields',$('enableQueue').checked);
  setVisible('burstFields',$('enableQueue').checked&&$('enableBurst').checked);setVisible('wifiFields',$('enableWifi').checked);
- setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);setVisible('managementServiceFields',$('disableServices').checked);
+ setVisible('pppoeServerFields',$('enablePppoeServer').checked);setVisible('pppoeVlanFields',$('enablePppoeServer').checked&&$('enablePppoeVlan').checked);setVisible('hotspotFields',$('enableHotspot').checked);setVisible('failoverFields',$('enableFailover').checked);setVisible('remoteFields',$('enableRemote').checked);setVisible('routingFields',$('enableRouting').checked);setVisible('managementServiceFields',$('disableServices').checked);setVisible('publicManagementFields',$('disableServices').checked&&$('managementMode').value==='public');
  const bt=$('backupWanType').value;setVisible('backupStaticFields',$('enableFailover').checked&&bt==='static');setVisible('backupPppoeFields',$('enableFailover').checked&&bt==='pppoe');setVisible('backupDhcpFields',$('enableFailover').checked&&bt==='dhcp');
  const rm=$('routingMode').value;setVisible('staticRoutingFields',$('enableRouting').checked&&rm==='static');setVisible('ospfRoutingFields',$('enableRouting').checked&&rm==='ospf');setVisible('bgpRoutingFields',$('enableRouting').checked&&rm==='bgp');
 }
@@ -35,7 +35,18 @@ function validate(panelIndex=current){
  if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('Primary WAN interface cannot also be used as LAN.');if($('enableFailover').checked&&lanChosen.includes($('backupWan').value))errors.push('Backup WAN interface cannot also be used as LAN.')}
  if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
- if((panelIndex>=5||panelIndex===7)&&$('disableServices').checked&&!cidr.test(clean($('managementSource').value)))add('managementSource','Management source must use CIDR format.')
+ if((panelIndex>=5||panelIndex===7)&&$('disableServices').checked){
+  if(!cidr.test(clean($('managementSource').value)))add('managementSource','Management source must use CIDR format.');
+  if($('managementMode').value==='public'&&!ip.test(clean($('managementPublicIp').value)))add('managementPublicIp','Enter a valid router public IP.');
+  const services=[
+   ['enableTelnetService','telnetServicePort','Telnet'],
+   ['enableSshService','sshServicePort','SSH'],
+   ['enableWinboxService','winboxServicePort','Winbox'],
+   ['enableWebfigService','webfigServicePort','WebFig']
+  ];
+  const activePorts=[];
+  services.forEach(([toggle,field,label])=>{const port=+$(field).value;if(port<1||port>65535)add(field,label+' port must be 1–65535.');if($(toggle).checked){if(activePorts.includes(port))add(field,label+' port conflicts with another enabled service.');activePorts.push(port);}});
+ }
  if((panelIndex>=4||panelIndex===7)&&$('enableVlan').checked){const id=+$('vlanId').value;if(id<1||id>4094)add('vlanId','VLAN ID must be 1–4094.');if(!cidr.test(clean($('vlanIp').value)))add('vlanIp','Enter VLAN gateway in CIDR format.');if($('enableVlanFiltering').checked&&!clean($('vlanTaggedPorts').value))add('vlanTaggedPorts','Enter at least one tagged trunk port.');if($('enableSecondVlan').checked){const second=+$('secondVlanId').value;if(second<1||second>4094||second===id)add('secondVlanId','Second VLAN ID must be unique and between 1–4094.');if(!cidr.test(clean($('secondVlanIp').value)))add('secondVlanIp','Enter second VLAN gateway in CIDR format.');}}
  if((panelIndex>=6||panelIndex===7)&&$('enableQueue').checked){
   if(!cidr.test(clean($('queueTarget').value)))add('queueTarget','Queue target must use CIDR format.');
@@ -159,6 +170,14 @@ function buildScript(){
   if($('enableBogonProtection').checked){['0.0.0.0/8','10.0.0.0/8','100.64.0.0/10','127.0.0.0/8','169.254.0.0/16','172.16.0.0/12','192.0.0.0/24','192.168.0.0/16','224.0.0.0/3'].forEach(net=>lines.push('/ip firewall address-list add list=BOGONS address='+net+' comment="BOGON SOURCE"'));const bogonWan=w==='pppoe'?'pppoe-out1':wan;lines.push('/ip firewall filter add chain=input in-interface='+bogonWan+' src-address-list=BOGONS action=drop comment="DROP BOGON FROM WAN"');}
   if($('enableRemote').checked)lines.push('/ip firewall filter add chain=input action=accept protocol=tcp src-address='+clean($('remoteSource').value)+' dst-port=22,'+$('winboxPort').value+' comment="ALLOW RESTRICTED REMOTE MANAGEMENT"');
   const inIf=w==='pppoe'?'pppoe-out1':wan;
+  if($('disableServices').checked&&$('managementMode').value==='public'){
+   const publicPorts=[];
+   if($('enableTelnetService').checked)publicPorts.push($('telnetServicePort').value);
+   if($('enableSshService').checked)publicPorts.push($('sshServicePort').value);
+   if($('enableWinboxService').checked)publicPorts.push($('winboxServicePort').value);
+   if($('enableWebfigService').checked)publicPorts.push($('webfigServicePort').value);
+   if(publicPorts.length)lines.push('/ip firewall filter add chain=input action=accept in-interface='+$('managementWanInterface').value+' dst-address='+clean($('managementPublicIp').value)+' src-address='+clean($('managementSource').value)+' protocol=tcp dst-port='+publicPorts.join(',')+' comment="ALLOW PUBLIC MANAGEMENT"');
+  }
   lines.push('/ip firewall filter add chain=input action=drop in-interface='+inIf+' comment="DROP PRIMARY WAN INPUT"');
   if($('enableFailover').checked){
    const backupIn=$('backupWanType').value==='pppoe'?'pppoe-backup':$('backupWan').value;
@@ -172,20 +191,21 @@ function buildScript(){
  }
  if($('disableServices').checked){
   lines.push('');lines.push('# ---------- MANAGEMENT SERVICES ----------');
-  const managementSources=[clean($('managementSource').value)];
-  if($('enableRemote').checked)managementSources.push(clean($('remoteSource').value));
-  const allowedSources=managementSources.filter(Boolean).join(',');
+  const allowedSources=clean($('managementSource').value);
   ['ftp','api','api-ssl'].forEach(service=>lines.push('/ip service set [find name='+service+'] disabled=yes'));
-  if($('enableTelnetService').checked)lines.push('/ip service set [find name=telnet] disabled=no address='+allowedSources+' port=23');
+  if($('enableTelnetService').checked)lines.push('/ip service set [find name=telnet] disabled=no address='+allowedSources+' port='+$('telnetServicePort').value);
   else lines.push('/ip service set [find name=telnet] disabled=yes');
-  if($('enableSshService').checked){lines.push('/ip service set [find name=ssh] disabled=no address='+allowedSources+' port=22');lines.push('/ip ssh set strong-crypto=yes');}
+  if($('enableSshService').checked){lines.push('/ip service set [find name=ssh] disabled=no address='+allowedSources+' port='+$('sshServicePort').value);lines.push('/ip ssh set strong-crypto=yes');}
   else lines.push('/ip service set [find name=ssh] disabled=yes');
-  const winboxPort=$('enableRemote').checked?$('winboxPort').value:'8291';
-  if($('enableWinboxService').checked)lines.push('/ip service set [find name=winbox] disabled=no address='+allowedSources+' port='+winboxPort);
+  if($('enableWinboxService').checked)lines.push('/ip service set [find name=winbox] disabled=no address='+allowedSources+' port='+$('winboxServicePort').value);
   else lines.push('/ip service set [find name=winbox] disabled=yes');
-  if($('enableWebfigService').checked)lines.push('/ip service set [find name=www] disabled=no address='+allowedSources+' port=80');
+  if($('enableWebfigService').checked)lines.push('/ip service set [find name=www] disabled=no address='+allowedSources+' port='+$('webfigServicePort').value);
   else lines.push('/ip service set [find name=www] disabled=yes');
   lines.push('/ip service set [find name=www-ssl] disabled=yes');
+  if($('managementMode').value==='public'){
+   lines.push('# Public Winbox: '+clean($('managementPublicIp').value)+':'+$('winboxServicePort').value);
+   lines.push('# Public WebFig: http://'+clean($('managementPublicIp').value)+':'+$('webfigServicePort').value);
+  }
  }
  if($('enableQueue').checked){
   const queueMode=$('queueMode').value,priority=$('queuePriority').value,target=clean($('queueTarget').value);
@@ -372,6 +392,14 @@ document.querySelectorAll('[data-profile]').forEach(button=>button.addEventListe
 $('nextStep').addEventListener('click',()=>{if(current===panels.length-1){renderReview();return}if(validate(current))show(current+1)});
 $('prevStep').addEventListener('click',()=>show(current-1));
 document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode,#disableServices').forEach(x=>x.addEventListener('change',syncConditional));
+function syncManagementMode(){
+ const publicMode=$('managementMode').value==='public';
+ if(publicMode&&$('managementSource').value==='192.168.10.0/24')$('managementSource').value='0.0.0.0/0';
+ if(!publicMode&&$('managementSource').value==='0.0.0.0/0')$('managementSource').value=clean($('dhcpNetwork').value)||'192.168.10.0/24';
+ ['telnetServicePort','sshServicePort','winboxServicePort','webfigServicePort'].forEach(id=>{$(id).value=$(id).dataset[publicMode?'publicPort':'lanPort']});
+ syncConditional();
+}
+$('managementMode').addEventListener('change',syncManagementMode);
 $('bridgeName').addEventListener('input',()=>{if($('vlanParent').options[0]){$('vlanParent').options[0].value=clean($('bridgeName').value);$('vlanParent').options[0].textContent=clean($('bridgeName').value)||'Bridge'}});
 $('copyScript').addEventListener('click',async function(){if(!renderReview())return;try{await navigator.clipboard.writeText($('scriptOutput').textContent);const old=this.innerHTML;this.innerHTML='<i class="bi bi-check2"></i> Copied';this.classList.add('is-success');setTimeout(()=>{this.innerHTML=old;this.classList.remove('is-success')},1600)}catch(e){alert('Copy failed. Select the script manually.')}});
 $('downloadScript').addEventListener('click',()=>{if(!renderReview())return;const blob=new Blob([$('scriptOutput').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(clean($('identity').value)||'mikrotik-router').replace(/\s+/g,'-').toLowerCase()+'.rsc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});

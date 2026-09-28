@@ -168,11 +168,20 @@
               <label><input id="enableChainGuide" type="checkbox" checked><span><i class="bi bi-signpost-split"></i><b>Firewall chain guide</b><small>Add INPUT, FORWARD and OUTPUT explanations to the generated script.</small></span></label>
             </div>
             <div id="managementServiceFields" class="mtg-form-grid mtg-module-fields">
-              <label class="mtg-field mtg-span-2"><span>Allowed management subnet</span><input id="managementSource" value="192.168.10.0/24" placeholder="192.168.10.0/24"><small>Only devices inside this subnet can open management services.</small></label>
-              <label class="mtg-switch"><input id="enableTelnetService" type="checkbox"><span></span><b>Telnet — TCP 23</b><small>Insecure; enable only when required.</small></label>
-              <label class="mtg-switch"><input id="enableSshService" type="checkbox" checked><span></span><b>SSH — TCP 22</b></label>
-              <label class="mtg-switch"><input id="enableWinboxService" type="checkbox" checked><span></span><b>Winbox — TCP 8291</b></label>
-              <label class="mtg-switch"><input id="enableWebfigService" type="checkbox" checked><span></span><b>WebFig HTTP — TCP 80</b><small>LAN-only access. HTTPS requires a router certificate.</small></label>
+              <label class="mtg-field"><span>Management access mode</span><select id="managementMode"><option value="lan" selected>LAN Only</option><option value="public">Direct Public Access</option></select></label>
+              <label class="mtg-field"><span>Allowed source</span><input id="managementSource" value="192.168.10.0/24" placeholder="0.0.0.0/0"><small>Use 0.0.0.0/0 to simulate access from anywhere.</small></label>
+              <div id="publicManagementFields" class="mtg-form-grid mtg-span-2" hidden>
+                <label class="mtg-field"><span>Router public IP</span><input id="managementPublicIp" value="123.200.2.218" placeholder="123.200.2.218"></label>
+                <label class="mtg-field"><span>Public WAN interface</span><select id="managementWanInterface"><option>ether1</option><option selected>ether2</option><option>pppoe-out1</option><option>pppoe-backup</option></select></label>
+              </div>
+              <label class="mtg-switch"><input id="enableTelnetService" type="checkbox"><span></span><b>Telnet</b><small>Unencrypted; optional.</small></label>
+              <label class="mtg-field"><span>Telnet port</span><input id="telnetServicePort" type="number" min="1" max="65535" value="23" data-lan-port="23" data-public-port="2323"></label>
+              <label class="mtg-switch"><input id="enableSshService" type="checkbox" checked><span></span><b>SSH</b></label>
+              <label class="mtg-field"><span>SSH port</span><input id="sshServicePort" type="number" min="1" max="65535" value="22" data-lan-port="22" data-public-port="2222"></label>
+              <label class="mtg-switch"><input id="enableWinboxService" type="checkbox" checked><span></span><b>Winbox</b></label>
+              <label class="mtg-field"><span>Winbox port</span><input id="winboxServicePort" type="number" min="1" max="65535" value="8291" data-lan-port="8291" data-public-port="8989"></label>
+              <label class="mtg-switch"><input id="enableWebfigService" type="checkbox" checked><span></span><b>WebFig HTTP</b></label>
+              <label class="mtg-field"><span>WebFig port</span><input id="webfigServicePort" type="number" min="1" max="65535" value="80" data-lan-port="80" data-public-port="8990"><small>Must differ from Winbox port.</small></label>
             </div>
           </section>
 
