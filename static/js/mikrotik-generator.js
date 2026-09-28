@@ -267,13 +267,22 @@ function buildScript(){
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE DEFAULT"');
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE DEFAULT"');
    }else if(w==='pppoe'){
-    const primaryProbe=clean($('netwatchHost').value)||'8.8.8.8';
-    const backupProbe=primaryProbe==='8.8.8.8'?'1.0.0.1':'8.8.8.8';
-    lines.push('# Internet-aware PPPoE + Static failover using ISP-pinned recursive probes');
-    lines.push('/ip route add dst-address='+primaryProbe+'/32 gateway=pppoe-out1 scope=10 comment="PRIMARY PPPOE INTERNET PROBE"');
-    lines.push('/ip route add dst-address='+backupProbe+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP STATIC INTERNET PROBE"');
-    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY PPPOE RECURSIVE DEFAULT"');
-    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP STATIC RECURSIVE DEFAULT"');
+    const primaryProbe1=clean($('netwatchHost').value)||'8.8.8.8';
+    const usedProbes=[primaryProbe1];
+    const takeProbe=candidates=>{const selected=candidates.find(candidate=>!usedProbes.includes(candidate));usedProbes.push(selected);return selected};
+    const primaryProbe2=takeProbe(['9.9.9.9','208.67.222.222']);
+    const backupProbe1=takeProbe(['1.0.0.1','8.8.4.4']);
+    const backupProbe2=takeProbe(['149.112.112.112','208.67.220.220']);
+    lines.push('# Resilient PPPoE + Static failover: two ISP-pinned probes per WAN');
+    lines.push('# One failed probe does not switch the ISP; both primary probes must fail before backup takes over');
+    lines.push('/ip route add dst-address='+primaryProbe1+'/32 gateway=pppoe-out1 scope=10 comment="PRIMARY PROBE 1 VIA PPPOE"');
+    lines.push('/ip route add dst-address='+primaryProbe2+'/32 gateway=pppoe-out1 scope=10 comment="PRIMARY PROBE 2 VIA PPPOE"');
+    lines.push('/ip route add dst-address='+backupProbe1+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP PROBE 1 VIA STATIC"');
+    lines.push('/ip route add dst-address='+backupProbe2+'/32 gateway='+clean($('backupGateway').value)+' scope=10 comment="BACKUP PROBE 2 VIA STATIC"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe1+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE PATH 1"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+primaryProbe2+' distance='+$('primaryDistance').value+' check-gateway=ping target-scope=11 comment="PRIMARY RECURSIVE PATH 2"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe1+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE PATH 1"');
+    lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+backupProbe2+' distance='+$('backupDistance').value+' check-gateway=ping target-scope=11 comment="BACKUP RECURSIVE PATH 2"');
    }else{
     lines.push('/ip route add dst-address=0.0.0.0/0 gateway='+clean($('backupGateway').value)+' distance='+$('backupDistance').value+' check-gateway=ping comment="BACKUP DEFAULT ROUTE"');
    }
@@ -303,10 +312,24 @@ function buildScript(){
   }
   if($('enableNetwatch').checked){
    const monitorHost=clean($('netwatchHost').value);
-   if((w==='static'||w==='pppoe')&&backupType==='static')lines.push('# Netwatch logs primary ISP status; recursive check-gateway routes perform upstream-aware automatic failover and recovery.');
-   else if(w==='pppoe')lines.push('# Netwatch logs status only; PPPoE session failure activates the distance-'+$('backupDistance').value+' backup route.');
-   else lines.push('# Netwatch provides status logs only; route availability follows the configured WAN clients.');
-   lines.push('/tool netwatch add host='+monitorHost+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="WAN STATUS MONITOR"');
+   if(w==='pppoe'&&backupType==='static'){
+    const usedMonitors=[monitorHost];
+    const takeMonitor=candidates=>{const selected=candidates.find(candidate=>!usedMonitors.includes(candidate));usedMonitors.push(selected);return selected};
+    const primaryMonitor2=takeMonitor(['9.9.9.9','208.67.222.222']);
+    const backupMonitor1=takeMonitor(['1.0.0.1','8.8.4.4']);
+    const backupMonitor2=takeMonitor(['149.112.112.112','208.67.220.220']);
+    const interval=$('netwatchInterval').value;
+    lines.push('# Netwatch logs every pinned probe; recursive routes perform automatic failover and recovery.');
+    lines.push('/tool netwatch add host='+monitorHost+' interval='+interval+' timeout=3s up-script=":log info PRIMARY-PROBE-1-UP" down-script=":log warning PRIMARY-PROBE-1-DOWN" comment="PRIMARY WAN PROBE 1"');
+    lines.push('/tool netwatch add host='+primaryMonitor2+' interval='+interval+' timeout=3s up-script=":log info PRIMARY-PROBE-2-UP" down-script=":log warning PRIMARY-PROBE-2-DOWN" comment="PRIMARY WAN PROBE 2"');
+    lines.push('/tool netwatch add host='+backupMonitor1+' interval='+interval+' timeout=3s up-script=":log info BACKUP-PROBE-1-UP" down-script=":log warning BACKUP-PROBE-1-DOWN" comment="BACKUP WAN PROBE 1"');
+    lines.push('/tool netwatch add host='+backupMonitor2+' interval='+interval+' timeout=3s up-script=":log info BACKUP-PROBE-2-UP" down-script=":log warning BACKUP-PROBE-2-DOWN" comment="BACKUP WAN PROBE 2"');
+   }else{
+    if(w==='static'&&backupType==='static')lines.push('# Netwatch logs primary ISP status; recursive check-gateway routes perform Internet-aware failover.');
+    else if(w==='pppoe')lines.push('# Netwatch logs status only; PPPoE session failure activates the distance-'+$('backupDistance').value+' backup route.');
+    else lines.push('# Netwatch provides status logs only; route availability follows the configured WAN clients.');
+    lines.push('/tool netwatch add host='+monitorHost+' interval='+$('netwatchInterval').value+' timeout=3s up-script=":log info PRIMARY-WAN-UP" down-script=":log warning PRIMARY-WAN-DOWN" comment="WAN STATUS MONITOR"');
+   }
   }
  }
  if($('enableRouting').checked){
