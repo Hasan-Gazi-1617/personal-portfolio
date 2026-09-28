@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Algorithm Visual Studio | Hasan{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/algorithm-studio.css' %}">{% endblock %}
+{% block content %}
+<main class="avs-shell">
+  <header class="avs-hero">
+    <div>
+      <a class="avs-back" href="{% url 'home' %}#projects"><i class="bi bi-arrow-left"></i> Portfolio</a>
+      <span class="avs-kicker">INTERACTIVE PROGRAMMING LAB</span>
+      <h1>Algorithm <span>Visual Studio</span></h1>
+      <p>Select a data structure or algorithm, watch every operation, and get clean implementation code in your preferred language.</p>
+    </div>
+    <div class="avs-hero-badge"><i class="bi bi-cpu"></i><b>DSA Engine</b><span>Visual · Explain · Code</span></div>
+  </header>
+
+  <section class="avs-workspace">
+    <aside class="avs-sidebar">
+      <div class="avs-search"><i class="bi bi-search"></i><input id="avsSearch" placeholder="Search topics..."></div>
+      <div class="avs-tabs"><button class="active" data-kind="all">All</button><button data-kind="structure">Data Structures</button><button data-kind="algorithm">Algorithms</button></div>
+      <div id="avsTopicList" class="avs-topic-list"></div>
+    </aside>
+
+    <section class="avs-main">
+      <div class="avs-toolbar">
+        <div><span class="avs-eyebrow" id="avsCategory">ALGORITHM</span><h2 id="avsTitle">Bubble Sort</h2></div>
+        <label>Language<select id="avsLanguage"><option value="cpp">C++</option><option value="python" selected>Python</option><option value="java">Java</option><option value="ruby">Ruby</option></select></label>
+      </div>
+
+      <div class="avs-metrics">
+        <div><small>Best</small><strong id="avsBest">O(n)</strong></div>
+        <div><small>Average</small><strong id="avsAverage">O(n²)</strong></div>
+        <div><small>Worst</small><strong id="avsWorst">O(n²)</strong></div>
+        <div><small>Space</small><strong id="avsSpace">O(1)</strong></div>
+      </div>
+
+      <div class="avs-grid">
+        <article class="avs-visual-card">
+          <div class="avs-card-head"><div><span>LIVE VISUALIZER</span><p id="avsDescription"></p></div><span id="avsStepCount">Step 1 / 1</span></div>
+          <div class="avs-input-row"><input id="avsInput" value="8, 3, 5, 1, 9, 2" aria-label="Visualization values"><button id="avsApply">Apply</button><button id="avsRandom">Random</button></div>
+          <div id="avsCanvas" class="avs-canvas"></div>
+          <div id="avsNarration" class="avs-narration"><i class="bi bi-lightbulb"></i><span>Ready.</span></div>
+          <div class="avs-controls">
+            <button id="avsReset" title="Reset"><i class="bi bi-skip-backward-fill"></i></button>
+            <button id="avsPrev" title="Previous"><i class="bi bi-chevron-left"></i></button>
+            <button id="avsPlay" class="primary"><i class="bi bi-play-fill"></i><span>Play</span></button>
+            <button id="avsNext" title="Next"><i class="bi bi-chevron-right"></i></button>
+            <label>Speed<input id="avsSpeed" type="range" min="200" max="1400" step="100" value="700"></label>
+          </div>
+        </article>
+
+        <article class="avs-code-card">
+          <div class="avs-card-head"><div><span>IMPLEMENTATION</span><p id="avsLanguageLabel">Python · Production-ready</p></div><button id="avsCopy"><i class="bi bi-copy"></i> Copy</button></div>
+          <pre><code id="avsCode"></code></pre>
+          <div class="avs-notes"><h3>How it works</h3><ol id="avsExplanation"></ol></div>
+        </article>
+      </div>
+    </section>
+  </section>
+</main>
+<script src="{% static 'js/algorithm-studio.js' %}"></script>
+{% endblock %}
