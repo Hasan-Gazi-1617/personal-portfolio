@@ -562,7 +562,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
         {% else %}
 
         <!-- Logo -->
-        <a class="navbar-brand brand-logo" href="#home">
+        <a class="navbar-brand brand-logo" href="{% url 'home' %}#home">
             hasan<span>.</span>net
         </a>
 
@@ -583,28 +583,28 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                 <!-- HOME -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#home">Home</a>
+                    <a class="nav-link" href="{% url 'home' %}#home">Home</a>
                 </li>
 
                 <!-- ABOUT -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#about">About</a>
+                    <a class="nav-link" href="{% url 'home' %}#about">About</a>
                 </li>
 
                 <!-- EXPERTISE -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#expertise">Expertise</a>
+                    <a class="nav-link" href="{% url 'home' %}#expertise">Expertise</a>
                 </li>
 
                   <!-- PROJECTS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#technology">Technology</a>
+                    <a class="nav-link" href="{% url 'home' %}#technology">Technology</a>
                 </li>
 
 
               <!-- EXPERIENCE -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#experience">
+                    <a class="nav-link" href="{% url 'home' %}#experience">
                         Experience
                     </a>
                 </li>
@@ -612,7 +612,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                 <!-- LESSONS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#lessons">
+                    <a class="nav-link" href="{% url 'home' %}#lessons">
                         Lessons
                     </a>
                 </li>
@@ -864,7 +864,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
             {% endif %}
 
             <!-- LET'S CONNECT -->
-            <a href="#contact" class="btn btn-outline-primary-custom connect-btn">
+            <a href="{% url 'home' %}#contact" class="btn btn-outline-primary-custom connect-btn">
                 Let's Connect
             </a>
 
