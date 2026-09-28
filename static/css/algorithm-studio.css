@@ -19,7 +19,7 @@
 .avs-line-explain{display:flex;align-items:flex-start;gap:11px;padding:10px 16px;border-bottom:1px solid var(--avs-line);background:rgba(34,211,238,.045)}
 .avs-line-explain span{flex:none;padding:4px 7px;border-radius:6px;background:rgba(34,211,238,.12);color:var(--avs-cyan);font:700 .68rem/1.2 "JetBrains Mono",monospace}
 .avs-line-explain p{margin:1px 0 0;color:var(--avs-muted);font-size:.75rem;line-height:1.45}
-.avs-code-actions{display:flex;gap:8px}.avs-code-actions #avsRun{background:var(--avs-green);border-color:var(--avs-green);color:#04130e;font-weight:800}
+.avs-code-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}.avs-code-actions button{min-height:36px!important;padding:7px 11px!important;font-size:.7rem!important;line-height:1!important;font-weight:750!important;white-space:nowrap}.avs-code-actions button i{font-size:.72rem;margin-right:3px}.avs-code-actions #avsRun{background:var(--avs-green);border-color:var(--avs-green);color:#04130e;font-weight:850!important}
 .avs-code-card pre.avs-code-view{height:auto;min-height:390px;max-height:620px;padding:12px 0;overflow:auto}
 .avs-code-line{display:block;padding:0 16px;border-left:3px solid transparent;white-space:pre}
 .avs-code-line::before{content:attr(data-line);display:inline-block;width:30px;margin-right:14px;color:#52677d;text-align:right;user-select:none}
