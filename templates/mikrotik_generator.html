@@ -4,7 +4,7 @@
 {% block title %}MikroTik Script Studio | Hasan{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.2">
+<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.3">
 
 <main class="mtg-page" id="mikrotikGenerator">
   <header class="mtg-hero">
@@ -31,14 +31,14 @@
         <div class="mtg-progress-head"><span>Automation workflow</span><strong id="progressText">1 / 8</strong></div>
         <div class="mtg-progress"><span id="progressBar"></span></div>
         <nav class="mtg-steps" id="generatorSteps">
-          <button class="active" data-panel="identity"><i class="bi bi-cpu"></i><span>Router & Platform<small>Identity, RouterOS v6/v7</small></span></button>
-          <button data-panel="wan"><i class="bi bi-globe2"></i><span>WAN & Internet<small>DHCP, Static, PPPoE client</small></span></button>
-          <button data-panel="lan"><i class="bi bi-diagram-3"></i><span>LAN & Bridge<small>Ports, gateway and RSTP</small></span></button>
-          <button data-panel="dhcp"><i class="bi bi-hdd-network"></i><span>DHCP & DNS<small>Pool, lease and resolvers</small></span></button>
-          <button data-panel="vlan"><i class="bi bi-layers"></i><span>VLAN & Switching<small>802.1Q access design</small></span></button>
-          <button data-panel="firewall"><i class="bi bi-shield-check"></i><span>Firewall & Security<small>NAT and service hardening</small></span></button>
-          <button data-panel="queue"><i class="bi bi-building-gear"></i><span>ISP Services & QoS<small>PPPoE, Hotspot, Failover</small></span></button>
-          <button data-panel="review"><i class="bi bi-terminal"></i><span>Review & Export<small>Validate, copy and download</small></span></button>
+          <button class="active" data-panel="identity" data-mobile-label="Platform"><i class="bi bi-cpu"></i><span>Router & Platform<small>Identity, RouterOS v6/v7</small></span></button>
+          <button data-panel="wan" data-mobile-label="WAN"><i class="bi bi-globe2"></i><span>WAN & Internet<small>DHCP, Static, PPPoE client</small></span></button>
+          <button data-panel="lan" data-mobile-label="LAN"><i class="bi bi-diagram-3"></i><span>LAN & Bridge<small>Ports, gateway and RSTP</small></span></button>
+          <button data-panel="dhcp" data-mobile-label="DHCP"><i class="bi bi-hdd-network"></i><span>DHCP & DNS<small>Pool, lease and resolvers</small></span></button>
+          <button data-panel="vlan" data-mobile-label="VLAN"><i class="bi bi-layers"></i><span>VLAN & Switching<small>802.1Q access design</small></span></button>
+          <button data-panel="firewall" data-mobile-label="Security"><i class="bi bi-shield-check"></i><span>Firewall & Security<small>NAT and service hardening</small></span></button>
+          <button data-panel="queue" data-mobile-label="ISP / QoS"><i class="bi bi-building-gear"></i><span>ISP Services & QoS<small>PPPoE, Hotspot, Failover</small></span></button>
+          <button data-panel="review" data-mobile-label="Export"><i class="bi bi-terminal"></i><span>Review & Export<small>Validate, copy and download</small></span></button>
         </nav>
       </aside>
 
@@ -320,5 +320,5 @@ document.querySelectorAll('.navbar-custom a[href^="#"]').forEach(function(link) 
   link.href = "{% url 'home' %}" + link.getAttribute("href");
 });
 </script>
-<script src="{% static 'js/mikrotik-generator.js' %}?v=20260929.2"></script>
+<script src="{% static 'js/mikrotik-generator.js' %}?v=20260929.3"></script>
 {% endblock %}
