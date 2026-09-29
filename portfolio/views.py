@@ -1,5 +1,6 @@
 import os
 import secrets
+import time
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -26,6 +27,14 @@ def owner_login(request):
         return redirect("home")
 
     if request.method == "POST":
+        now = int(time.time())
+        attempts = request.session.get("owner_login_attempts", [])
+        attempts = [stamp for stamp in attempts if now - stamp < 15 * 60]
+        if len(attempts) >= 5:
+            messages.error(request, "Too many attempts. Please wait 15 minutes and try again.")
+            request.session["owner_login_attempts"] = attempts
+            return render(request, "owner_login.html", status=429)
+
         submitted_key = request.POST.get("access_key", "")
         configured_key = os.environ.get("OWNER_ACCESS_KEY", "")
 
@@ -33,8 +42,11 @@ def owner_login(request):
             request.session.cycle_key()
             request.session["owner_access"] = True
             request.session.set_expiry(60 * 60 * 24 * 7)
+            request.session.pop("owner_login_attempts", None)
             return redirect("home")
 
+        attempts.append(now)
+        request.session["owner_login_attempts"] = attempts
         messages.error(request, "Invalid owner access key.")
 
     return render(request, "owner_login.html")
