@@ -6,6 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hasan | NOC Engineer - Network Operations, Infrastructure, Monitoring and Troubleshooting">
+    <meta name="theme-color" content="#0b1422">
+    <meta name="color-scheme" content="dark light">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hasan | NOC Engineer">
+    <meta property="og:description" content="NOC Engineer focused on network operations, infrastructure, monitoring and service reliability.">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
     <title>
         {% block title %}
@@ -532,12 +540,12 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 (function(){try{const saved=localStorage.getItem('hasan-portfolio-theme');const preferred=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=saved||preferred}catch(e){document.documentElement.dataset.theme='dark'}})();
 </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{% static 'css/portfolio-enhancements.css' %}?v=20260928.7">
+    <link rel="stylesheet" href="{% static 'css/responsive-foundation.css' %}?v=20260929.1">
 </head>
 
 <body>
+<a class="skip-link" href="#mainContent">Skip to main content</a>
 
 <!-- ================= NAVBAR ================= -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom">
@@ -879,7 +887,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 </nav>
 
 <!-- ================= MAIN ================= -->
-<main>
+<main id="mainContent" tabindex="-1">
     {% block content %}
     {% endblock %}
 </main>
@@ -1320,5 +1328,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script src="{% static 'js/portfolio-enhancements.js' %}?v=20260928.7" defer></script>
+<script src="{% static 'js/responsive-navigation.js' %}?v=20260929.1" defer></script>
 </body>
 </html>

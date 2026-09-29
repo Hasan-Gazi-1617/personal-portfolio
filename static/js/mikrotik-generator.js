@@ -38,6 +38,7 @@ function validate(panelIndex=current){
  if((panelIndex>=5||panelIndex===7)&&$('disableServices').checked){
   if(!cidr.test(clean($('managementSource').value)))add('managementSource','Management source must use CIDR format.');
   if($('managementMode').value==='public'&&!ip.test(clean($('managementPublicIp').value)))add('managementPublicIp','Enter a valid router public IP.');
+  if($('managementMode').value==='public'&&clean($('managementSource').value)==='0.0.0.0/0')add('managementSource','For public management, use a trusted fixed public IP with /32 instead of 0.0.0.0/0.');
   const services=[
    ['enableTelnetService','telnetServicePort','Telnet'],
    ['enableSshService','sshServicePort','SSH'],
@@ -460,8 +461,8 @@ $('prevStep').addEventListener('click',()=>show(current-1));
 document.querySelectorAll('input[name="wanType"],#lanMode,#enableDhcp,#enableVlan,#enableSecondVlan,#enableQueue,#enableBurst,#enableWifi,#enablePppoeServer,#enablePppoeVlan,#enableHotspot,#enableFailover,#backupWanType,#enableRemote,#enableRouting,#routingMode,#disableServices,#enableNetwatch,#probeMode').forEach(x=>x.addEventListener('change',syncConditional));
 function syncManagementMode(){
  const publicMode=$('managementMode').value==='public';
- if(publicMode&&$('managementSource').value==='192.168.10.0/24')$('managementSource').value='0.0.0.0/0';
- if(!publicMode&&$('managementSource').value==='0.0.0.0/0')$('managementSource').value=clean($('dhcpNetwork').value)||'192.168.10.0/24';
+ if(publicMode&&$('managementSource').value==='192.168.10.0/24')$('managementSource').value='';
+ if(!publicMode&&(!$('managementSource').value||$('managementSource').value==='0.0.0.0/0'))$('managementSource').value=clean($('dhcpNetwork').value)||'192.168.10.0/24';
  ['telnetServicePort','sshServicePort','winboxServicePort','webfigServicePort'].forEach(id=>{$(id).value=$(id).dataset[publicMode?'publicPort':'lanPort']});
  syncConditional();
 }
@@ -476,7 +477,7 @@ function executableCommands(script){
 function renderCommandRows(script){
  const commands=executableCommands(script);const box=$('commandResults');if(!box)return;
  box.innerHTML=commands.map((cmd,i)=>{
-  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+'</code><span class="mtg-result-status success">Validated</span></div>';
+  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+'</code><span class="mtg-result-status success">Syntax ready</span></div>';
  }).join('')||'<div class="mtg-result-empty">No executable commands generated.</div>';
 }
 function escapeHtml(value){const e=document.createElement('div');e.textContent=String(value||'');return e.innerHTML}

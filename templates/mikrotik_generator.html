@@ -2,11 +2,10 @@
 {% load static %}
 
 {% block title %}MikroTik Script Studio | Hasan{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.5">{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.4">
-
-<main class="mtg-page" id="mikrotikGenerator">
+<div class="mtg-page" id="mikrotikGenerator">
   <header class="mtg-hero">
     <div class="mtg-shell">
       <a class="mtg-back" href="{% url 'home' %}#projects"><i class="bi bi-arrow-left"></i> Back to Featured Projects</a>
@@ -169,7 +168,7 @@
             </div>
             <div id="managementServiceFields" class="mtg-form-grid mtg-module-fields">
               <label class="mtg-field"><span>Management access mode</span><select id="managementMode"><option value="lan" selected>LAN Only</option><option value="public">Direct Public Access</option></select></label>
-              <label class="mtg-field"><span>Allowed source</span><input id="managementSource" value="192.168.10.0/24" placeholder="0.0.0.0/0"><small>Use 0.0.0.0/0 to simulate access from anywhere.</small></label>
+              <label class="mtg-field"><span>Allowed source</span><input id="managementSource" value="192.168.10.0/24" placeholder="198.51.100.25/32"><small>For public access, enter the fixed public IP you connect from as /32. Any-source access is intentionally rejected.</small></label>
               <div id="publicManagementFields" class="mtg-form-grid mtg-span-2" hidden>
                 <label class="mtg-field"><span>Router public IP</span><input id="managementPublicIp" value="123.200.2.218" placeholder="123.200.2.218"></label>
                 <label class="mtg-field"><span>Public WAN interface</span><select id="managementWanInterface"><option>ether1</option><option selected>ether2</option><option>pppoe-out1</option><option>pppoe-backup</option></select></label>
@@ -180,7 +179,7 @@
               <label class="mtg-field"><span>SSH port</span><input id="sshServicePort" type="number" min="1" max="65535" value="22" data-lan-port="22" data-public-port="2222"></label>
               <label class="mtg-switch"><input id="enableWinboxService" type="checkbox" checked><span></span><b>Winbox</b></label>
               <label class="mtg-field"><span>Winbox port</span><input id="winboxServicePort" type="number" min="1" max="65535" value="8291" data-lan-port="8291" data-public-port="8989"></label>
-              <label class="mtg-switch"><input id="enableWebfigService" type="checkbox" checked><span></span><b>WebFig HTTP</b></label>
+              <label class="mtg-switch"><input id="enableWebfigService" type="checkbox" checked><span></span><b>WebFig HTTP</b><small>Use only when HTTPS is not configured; WireGuard or HTTPS is safer.</small></label>
               <label class="mtg-field"><span>WebFig port</span><input id="webfigServicePort" type="number" min="1" max="65535" value="80" data-lan-port="80" data-public-port="8990"><small>Must differ from Winbox port.</small></label>
             </div>
           </section>
@@ -290,8 +289,8 @@
             </div>
             <section class="mtg-offline-validation">
               <div class="mtg-offline-head">
-                <div><i class="bi bi-shield-check"></i><div><h3>Offline Script Validation</h3><p>Commands are checked locally in your browser. Nothing connects to a router.</p></div></div>
-                <span><i class="bi bi-check2-circle"></i> Script ready</span>
+                <div><i class="bi bi-shield-check"></i><div><h3>Offline Script Validation</h3><p>Required fields and command structure are checked locally. Router execution is not performed.</p></div></div>
+                <span><i class="bi bi-check2-circle"></i> Syntax ready</span>
               </div>
               <div class="mtg-command-results" id="commandResults">
                 <div class="mtg-result-empty">Generate the configuration to validate each command.</div>
@@ -314,7 +313,7 @@
       </div>
     </div>
   </section>
-</main>
+</div>
 <script>
 document.querySelectorAll('.navbar-custom a[href^="#"]').forEach(function(link) {
   link.href = "{% url 'home' %}" + link.getAttribute("href");
