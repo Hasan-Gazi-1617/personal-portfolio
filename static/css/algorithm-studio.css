@@ -80,3 +80,13 @@ html[data-theme="light"] .avs-code-card .avs-output-panel pre{background:#f5fcf8
   .avs-title-block h2{font-size:1.45rem}
   .avs-card-head{align-items:flex-start;flex-direction:column}
 }
+
+/* Clear, touch-friendly playback controls. */
+.avs-controls button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:40px;padding:7px 10px}
+.avs-controls button span{font-size:.68rem;font-weight:750}
+@media(max-width:520px){
+  .avs-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .avs-controls button{min-width:0;padding:7px 4px}
+  .avs-controls button span{font-size:.62rem}
+  .avs-controls .avs-timeline{grid-column:1/-1;width:100%;order:initial}
+}
