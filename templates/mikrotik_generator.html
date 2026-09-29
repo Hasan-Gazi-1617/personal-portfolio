@@ -4,7 +4,7 @@
 {% block title %}MikroTik Script Studio | Hasan{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.1">
+<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.2">
 
 <main class="mtg-page" id="mikrotikGenerator">
   <header class="mtg-hero">
@@ -320,5 +320,5 @@ document.querySelectorAll('.navbar-custom a[href^="#"]').forEach(function(link) 
   link.href = "{% url 'home' %}" + link.getAttribute("href");
 });
 </script>
-<script src="{% static 'js/mikrotik-generator.js' %}?v=20260929.1"></script>
+<script src="{% static 'js/mikrotik-generator.js' %}?v=20260929.2"></script>
 {% endblock %}
