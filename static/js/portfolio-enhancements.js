@@ -110,7 +110,9 @@ ready(function(){
       e.preventDefault();var data=new FormData(form);
       var subject=encodeURIComponent(data.get('subject')||'Portfolio contact');
       var body=encodeURIComponent('Name: '+data.get('name')+'\nEmail: '+data.get('email')+'\n\n'+data.get('message'));
-      window.location.href='mailto:mdhasan.cse9243@gmail.com?subject='+subject+'&body='+body;
+      const recipient=document.body.dataset.contactEmail||'';
+      if(!recipient){alert('Contact email is not configured.');return;}
+      window.location.href='mailto:'+encodeURIComponent(recipient)+'?subject='+subject+'&body='+body;
     });
     contactLeft.appendChild(form);
   }

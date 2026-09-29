@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}MikroTik Script Studio | Hasan{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}?v=20260929.5">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/mikrotik-generator.css' %}">{% endblock %}
 
 {% block content %}
 <div class="mtg-page" id="mikrotikGenerator">
@@ -51,7 +51,7 @@
           <button type="button" data-jump="queue"><i class="bi bi-shuffle"></i><span><b>Resilience</b><small>Failover · QoS · Queue</small></span></button>
           <button type="button" data-jump="review"><i class="bi bi-terminal-check"></i><span><b>Automation</b><small>Validate · Copy · Download</small></span></button>
         </section>
-        <div id="validationSummary" class="mtg-alert mtg-alert-error" hidden></div>
+        <div id="validationSummary" class="mtg-alert mtg-alert-error" role="alert" aria-live="assertive" hidden></div>
 
         <form id="mtgForm" novalidate>
           <section class="mtg-panel active mtg-platform-panel" data-panel="identity">
@@ -97,7 +97,7 @@
             </div>
             <div class="mtg-form-grid mtg-top-gap">
               <label class="mtg-field"><span>WAN interface</span><select id="wanInterface"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option><option>sfp-sfpplus1</option></select></label>
-              <label class="mtg-field"><span>Primary ISP name / comment</span><input id="wanComment" value="PRIMARY ISP" maxlength="80" placeholder="e.g. Link3"></label>
+              <label class="mtg-field"><span>Primary ISP name / comment</span><input id="wanComment" value="PRIMARY ISP" maxlength="80" placeholder="e.g. Primary provider"></label>
             </div>
             <div id="staticFields" class="mtg-form-grid mtg-top-gap" hidden>
               <label class="mtg-field"><span>WAN IP / prefix</span><input id="wanIp" placeholder="203.0.113.2/30"></label>
@@ -170,7 +170,7 @@
               <label class="mtg-field"><span>Management access mode</span><select id="managementMode"><option value="lan" selected>LAN Only</option><option value="public">Direct Public Access</option></select></label>
               <label class="mtg-field"><span>Allowed source</span><input id="managementSource" value="192.168.10.0/24" placeholder="198.51.100.25/32"><small>For public access, enter the fixed public IP you connect from as /32. Any-source access is intentionally rejected.</small></label>
               <div id="publicManagementFields" class="mtg-form-grid mtg-span-2" hidden>
-                <label class="mtg-field"><span>Router public IP</span><input id="managementPublicIp" value="123.200.2.218" placeholder="123.200.2.218"></label>
+                <label class="mtg-field"><span>Router public IP</span><input id="managementPublicIp" value="" placeholder="198.51.100.10"></label>
                 <label class="mtg-field"><span>Public WAN interface</span><select id="managementWanInterface"><option>ether1</option><option selected>ether2</option><option>pppoe-out1</option><option>pppoe-backup</option></select></label>
               </div>
               <label class="mtg-switch"><input id="enableTelnetService" type="checkbox"><span></span><b>Telnet</b><small>Unencrypted; optional.</small></label>
@@ -225,7 +225,7 @@
             </div>
             <div id="hotspotFields" class="mtg-form-grid mtg-module-fields" hidden>
               <label class="mtg-field"><span>Hotspot interface</span><select id="hotspotInterface"><option value="bridge-LAN">bridge-LAN</option><option>ether3</option><option>ether4</option></select></label>
-              <label class="mtg-field"><span>DNS name</span><input id="hotspotDnsName" value="login.hasan.net"></label>
+              <label class="mtg-field"><span>DNS name</span><input id="hotspotDnsName" value="hotspot.example.invalid"></label>
               <label class="mtg-field"><span>Address pool</span><input id="hotspotPool" value="192.168.20.10-192.168.20.254"></label>
               <label class="mtg-field"><span>Hotspot gateway</span><input id="hotspotGateway" value="192.168.20.1/24"></label>
               <label class="mtg-field"><span>Admin username</span><input id="hotspotUser" value="hotspot-admin"></label>
@@ -240,7 +240,7 @@
               <label class="mtg-field"><span>Primary WAN port (ether1–ether5)</span><select id="primaryWanPort"><option>ether1</option><option>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
               <label class="mtg-field"><span>Backup WAN port (ether1–ether5)</span><select id="backupWan"><option>ether1</option><option selected>ether2</option><option>ether3</option><option>ether4</option><option>ether5</option><option>sfp1</option></select></label>
               <label class="mtg-field"><span>Backup WAN type</span><select id="backupWanType"><option value="dhcp">DHCP / Dynamic</option><option value="static">Static / Private</option><option value="pppoe" selected>PPPoE</option></select></label>
-              <label class="mtg-field"><span>Backup ISP name / comment</span><input id="backupIspComment" value="BACKUP ISP" maxlength="80" placeholder="e.g. Amber IT"></label>
+              <label class="mtg-field"><span>Backup ISP name / comment</span><input id="backupIspComment" value="BACKUP ISP" maxlength="80" placeholder="e.g. Backup provider"></label>
               <label class="mtg-field"><span>LAN ports</span><input id="failoverLanPorts" value="ether3,ether4,ether5" readonly></label>
               <div id="backupStaticFields" class="mtg-form-grid mtg-span-2" hidden><label class="mtg-field"><span>Backup IP / prefix</span><input id="backupIp" value="198.51.100.2/30"></label><label class="mtg-field"><span>Backup gateway</span><input id="backupGateway" value="198.51.100.1"></label></div>
               <div id="backupPppoeFields" class="mtg-form-grid mtg-span-2"><label class="mtg-field"><span>Backup PPPoE username</span><input id="backupUser" value="backup-user"></label><label class="mtg-field"><span>Backup PPPoE password</span><input id="backupPass" type="password" autocomplete="new-password"></label></div>
@@ -290,9 +290,9 @@
             <section class="mtg-offline-validation">
               <div class="mtg-offline-head">
                 <div><i class="bi bi-shield-check"></i><div><h3>Offline Script Validation</h3><p>Required fields and command structure are checked locally. Router execution is not performed.</p></div></div>
-                <span><i class="bi bi-check2-circle"></i> Syntax ready</span>
+                <span><i class="bi bi-check2-circle"></i> Validation passed</span>
               </div>
-              <div class="mtg-command-results" id="commandResults">
+              <div class="mtg-command-results" id="commandResults" role="status" aria-live="polite">
                 <div class="mtg-result-empty">Generate the configuration to validate each command.</div>
               </div>
             </section>
@@ -319,5 +319,5 @@ document.querySelectorAll('.navbar-custom a[href^="#"]').forEach(function(link) 
   link.href = "{% url 'home' %}" + link.getAttribute("href");
 });
 </script>
-<script src="{% static 'js/mikrotik-generator.js' %}?v=20260929.4"></script>
+<script src="{% static 'js/mikrotik-generator.js' %}"></script>
 {% endblock %}

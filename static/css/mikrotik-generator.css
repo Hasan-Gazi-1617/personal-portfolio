@@ -96,7 +96,7 @@
 
 /* Phone layout: account for the fixed navbar and prevent horizontal crowding */
 @media(max-width:767.98px){
-  .mtg-page{padding-top:86px;overflow-x:hidden}
+  .mtg-page{padding-top:86px}
   .mtg-shell{width:calc(100% - 20px)}
   .mtg-hero{padding:28px 0 24px}
   .mtg-back{margin-bottom:20px;font-size:12px}

@@ -33,7 +33,15 @@ function validate(panelIndex=current){
   if(wanType()==='pppoe'){if(!clean($('pppoeUser').value))add('pppoeUser','PPPoE username is required.');if(!clean($('pppoePass').value))add('pppoePass','PPPoE password is required.')}
  }
  if(panelIndex>=2||panelIndex===7){if($('lanMode').value==='bridge'&&!clean($('bridgeName').value))add('bridgeName','Bridge name is required.');if(!cidr.test(clean($('lanIp').value)))add('lanIp','Enter the LAN gateway in CIDR format.');if($('lanMode').value==='bridge'&&!selectedPorts().length)errors.push('Select at least one LAN bridge port.');const lanChosen=$('lanMode').value==='bridge'?selectedPorts():[$('directLanInterface').value];if(lanChosen.includes($('wanInterface').value))errors.push('Primary WAN interface cannot also be used as LAN.');if($('enableFailover').checked&&lanChosen.includes($('backupWan').value))errors.push('Backup WAN interface cannot also be used as LAN.')}
- if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.')}
+ if((panelIndex>=3||panelIndex===7)&&$('enableDhcp').checked){
+  ['poolStart','poolEnd'].forEach(id=>{if(!ip.test(clean($(id).value)))add(id,'Enter valid DHCP pool addresses.')});
+  if(!cidr.test(clean($('dhcpNetwork').value)))add('dhcpNetwork','Enter DHCP network in CIDR format.');
+  const lan=cidrDetails(clean($('lanIp').value)),network=cidrDetails(clean($('dhcpNetwork').value)),start=ipv4Number($('poolStart').value),end=ipv4Number($('poolEnd').value);
+  if(start!==null&&end!==null&&start>end)add('poolEnd','DHCP pool end must be greater than or equal to pool start.');
+  if(lan&&network&&lan.network!==network.network)add('dhcpNetwork','DHCP network must match the LAN gateway subnet.');
+  if(lan&&start!==null&&end!==null&&(start<=lan.network||end>=lan.broadcast))add('poolStart','DHCP pool must stay inside the usable LAN subnet.');
+  if(lan&&start!==null&&end!==null&&lan.address>=start&&lan.address<=end)add('poolStart','DHCP pool cannot include the router LAN gateway.');
+ }
  if(panelIndex>=3||panelIndex===7){if(!ip.test(clean($('dns1').value)))add('dns1','Primary DNS is invalid.');if(clean($('dns2').value)&&!ip.test(clean($('dns2').value)))add('dns2','Secondary DNS is invalid.')}
  if((panelIndex>=5||panelIndex===7)&&$('disableServices').checked){
   if(!cidr.test(clean($('managementSource').value)))add('managementSource','Management source must use CIDR format.');
@@ -120,6 +128,8 @@ function buildScript(){
  lines.push('# MikroTik RouterOS v'+$('routerOsVersion').value+' configuration');
  lines.push('# '+clean($('configLabel').value));
  lines.push('# Review before import. Existing configuration is not removed.');
+ lines.push('# Before import: /export hide-sensitive file=before-hasan-config');
+ lines.push('# Before import: /system backup save name=before-hasan-config password=<SET-A-STRONG-PASSWORD>');
  lines.push('');
  lines.push('# ---------- SYSTEM ----------');
  lines.push('/system identity set name='+q($('identity').value));
@@ -384,6 +394,10 @@ function buildScript(){
   lines.push('/ping '+target+' count=4');
   lines.push('/tool traceroute '+target);
  }
+ lines.push('');lines.push('# ---------- ROLLBACK GUIDE ----------');
+ lines.push('# Preferred rollback: restore the binary backup from Files, then reboot.');
+ lines.push('# Text rollback: inspect /export terse and remove only entries created by this script.');
+ lines.push('# Never import remotely without a tested out-of-band management path.');
  lines.push('');lines.push('# ---------- END ----------');lines.push(':log info "Hasan MikroTik generated configuration applied"');
  return lines.join('\n');
 }
@@ -477,7 +491,7 @@ function executableCommands(script){
 function renderCommandRows(script){
  const commands=executableCommands(script);const box=$('commandResults');if(!box)return;
  box.innerHTML=commands.map((cmd,i)=>{
-  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+'</code><span class="mtg-result-status success">Syntax ready</span></div>';
+  return '<div class="mtg-result-row"><span class="mtg-result-index">'+String(i+1).padStart(2,'0')+'</span><code class="mtg-result-command">'+escapeHtml(cmd)+'</code><span class="mtg-result-status ready">Generated</span></div>';
  }).join('')||'<div class="mtg-result-empty">No executable commands generated.</div>';
 }
 function escapeHtml(value){const e=document.createElement('div');e.textContent=String(value||'');return e.innerHTML}
