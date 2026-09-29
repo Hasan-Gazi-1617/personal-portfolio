@@ -3,7 +3,7 @@
 {% block title %}Algorithm Visual Studio | Hasan{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/algorithm-studio.css' %}?v=20260929.1">{% endblock %}
 {% block content %}
-<main class="avs-shell">
+<div class="avs-shell">
   <header class="avs-hero">
     <div>
       <a class="avs-back" href="{% url 'home' %}#projects"><i class="bi bi-arrow-left"></i> Portfolio</a>
@@ -27,7 +27,7 @@
       <div class="avs-toolbar">
         <button id="avsSidebarOpen" class="avs-mobile-topics" type="button"><i class="bi bi-list"></i> Topics</button>
         <div class="avs-title-block"><span class="avs-eyebrow" id="avsCategory">ALGORITHM</span><h2 id="avsTitle">Bubble Sort</h2></div>
-        <button id="avsBookmark" class="avs-bookmark" type="button" title="Bookmark topic"><i class="bi bi-bookmark"></i></button>
+        <button id="avsBookmark" class="avs-bookmark" type="button" title="Bookmark topic" aria-label="Bookmark topic"><i class="bi bi-bookmark"></i></button>
         <label>Language<select id="avsLanguage"><option value="cpp">C++</option><option value="python" selected>Python</option><option value="java">Java</option><option value="ruby">Ruby</option></select></label>
       </div>
 
@@ -52,10 +52,10 @@
           <div id="avsCanvas" class="avs-canvas"></div>
           <div id="avsNarration" class="avs-narration"><i class="bi bi-lightbulb"></i><span>Ready.</span></div>
           <div class="avs-controls">
-            <button id="avsReset" title="Reset"><i class="bi bi-skip-backward-fill"></i></button>
-            <button id="avsPrev" title="Previous"><i class="bi bi-chevron-left"></i></button>
+            <button id="avsReset" title="Reset" aria-label="Reset animation"><i class="bi bi-skip-backward-fill"></i><span>Reset</span></button>
+            <button id="avsPrev" title="Previous" aria-label="Previous step"><i class="bi bi-chevron-left"></i><span>Previous</span></button>
             <button id="avsPlay" class="primary"><i class="bi bi-play-fill"></i><span>Play</span></button>
-            <button id="avsNext" title="Next"><i class="bi bi-chevron-right"></i></button>
+            <button id="avsNext" title="Next" aria-label="Next step"><i class="bi bi-chevron-right"></i><span>Next</span></button>
             <input id="avsTimeline" class="avs-timeline" type="range" min="0" max="0" value="0" aria-label="Animation timeline">
             <label>Speed<input id="avsSpeed" type="range" min="200" max="1400" step="100" value="700"></label>
           </div>
@@ -75,6 +75,6 @@
       </div>
     </section>
   </section>
-</main>
+</div>
 <script src="{% static 'js/algorithm-studio.js' %}?v=20260929.1"></script>
 {% endblock %}
