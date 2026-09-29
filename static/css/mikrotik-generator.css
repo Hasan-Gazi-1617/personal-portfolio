@@ -146,7 +146,8 @@ html[data-theme="light"] .mtg-alert-info{color:#315e4e;background:#e9f7f2;border
 
 /* Visible labels make every phone workflow step self-explanatory */
 @media(max-width:600px){
-  .mtg-steps button{flex-direction:column;gap:6px;min-height:68px;background:color-mix(in srgb,var(--mtg-accent) 4%,var(--mtg-surface));color:var(--mtg-muted)}
-  .mtg-steps button::after{content:attr(data-mobile-label);display:block;max-width:100%;overflow:hidden;color:currentColor;font:800 .58rem/1.1 var(--mtg-mono);letter-spacing:.01em;text-align:center;text-overflow:ellipsis;white-space:nowrap}
+  .mtg-steps{-webkit-text-size-adjust:none;text-size-adjust:none}
+  .mtg-steps button{flex-direction:column;gap:5px;min-height:62px;background:color-mix(in srgb,var(--mtg-accent) 4%,var(--mtg-surface));color:var(--mtg-muted)}
+  .mtg-steps button::after{content:attr(data-mobile-label);display:block;width:100%;max-width:100%;overflow:visible;color:currentColor;font-family:var(--mtg-mono);font-size:9px!important;font-weight:800;line-height:1.1;letter-spacing:0;text-align:center;text-overflow:clip;white-space:normal}
   .mtg-steps button.active{color:var(--mtg-text);background:color-mix(in srgb,var(--mtg-accent) 12%,var(--mtg-surface))}
 }
