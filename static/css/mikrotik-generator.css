@@ -123,3 +123,23 @@
   .mtg-nav-actions .mtg-btn{flex:1 1 130px}
 }
 html[data-theme="light"] .mtg-alert-info{color:#315e4e;background:#e9f7f2;border-color:#a9d9c8}
+
+/* Final compact phone navigation: no clipped steps or oversized capability rows */
+@media(max-width:600px){
+  .mtg-sidebar{position:static;top:auto;padding:10px;margin-bottom:12px}
+  .mtg-progress{margin:0 3px 8px}
+  .mtg-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0;overflow:visible;scroll-snap-type:none}
+  .mtg-steps button{width:100%;min-width:0;min-height:42px;flex:none;padding:5px;border:1px solid transparent}
+  .mtg-steps button>i{width:32px;height:32px;font-size:.88rem}
+  .mtg-steps button.active{border-color:color-mix(in srgb,var(--mtg-accent) 35%,transparent);box-shadow:inset 0 -3px var(--mtg-accent)}
+  .mtg-capability-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+  .mtg-capability-map button{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:9px;min-height:66px;padding:10px;border:1px solid var(--mtg-border);border-radius:12px}
+  .mtg-capability-map i{display:grid;width:30px;height:30px;flex-basis:30px;font-size:.85rem}
+  .mtg-capability-map span{gap:4px}
+  .mtg-capability-map b{font-size:.75rem;line-height:1.15}
+  .mtg-capability-map small{display:block;overflow:visible;font-size:.59rem;line-height:1.3;white-space:normal;text-overflow:clip}
+}
+@media(max-width:360px){
+  .mtg-capability-map button{grid-template-columns:1fr;justify-items:start;min-height:76px}
+  .mtg-capability-map i{width:27px;height:27px}
+}
