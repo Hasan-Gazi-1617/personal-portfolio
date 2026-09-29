@@ -1,10 +1,13 @@
 import os
+import logging
 import secrets
 import time
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -47,6 +50,10 @@ def owner_login(request):
 
         attempts.append(now)
         request.session["owner_login_attempts"] = attempts
+        logger.warning(
+            "Rejected owner login attempt",
+            extra={"client_ip": request.META.get("REMOTE_ADDR", "unknown"), "attempt_count": len(attempts)},
+        )
         messages.error(request, "Invalid owner access key.")
 
     return render(request, "owner_login.html")

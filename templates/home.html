@@ -727,7 +727,7 @@ html[data-theme="light"] #live-network-topology {
 
 
 
-        <div class="row g-4">
+        <div class="row g-4 featured-tools-grid">
 
 
             <!-- 1 -->
@@ -2940,7 +2940,7 @@ html[data-theme="light"] #live-network-topology {
 
 
     <a
-        href="https://drive.google.com/drive/folders/1WXdcn08iP-wMq95_1pFWg8SXUCenm3Bh"
+        href="{{ networking_lessons_url }}"
         target="_blank"
         rel="noopener noreferrer"
         class="lesson-resource-btn"
@@ -4027,7 +4027,7 @@ document.addEventListener(
                     <div class="contact-links">
 
 
-                       <a href="https://mail.google.com/mail/?view=cm&fs=1&to=mdhasan.cse9243@gmail.com"
+                       <a href="mailto:{{ public_email }}"
                                 class="contact-link"
                                 target="_blank"
                                 rel="noopener noreferrer">
@@ -4040,7 +4040,7 @@ document.addEventListener(
                                         <small>EMAIL</small>
 
                                         <strong>
-                                            mdhasan.cse9243@gmail.com
+                                            {{ public_email|default:"Email available on request" }}
                                         </strong>
                                     </div>
 

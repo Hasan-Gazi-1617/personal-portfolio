@@ -540,11 +540,11 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 (function(){try{const saved=localStorage.getItem('hasan-portfolio-theme');const preferred=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=saved||preferred}catch(e){document.documentElement.dataset.theme='dark'}})();
 </script>
 
-    <link rel="stylesheet" href="{% static 'css/portfolio-enhancements.css' %}?v=20260928.7">
-    <link rel="stylesheet" href="{% static 'css/responsive-foundation.css' %}?v=20260929.1">
+    <link rel="stylesheet" href="{% static 'css/portfolio-enhancements.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive-foundation.css' %}">
 </head>
 
-<body>
+<body data-contact-email="{{ public_email }}">
 <a class="skip-link" href="#mainContent">Skip to main content</a>
 
 <!-- ================= NAVBAR ================= -->
@@ -575,14 +575,15 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
         </a>
 
         <!-- Mobile Button -->
-        <button class="navbar-toggler"
+        <button class="navbar-toggler nav-menu-toggle"
                 type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#mainNavbar"
                 aria-controls="mainNavbar"
                 aria-expanded="false"
                 aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon" aria-hidden="true"></span>
+            <span class="nav-menu-label">Menu</span>
         </button>
 
         <!-- Navigation -->
@@ -643,7 +644,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                         <!-- WEBMAIL -->
                         <li>
                             <a class="dropdown-item"
-                               href="https://server344.web-hosting.com:2096/"
+                               href="{{ private_links.webmail|default:'#' }}"
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-envelope"></i>
@@ -654,7 +655,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                          <!-- Client Management System -->
                         <li>
                             <a class="dropdown-item"
-                               href="https://isp.manor.net/"
+                               href="{{ private_links.isp_panel|default:'#' }}"
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
@@ -665,7 +666,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                         <!-- MIT BILLING -->
                         <li>
                             <a class="dropdown-item"
-                               href="https://ispbiller.com/"
+                               href="{{ private_links.billing|default:'#' }}"
                                target="_blank"
                                rel="noopener noreferrer">
                                 <i class="bi bi-receipt"></i>
@@ -688,7 +689,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                             <ul class="dropdown-menu submenu-menu">
                                 <li>
                                     <a class="dropdown-item"
-                                       href="https://docs.google.com/spreadsheets/d/1uVHbN6owWXHIUM8e1nxWyyzau9nOLdL9oNUc_qgdjWg/edit?gid=1931080573#gid=1931080573"
+                                       href="{{ private_links.client_database|default:'#' }}"
                                        target="_blank"
                                        rel="noopener noreferrer">
                                         <i class="bi bi-file-earmark-spreadsheet"></i>
@@ -698,7 +699,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                                 <li>
                                     <a class="dropdown-item"
-                                       href="https://docs.google.com/spreadsheets/d/1ediAyAoKrS-jAFY5xsp7Mwglwf_Xyoh9za-TofCAG8s/edit?gid=1438501927#gid=1438501927"
+                                       href="{{ private_links.level3_database|default:'#' }}"
                                        target="_blank"
                                        rel="noopener noreferrer">
                                         <i class="bi bi-file-earmark-spreadsheet"></i>
@@ -708,7 +709,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                                 <li>
                                     <a class="dropdown-item"
-                                       href="https://docs.google.com/spreadsheets/d/1LMgOkbj0CknOdS6yu5BT78m222O-xTHh/edit?gid=1089012791#gid=1089012791"
+                                       href="{{ private_links.roster|default:'#' }}"
                                        target="_blank"
                                        rel="noopener noreferrer">
                                         <i class="bi bi-calendar3"></i>
@@ -729,90 +730,16 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                             </a>
 
                             <ul class="dropdown-menu submenu-menu">
-                                <!-- Replace # with your actual Drop 1 URL -->
+                                {% for endpoint in private_links.olt_menu %}
                                 <li>
-                                    <a class="dropdown-item"
-                                       href="https://103.101.253.17:4512/"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON):12
+                                    <a class="dropdown-item" href="{{ endpoint.url }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="bi bi-hdd-network"></i>
+                                        <span>{{ endpoint.label }}</span>
                                     </a>
                                 </li>
-
-                                <!-- Replace # with your actual Drop 2 URL -->
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="http://103.101.253.17:4514/"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                        OLT CDATA(G-PON-1):14
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="http://103.101.253.17:4515/"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON-2):15
-                                    </a>
-                                </li>
-
-                                 <li>
-                                    <a class="dropdown-item"
-                                       href="http://103.101.253.17:4516"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON-3(POP Akhalia)):16
-                                    </a>
-                                </li>
-
-                                
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="http://103.101.253.17:4518"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON-3(POP Akhalia)):18
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="https://103.101.253.17:4519/#/login"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON-3(POP Akhalia)):19
-                                    </a>
-                                </li>
-
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="http://103.101.253.17:4517"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT CDATA(G-PON-4(POP Khadim)):17
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="https://103.101.253.17:4510/action/login.html"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT VSOL EPON:10
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="https://103.101.253.17:4511/action/login.html"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                       OLT VSOL EPON:11
-                                    </a>
-                                </li>
+                                {% empty %}
+                                <li><span class="dropdown-item disabled">No OLT links configured</span></li>
+                                {% endfor %}
                             </ul>
                         </li>
                     </ul>
@@ -931,7 +858,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                     </a>
 
                     <!-- EMAIL -->
-                    <a href="mailto:mdhasan.cse9243@gmail.com"
+                    <a href="mailto:{{ public_email }}"
                        aria-label="Email">
                         <i class="bi bi-envelope"></i>
                     </a>
@@ -956,6 +883,9 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- ================= OLT LOCATION SEARCH JS ================= -->
+{% if request.session.owner_access %}
+{{ olt_locations|json_script:"olt-location-data" }}
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchWrap = document.getElementById('oltLocationSearch');
@@ -967,117 +897,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Keep usernames/passwords out of frontend JavaScript.
     // Search results only open the matching OLT login page.
-    const oltLocations = [
-        { location: 'Madina Market 1', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Bagbari', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Zindabazar', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Kazi Elias', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Kalighat', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Mohajonpotti', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-        { location: 'Bondor', olt: 'CDATA G-PON', pop: 'EPON', port: '4512', url: 'http://103.101.253.17:4512/' },
-
-        { location: 'Galleria', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Zindabazar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Bondor', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Jailroad', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Barutkhana', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Hawapara', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Noyashorok', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Taltola', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Masudighirpar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Sheikhghat', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Medical', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Shamimabad 1', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Lama Bazar', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'South Surma', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Boroikandi', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-        { location: 'Kumarpara', olt: 'CDATA G-PON-1', pop: 'GPON-1', port: '4514', url: 'http://103.101.253.17:4514/' },
-
-        { location: 'Amberkhana', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Kazitula', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Chowkidekhi', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Jalalabad', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Lakkatura', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Mirabazar', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Baluchor', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Uposhohor', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-        { location: 'Badambagicha', olt: 'CDATA G-PON-2', pop: 'GPON-2', port: '4515', url: 'http://103.101.253.17:4515/' },
-       
-        { location: 'Madina Market', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Bagbari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Sagordighirpar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Kalibari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Neharipara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Borobari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Shamimabad', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Nobab Road', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Keuapara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Londoni Road', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Subidbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Ponitula', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Akhalia', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Surma', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Temukhi', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Kumargaw', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Noyakhurumkhola', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Pirpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Hyderpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Shahebergao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Chorugao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Tukerbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Khaligao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Shahpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Nuagao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Gauripur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-        { location: 'Citycorner', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4516', url: 'http://103.101.253.17:4516/' },
-
-        { location: 'Mejortila', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
-        { location: 'Khadim', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
-        { location: 'Surmagate', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
-        { location: 'Dolipara', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
-        { location: 'DShahparan', olt: 'CDATA G-PON-4', pop: 'POP Khadim', port: '4517', url: 'http://103.101.253.17:4517/' },
-
-        { location: 'Surma', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Akhali', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Mahmudabad', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Chorugao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Shahebergao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Thanabari', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Shining City', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Haydarpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Khaligao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Noyakhurumkhola', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Pirpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Tukerbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Shahpur', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Tulergao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-        { location: 'Nuagao', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4518', url: 'http://103.101.253.17:4518/' },
-
-        { location: 'Shubidbazar', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Kodomtoli (New)', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Dariapara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Jalalpara', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Shibgonj', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Banullahkhana', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Dorgah', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Mirer Moydan', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Upo. F-J Block', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Naiorpool', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        { location: 'Mendibag', olt: 'CDATA G-PON-3', pop: 'POP Akhalia', port: '4519', url: 'https://103.101.253.17:4519/#/login' },
-        
-
-        { location: 'Rikabibazar', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Kazitula', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Uposhohor', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Jotorpur', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Mirzajangal', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Muttalib Villa', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Kalighat', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Vatalia', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Lamabazar', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Tatipara', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-        { location: 'Subhanighat', olt: 'VSOL EPON', pop: 'VSOL', port: '4510', url: 'https://103.101.253.17:4510/action/login.html' },
-    ];
+    const dataElement = document.getElementById("olt-location-data");
+    const oltLocations = dataElement ? JSON.parse(dataElement.textContent) : [];
 
     let visibleMatches = [];
     let activeIndex = -1;
@@ -1327,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
-<script src="{% static 'js/portfolio-enhancements.js' %}?v=20260928.7" defer></script>
-<script src="{% static 'js/responsive-navigation.js' %}?v=20260929.1" defer></script>
+<script src="{% static 'js/portfolio-enhancements.js' %}" defer></script>
+<script src="{% static 'js/responsive-navigation.js' %}" defer></script>
 </body>
 </html>
