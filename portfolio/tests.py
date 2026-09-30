@@ -15,12 +15,12 @@ TEST_STORAGES = {
 @override_settings(SECURE_SSL_REDIRECT=False, STORAGES=TEST_STORAGES)
 class PublicPageTests(TestCase):
     def test_public_pages_render(self):
-        for name in ("home", "mikrotik_generator", "algorithm_studio", "noc_twin_studio", "owner_login"):
+        for name in ("home", "mikrotik_generator", "algorithm_studio", "owner_login"):
             response = self.client.get(reverse(name))
             self.assertEqual(response.status_code, 200, name)
 
     def test_pages_have_one_main_landmark(self):
-        for name in ("home", "mikrotik_generator", "algorithm_studio", "noc_twin_studio"):
+        for name in ("home", "mikrotik_generator", "algorithm_studio"):
             html = self.client.get(reverse(name)).content.decode()
             self.assertEqual(html.count("<main"), 1, name)
             self.assertIn('id="mainContent"', html)
@@ -38,7 +38,7 @@ class PublicPageTests(TestCase):
         self.assertIn("responsive-navigation", html)
 
     def test_manual_cache_busting_query_strings_are_removed(self):
-        for name in ("home", "mikrotik_generator", "algorithm_studio", "noc_twin_studio"):
+        for name in ("home", "mikrotik_generator", "algorithm_studio"):
             html = self.client.get(reverse(name)).content.decode()
             self.assertNotRegex(html, r'/static/[^"\']+\?v=')
 
@@ -82,7 +82,6 @@ class FrontendContractTests(TestCase):
         cls.generator = (static_root / "js" / "mikrotik-generator.js").read_text()
         cls.algorithm = (static_root / "js" / "algorithm-studio.js").read_text()
         cls.navigation = (static_root / "js" / "responsive-navigation.js").read_text()
-        cls.noc_twin = (static_root / "js" / "noc-twin-studio.js").read_text()
         cls.foundation = (static_root / "css" / "responsive-foundation.css").read_text()
 
     def test_all_nine_failover_scenarios_are_declared(self):
@@ -122,21 +121,6 @@ class FrontendContractTests(TestCase):
         self.assertGreaterEqual(html.count('aria-live="polite"'), 2)
         for topic in ("stack", "queue", "bfs", "dfs", "sliding"):
             self.assertRegex(self.algorithm, rf"id:'{topic}'")
-
-    def test_noc_twin_generation_validation_simulation_and_export(self):
-        html = self.client.get(reverse("noc_twin_studio")).content.decode()
-        for control in ("ntsGenerate", "ntsCanvas", "ntsFailureList", "ntsExportJson", "ntsExportSvg"):
-            self.assertIn(f'id="{control}"', html)
-        for behavior in ("parsePrompt", "audit", "simulate", "exportSvg", "enableDrag"):
-            self.assertIn(behavior, self.noc_twin)
-        self.assertIn("বাংলা + EN", html)
-
-    def test_noc_twin_supports_port_level_branch_topology(self):
-        for behavior in ("parsePortTopology", "buildFivePortBranchTopology", "fixed-five-port-branch", "bridge-LAN", "desktopPorts", "TP-Link AP", "port-topology"):
-            self.assertIn(behavior, self.noc_twin)
-        html = self.client.get(reverse("noc_twin_studio")).content.decode()
-        self.assertIn("TP-Link", html)
-        self.assertIn('data-fixed-topology="five-port-branch"', html)
 
     def test_single_breakpoint_foundation_and_no_overflow_hiding(self):
         for width in (991.98, 767.98, 374.98):
