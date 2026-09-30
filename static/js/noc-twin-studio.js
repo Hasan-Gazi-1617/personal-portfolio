@@ -28,8 +28,8 @@ function wordNumber(text,before){
   if(!match)return 0; const token=match[0].split(/\s+/)[0];return Number(token)||nums[token]||0;
 }
 function makeNode(type,name,level,index,total,vendor='Generic'){
-  const width=Math.max(canvas.clientWidth,620),height=Math.max(canvas.clientHeight,500);
-  const x=((index+1)/(total+1))*Math.max(width-150,300); const y=58+level*Math.min(135,(height-130)/4);
+  const width=Math.max(canvas.clientWidth,280),height=Math.max(canvas.clientHeight,500);
+  const x=((index+1)/(total+1))*Math.max(width-140,140); const y=58+level*Math.min(135,(height-130)/4);
   return{id:uid(type),type,name,vendor,ip:'',x:Math.round(x),y:Math.round(y),level};
 }
 function parsePrompt(text){
@@ -64,11 +64,23 @@ function parsePrompt(text){
   if(groups.core.length>1)connect(groups.core[0],groups.core[1],'Core Peer');
   return{nodes,links,vlans};
 }
-function autoLayout(){
-  const width=Math.max(canvas.clientWidth,620),height=Math.max(canvas.clientHeight,500);
+function autoLayout(announce=true){
+  const width=Math.max(canvas.clientWidth,280),nodeWidth=width<520?112:126;
   const levels={};topology.nodes.forEach(n=>(levels[n.level]||(levels[n.level]=[])).push(n));
-  Object.entries(levels).forEach(([level,nodes])=>nodes.forEach((n,i)=>{n.x=Math.round(((i+1)/(nodes.length+1))*(width-140));n.y=Math.round(42+Number(level)*Math.min(125,(height-120)/4))}));
-  render();log('Topology arranged into logical network layers.','LAYOUT');
+  let cursorY=38;
+  Object.keys(levels).sort((a,b)=>Number(a)-Number(b)).forEach(level=>{
+    const nodes=levels[level],columns=width<520?Math.min(2,nodes.length):nodes.length;
+    const rows=Math.ceil(nodes.length/Math.max(columns,1));
+    nodes.forEach((n,i)=>{
+      const row=Math.floor(i/columns),column=i%columns,itemsInRow=Math.min(columns,nodes.length-row*columns);
+      const slot=width/itemsInRow;
+      n.x=Math.max(6,Math.round(column*slot+(slot-nodeWidth)/2));
+      n.y=cursorY+row*92;
+    });
+    cursorY+=rows*92+24;
+  });
+  canvas.style.minHeight=Math.max(500,cursorY+30)+'px';
+  render();if(announce)log('Topology arranged into logical network layers.','LAYOUT');
 }
 function render(){
   canvas.querySelectorAll('.nts-node').forEach(n=>n.remove());empty.hidden=topology.nodes.length>0;
@@ -138,7 +150,7 @@ function exportSvg(){
   svg+='</svg>';download('noc-twin-topology.svg','image/svg+xml',svg);log('Topology exported as SVG.','EXPORT');
 }
 
-$('#ntsGenerate').addEventListener('click',()=>{if(!prompt.value.trim())return;topology=parsePrompt(prompt.value);selectedId=null;failure=null;render();audit();log('Digital twin generated from the network requirement.','GENERATED')});
+$('#ntsGenerate').addEventListener('click',()=>{if(!prompt.value.trim())return;topology=parsePrompt(prompt.value);selectedId=null;failure=null;autoLayout(false);audit();log('Digital twin generated from the network requirement.','GENERATED')});
 $$('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{prompt.value=b.dataset.prompt;prompt.focus()}));
 $$('#ntsDevicePalette [data-type]').forEach(b=>b.addEventListener('click',()=>addDevice(b.dataset.type)));
 $$('#ntsFailureList [data-failure]').forEach(b=>b.addEventListener('click',()=>{$$('#ntsFailureList button').forEach(x=>x.classList.toggle('active',x===b&&b.dataset.failure!=='reset'));simulate(b.dataset.failure)}));
@@ -147,5 +159,5 @@ $('#ntsAutoLayout').addEventListener('click',autoLayout);$('#ntsExportJson').add
 $('#ntsReset').addEventListener('click',()=>{topology={nodes:[],links:[],vlans:[]};selectedId=null;failure=null;render();$('#ntsAudit').innerHTML='<div class="nts-audit-empty"><i class="bi bi-clipboard-data"></i><span>Generate a design to run the network audit.</span></div>';$('#ntsScore').textContent='Score —';log('Canvas reset.','RESET')});
 $('#ntsDeleteNode').addEventListener('click',()=>{if(!selectedId)return;topology.nodes=topology.nodes.filter(n=>n.id!==selectedId);topology.links=topology.links.filter(l=>l.from!==selectedId&&l.to!==selectedId);selectedId=null;render();audit()});
 ['ntsNodeName','ntsNodeIp','ntsNodeVendor'].forEach(id=>$('#'+id).addEventListener('input',()=>{const n=topology.nodes.find(x=>x.id===selectedId);if(!n)return;n.name=$('#ntsNodeName').value||labels[n.type];n.ip=$('#ntsNodeIp').value;n.vendor=$('#ntsNodeVendor').value;render()}));
-window.addEventListener('resize',drawLinks);render();
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(topology.nodes.length)autoLayout(false);else drawLinks()},120)});render();
 })();
