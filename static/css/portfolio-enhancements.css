@@ -353,6 +353,10 @@ html:not([data-theme="light"]) section [class*="topology-background"]{opacity:.4
 /* ===== CLEAR FEATURED PROJECT INTERACTIONS ===== */
 #projects .project-card-link{cursor:pointer}
 #projects .featured-tool-card .project-visual{color:#0891b2}
+#projects .noc-twin-tool-card{--project-accent:#a78bfa}
+#projects .noc-twin-tool-card .project-icon,
+#projects .noc-twin-tool-card .project-visual{color:#a78bfa}
+#projects .noc-twin-tool-card .project-visual{background:linear-gradient(135deg,rgba(167,139,250,.11),rgba(34,211,238,.07))}
 #projects .featured-tool-card .project-visual i{font-size:16px}
 #projects .project-status{font-size:10.5px!important;font-weight:800;letter-spacing:.065em;white-space:nowrap}
 #projects .project-action{
