@@ -24,11 +24,6 @@ def algorithm_studio(request):
     return render(request, "algorithm_studio.html")
 
 
-def noc_twin_studio(request):
-    """Client-side intelligent network topology and failure simulation studio."""
-    return render(request, "noc_twin_studio.html")
-
-
 @require_http_methods(["GET", "POST"])
 def owner_login(request):
     if request.session.get("owner_access"):
