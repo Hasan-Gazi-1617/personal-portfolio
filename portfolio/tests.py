@@ -131,6 +131,12 @@ class FrontendContractTests(TestCase):
             self.assertIn(behavior, self.noc_twin)
         self.assertIn("বাংলা + EN", html)
 
+    def test_noc_twin_supports_port_level_branch_topology(self):
+        for behavior in ("parsePortTopology", "bridge-LAN", "desktopPorts", "TP-Link AP", "port-topology"):
+            self.assertIn(behavior, self.noc_twin)
+        html = self.client.get(reverse("noc_twin_studio")).content.decode()
+        self.assertIn("TP-Link", html)
+
     def test_single_breakpoint_foundation_and_no_overflow_hiding(self):
         for width in (991.98, 767.98, 374.98):
             self.assertIn(f"max-width: {width}px", self.foundation)
