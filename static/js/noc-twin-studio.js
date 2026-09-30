@@ -32,6 +32,24 @@ function makeNode(type,name,level,index,total,vendor='Generic'){
   const x=((index+1)/(total+1))*Math.max(width-140,140); const y=58+level*Math.min(135,(height-130)/4);
   return{id:uid(type),type,name,vendor,ip:'',x:Math.round(x),y:Math.round(y),level};
 }
+function buildFivePortBranchTopology(){
+  const isp=makeNode('cloud','ISP',0,0,1,'ISP');
+  const router=makeNode('router','MikroTik 5-Port',1,0,1,'MikroTik');router.ip='103.101.253.27/28';
+  const bridge=makeNode('bridge','bridge-LAN',2,0,1,'MikroTik');bridge.ip='192.168.10.1/24';bridge.ports=['ether3','ether4','ether5'];
+  const ap=makeNode('ap','TP-Link AP',3,0,3,'TP-Link');ap.ip='192.168.10.2/24';
+  const desktop1=makeNode('client','Desktop 1',3,1,3,'Generic');
+  const desktop2=makeNode('client','Desktop 2',3,2,3,'Generic');
+  const nodes=[isp,router,bridge,ap,desktop1,desktop2];
+  const link=(from,to,label)=>({id:uid('link'),from:from.id,to:to.id,label,status:'healthy'});
+  const links=[
+    link(isp,router,'ether1 · WAN'),
+    link(router,bridge,'bridge-LAN'),
+    link(bridge,ap,'ether3 · AP'),
+    link(bridge,desktop1,'ether4 · LAN'),
+    link(bridge,desktop2,'ether5 · LAN')
+  ];
+  return{nodes,links,vlans:[],mode:'fixed-five-port-branch'};
+}
 function parsePortTopology(text){
   const lower=text.toLowerCase();
   const ports=Array.from(lower.matchAll(/ether\s*-?\s*(\d+)/g),m=>'ether'+m[1]);
@@ -185,6 +203,12 @@ function exportSvg(){
 }
 
 $('#ntsGenerate').addEventListener('click',()=>{if(!prompt.value.trim())return;topology=parsePrompt(prompt.value);selectedId=null;failure=null;autoLayout(false);audit();log('Digital twin generated from the network requirement.','GENERATED')});
+$$('[data-fixed-topology]').forEach(button=>button.addEventListener('click',()=>{
+  if(button.dataset.fixedTopology!=='five-port-branch')return;
+  prompt.value='Fixed 5-port MikroTik branch: ISP 103.101.253.27/28 on ether1; ether3, ether4 and ether5 in bridge-LAN; TP-Link AP on ether3; Desktop 1 on ether4; Desktop 2 on ether5.';
+  topology=buildFivePortBranchTopology();selectedId=null;failure=null;autoLayout(false);audit();
+  log('Fixed 5-port MikroTik branch topology loaded.','PRESET');
+}));
 $$('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{prompt.value=b.dataset.prompt;prompt.focus()}));
 $$('#ntsDevicePalette [data-type]').forEach(b=>b.addEventListener('click',()=>addDevice(b.dataset.type)));
 $$('#ntsFailureList [data-failure]').forEach(b=>b.addEventListener('click',()=>{$$('#ntsFailureList button').forEach(x=>x.classList.toggle('active',x===b&&b.dataset.failure!=='reset'));simulate(b.dataset.failure)}));
