@@ -4,8 +4,8 @@ const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll
 const canvas=$('#ntsCanvas'), linksSvg=$('#ntsLinks'), empty=$('#ntsEmpty'), prompt=$('#ntsPrompt');
 if(!canvas)return;
 
-const icons={cloud:'bi-cloud',router:'bi-router',firewall:'bi-shield-lock',switch:'bi-diagram-3',olt:'bi-hdd-network',server:'bi-server',ap:'bi-wifi',client:'bi-pc-display'};
-const labels={cloud:'ISP',router:'Router',firewall:'Firewall',switch:'Switch',olt:'OLT',server:'Server',ap:'Wi-Fi AP',client:'Client'};
+const icons={cloud:'bi-cloud',router:'bi-router',firewall:'bi-shield-lock',switch:'bi-diagram-3',bridge:'bi-bezier2',olt:'bi-hdd-network',server:'bi-server',ap:'bi-wifi',client:'bi-pc-display'};
+const labels={cloud:'ISP',router:'Router',firewall:'Firewall',switch:'Switch',bridge:'LAN Bridge',olt:'OLT',server:'Server',ap:'Wi-Fi AP',client:'Desktop'};
 let topology={nodes:[],links:[],vlans:[]}, selectedId=null, eventCount=0, failure=null;
 
 function uid(prefix){return prefix+'-'+Math.random().toString(36).slice(2,8)}
@@ -32,8 +32,42 @@ function makeNode(type,name,level,index,total,vendor='Generic'){
   const x=((index+1)/(total+1))*Math.max(width-140,140); const y=58+level*Math.min(135,(height-130)/4);
   return{id:uid(type),type,name,vendor,ip:'',x:Math.round(x),y:Math.round(y),level};
 }
+function parsePortTopology(text){
+  const lower=text.toLowerCase();
+  const ports=Array.from(lower.matchAll(/ether\s*-?\s*(\d+)/g),m=>'ether'+m[1]);
+  const uniquePorts=[...new Set(ports)];
+  const hasBridge=/bridge(?:-lan|\s+mode|\s+ether|\s+port)?/.test(lower);
+  const hasMikrotik=/mikrotik/.test(lower);
+  const hasAp=/(tp[\s-]?link|access point|\bap\s+mode\b)/.test(lower);
+  const hasDesktop=/desktop|workstation|\bpc\b/.test(lower);
+  if(!hasMikrotik||!hasBridge||uniquePorts.length<2||(!hasAp&&!hasDesktop))return null;
+
+  const cidr=(text.match(/\b(?:\d{1,3}\.){3}\d{1,3}\/\d{1,2}\b/)||[])[0]||'';
+  const wanPort=(lower.match(/(?:isp|wan|connectivity)[\s\S]{0,55}?(ether\s*-?\s*\d+)/)||[])[1]?.replace(/\s|-/g,'')||'ether1';
+  const apPort=(lower.match(/(ether\s*-?\s*\d+)[\s\S]{0,70}?(?:tp[\s-]?link|access point|\bap\s+mode\b)/)||[])[1]?.replace(/\s|-/g,'')||'ether3';
+  let desktopPorts=[];
+  const desktopClause=(lower.match(/((?:ether\s*-?\s*\d+[\s,]*(?:and|&)?[\s,]*)+)[\s\S]{0,35}?(?:desktop|workstation|\bpc\b)/)||[])[1];
+  if(desktopClause)desktopPorts=[...desktopClause.matchAll(/ether\s*-?\s*(\d+)/g)].map(m=>'ether'+m[1]);
+  if(!desktopPorts.length&&hasDesktop)desktopPorts=uniquePorts.filter(p=>p!==wanPort&&p!==apPort);
+  const bridgePorts=uniquePorts.filter(p=>p!==wanPort);
+  if(!bridgePorts.includes(apPort)&&hasAp)bridgePorts.unshift(apPort);
+
+  const isp=makeNode('cloud','ISP',0,0,1,'ISP');
+  const router=makeNode('router',/5[\s-]*port/.test(lower)?'MikroTik 5-Port':'MikroTik Router',1,0,1,'MikroTik');
+  router.ip=cidr;
+  const bridge=makeNode('bridge','bridge-LAN',2,0,1,'MikroTik');
+  bridge.ip='192.168.10.1/24';bridge.ports=bridgePorts;
+  const nodes=[isp,router,bridge],links=[];
+  const connect=(from,to,label)=>links.push({id:uid('link'),from:from.id,to:to.id,label,status:'healthy'});
+  connect(isp,router,wanPort+' · WAN');
+  connect(router,bridge,'bridge-LAN');
+  if(hasAp){const ap=makeNode('ap','TP-Link AP',3,0,1,'TP-Link');ap.ip='192.168.10.2/24';nodes.push(ap);connect(bridge,ap,apPort+' · AP');}
+  desktopPorts.forEach((port,index)=>{const client=makeNode('client','Desktop '+(index+1),3,index,desktopPorts.length,'Generic');nodes.push(client);connect(bridge,client,port+' · LAN');});
+  return{nodes,links,vlans:[],mode:'port-topology'};
+}
 function parsePrompt(text){
   const lower=text.toLowerCase();
+  const portTopology=parsePortTopology(text);if(portTopology)return portTopology;
   const ispCount=Math.max(wordNumber(text,'isp|upstream|provider'),/(two|দুইটি|দুটি).*?(isp|upstream|provider)/i.test(text)?2:1);
   const routerCount=Math.max(wordNumber(text,'router|edge router|mikrotik'),lower.includes('router')||lower.includes('mikrotik')?1:0);
   const firewallCount=Math.max(wordNumber(text,'firewall'),lower.includes('firewall')?1:0);
@@ -115,9 +149,9 @@ function updateInspector(){
 }
 function updateSummary(){const values=$$('#ntsSummary strong');values[0].textContent=topology.nodes.length;values[1].textContent=topology.links.length;values[2].textContent=topology.vlans.length}
 function audit(){
-  const findings=[],clouds=topology.nodes.filter(n=>n.type==='cloud'),cores=topology.nodes.filter(n=>n.name.toLowerCase().includes('core'));
+  const findings=[],clouds=topology.nodes.filter(n=>n.type==='cloud'),cores=topology.nodes.filter(n=>n.name.toLowerCase().includes('core')),bridges=topology.nodes.filter(n=>n.type==='bridge');
   if(clouds.length>1)findings.push(['ok','bi-check-circle','Dual upstream paths detected.']);else findings.push(['warning','bi-exclamation-triangle','Single ISP creates an upstream failure risk.']);
-  if(cores.length>1)findings.push(['ok','bi-check-circle','Redundant core layer detected.']);else findings.push(['warning','bi-exclamation-triangle','Core layer is a single point of failure.']);
+  if(cores.length>1)findings.push(['ok','bi-check-circle','Redundant core layer detected.']);else if(cores.length) findings.push(['warning','bi-exclamation-triangle','Core layer is a single point of failure.']);else if(bridges.length)findings.push(['ok','bi-check-circle','LAN bridge and member-port topology detected.']);
   const linked=new Set(topology.links.flatMap(l=>[l.from,l.to]));const orphan=topology.nodes.filter(n=>!linked.has(n.id));if(orphan.length)findings.push(['error','bi-x-circle',orphan.length+' disconnected device(s) found.']);
   const ips=topology.nodes.map(n=>n.ip).filter(Boolean),duplicates=ips.filter((ip,i)=>ips.indexOf(ip)!==i);if(duplicates.length)findings.push(['error','bi-x-circle','Duplicate management IP detected: '+duplicates[0]]);else findings.push(['ok','bi-check-circle','No duplicate management IP detected.']);
   if(topology.vlans.length)findings.push(['ok','bi-check-circle','VLAN plan detected: '+topology.vlans.join(', ')+'.']);else findings.push(['warning','bi-exclamation-triangle','No VLAN plan was found in the prompt.']);
