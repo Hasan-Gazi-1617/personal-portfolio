@@ -76,8 +76,8 @@ html[data-theme="light"] section [class*="topology-background"] { opacity: .12; 
 #experience .experience-content { width: 100%; padding-inline: clamp(1.1rem, 3vw, 2.1rem); background: var(--surface); border-color: var(--border); }
 #experience .experience-description, #experience .experience-content li { max-width: 900px; }
 
-#projects .featured-tools-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
-#projects .featured-tool-column { width: 100%; max-width: none; }
+#projects .featured-tools-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
+#projects .featured-tool-column { width: 100% !important; max-width: none !important; min-width: 0; }
 #projects .featured-tool-card { min-height: 0; padding: clamp(1rem, 2vw, 1.3rem); cursor: pointer; }
 #projects .featured-tool-card > p { display: -webkit-box; min-height: 0; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 #projects .featured-tool-card .project-visual { height: clamp(58px, 7vw, 86px); }
@@ -107,6 +107,7 @@ html[data-theme="light"] section [class*="topology-background"] { opacity: .12; 
   #home .profile-wrapper { max-width: 340px; }
   #experience .experience-content { padding-inline: 1.25rem; }
   #contact .contact-box { padding: 2.1rem 1.5rem; }
+  #projects .featured-tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Phone breakpoint covers 320, 360, 375–390 and 414px. */
