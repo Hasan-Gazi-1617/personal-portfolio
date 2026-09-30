@@ -51,9 +51,7 @@ ready(function(){
     if(card.dataset.enhanced)return;card.dataset.enhanced='true';
     var h3=card.querySelector('h3');
     var title=h3?h3.textContent.trim():'';
-    var preset=title.indexOf('NOC Twin Studio')>-1
-      ? ['bi-bounding-box-circles','bi-bezier2','Live prototype']
-      : title.indexOf('MikroTik Configuration')>-1
+    var preset=title.indexOf('MikroTik Configuration')>-1
       ? ['bi-router','bi-terminal','Live tool']
       : title.indexOf('Django Portfolio')>-1
         ? ['bi-code-slash','bi-window-stack','Live portfolio']
