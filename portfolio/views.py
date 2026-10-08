@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
 from .models import ComplaintTicket, TicketActivity
-from .tki_import import import_solved_tsv
+from .tki_import import decode_tki_upload, import_solved_tsv
 
 
 def _month_bounds(raw_month):
@@ -235,12 +235,11 @@ def tki_import_solved(request):
         messages.error(request, "The import file must be smaller than 2 MB.")
         return redirect("tki_dashboard")
     try:
-        # utf-8-sig accepts normal UTF-8 as well as Excel/Notepad UTF-8 files
-        # that include a byte-order mark. Unicode content, including Bangla,
-        # is preserved without transliteration.
-        text = upload.read().decode("utf-8-sig")
+        # Accept standard UTF-8/BOM and Excel's Unicode Text (UTF-16) export.
+        # Unicode content, including Bangla, is preserved without transliteration.
+        text = decode_tki_upload(upload.read())
     except UnicodeDecodeError:
-        messages.error(request, "Fileটি UTF-8 encoding-এ save করুন। বাংলা লেখা UTF-8-এ সম্পূর্ণভাবে supported।")
+        messages.error(request, "Fileটি UTF-8 অথবা Excel Unicode Text হিসেবে save করুন। বাংলা লেখা সম্পূর্ণভাবে supported।")
         return redirect("tki_dashboard")
     result = import_solved_tsv(text, ComplaintTicket)
     messages.success(request, f"Solved TKI import complete: {result['created']} created, {result['updated']} updated, {result['skipped']} skipped.")
