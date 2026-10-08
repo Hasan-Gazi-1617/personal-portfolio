@@ -19,6 +19,23 @@
       <span>{% if report_period == 'daily' %}{% now "d M Y" %}{% else %}{% now "F Y" %}{% endif %}</span>
     </nav>
 
+    {% if can_edit_tki %}
+    <section class="tki-data-tools" aria-label="TKI data tools">
+      <form method="get" action="{% url 'tki_export_xlsx' %}" class="tki-export-tool">
+        <div><i class="bi bi-file-earmark-excel"></i><span><strong>Export Excel report</strong><small>Download a professionally formatted monthly .xlsx file.</small></span></div>
+        <label><span>Report month</span><input type="month" name="month" value="{{ current_month }}" required></label>
+        <button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-download"></i> Export .xlsx</button>
+      </form>
+      <form method="post" action="{% url 'tki_delete_month' %}" class="tki-delete-tool" onsubmit="return confirm('This will permanently delete every TKI in the selected month. Continue?')">
+        {% csrf_token %}
+        <div><i class="bi bi-trash3"></i><span><strong>Delete monthly data</strong><small>Permanent action. Export a backup first.</small></span></div>
+        <label><span>Delete month</span><input type="month" name="month" value="{{ current_month }}" required></label>
+        <label><span>Type DELETE</span><input name="confirm" autocomplete="off" placeholder="DELETE" required></label>
+        <button class="tki-btn tki-btn-danger" type="submit"><i class="bi bi-trash3"></i> Delete month</button>
+      </form>
+    </section>
+    {% endif %}
+
     <div class="tki-stats tki-stats-six">
       <article><span>Total TKI</span><strong>{{ summary.total }}</strong><small>Entered in this period</small></article>
       <article><span>Pending</span><strong class="is-amber">{{ summary.pending }}</strong><small>Waiting for action</small></article>
