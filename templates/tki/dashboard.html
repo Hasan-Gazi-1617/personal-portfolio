@@ -23,8 +23,8 @@
     <section class="tki-data-tools" aria-label="TKI data tools">
       <form method="post" action="{% url 'tki_import_solved' %}" enctype="multipart/form-data" class="tki-import-tool">
         {% csrf_token %}
-        <div><i class="bi bi-cloud-arrow-up"></i><span><strong>Import solved TKI</strong><small>UTF-8 বাংলা ও English supported; client data stays in the private database.</small></span></div>
-        <label><span>UTF-8 TXT / TSV file</span><input type="file" name="tki_file" accept=".txt,.tsv,text/plain,text/tab-separated-values" required></label>
+        <div><i class="bi bi-cloud-arrow-up"></i><span><strong>Import solved TKI</strong><small>বাংলা ও English supported; UTF-8 এবং Excel Unicode Text দুটোই নেওয়া হবে।</small></span></div>
+        <label><span>TXT / TSV file</span><input type="file" name="tki_file" accept=".txt,.tsv,text/plain,text/tab-separated-values" required></label>
         <button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-upload"></i> Import solved</button>
       </form>
       <form method="get" action="{% url 'tki_export_xlsx' %}" class="tki-export-tool">
