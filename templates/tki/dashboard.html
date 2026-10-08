@@ -63,11 +63,25 @@
       <section class="tki-panel tki-chart-card">
         <div class="tki-panel-head"><div><h2>Pending by dependency</h2><p>Where operational action is blocked</p></div><i class="bi bi-pie-chart"></i></div>
         <div class="tki-pie-layout">
-          <div class="tki-pie" style="background:{{ dependency_gradient }}"><span><b>{{ summary.dependency }}</b><small>Issues</small></span></div>
+          <div class="tki-pie" style="background:{{ dependency_gradient }}"><span><b>{{ pending_dependency_total }}</b><small>Pending</small></span></div>
           <div class="tki-pie-legend">{% for item in dependency_report %}<div><i style="background:{{ item.color }}"></i><span>{{ item.label }}</span><b>{{ item.count }}</b></div>{% endfor %}</div>
         </div>
       </section>
     </div>
+
+    <section class="tki-panel tki-engineer-performance">
+      <div class="tki-panel-head"><div><h2>Engineer resolution report</h2><p>{{ report_period|title }} solved TKI, completed field support and NOC visits</p></div><i class="bi bi-person-check"></i></div>
+      <div class="tki-performance-grid">
+        <div class="tki-performance-group">
+          <div class="tki-performance-title"><span>Field Support Engineers</span><small>Solved / Support completed</small></div>
+          {% for item in field_completion_report %}<article><div><strong>{{ item.label }}</strong><small>Field support team</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.support_done }}</b> done</span></article>{% endfor %}
+        </div>
+        <div class="tki-performance-group">
+          <div class="tki-performance-title"><span>NOC Engineers</span><small>Solved / Field visits completed</small></div>
+          {% for item in noc_completion_report %}<article><div><strong>{{ item.label }}</strong><small>NOC team</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.field_visits }}</b> visits</span></article>{% endfor %}
+        </div>
+      </div>
+    </section>
 
     <form method="get" class="tki-filter-bar">
       <input type="hidden" name="period" value="{{ report_period }}">
@@ -90,8 +104,8 @@
               <td><strong>{{ ticket.tki_id }}</strong></td><td>{{ ticket.client_id }}</td>
               <td><span class="tki-status status-{{ ticket.status }}"><i></i>{{ ticket.get_status_display }}</span></td>
               <td>{% if ticket.dependency %}{{ ticket.get_dependency_display }}{% else %}<span class="tki-muted">None</span>{% endif %}</td>
-              <td>{% if ticket.higher_level_noc %}{{ ticket.get_higher_level_noc_display }}{% else %}<span class="tki-muted">—</span>{% endif %}</td>
-              <td>{% if ticket.field_support_engineer %}<strong>{{ ticket.get_field_support_engineer_display }}</strong><small>Support: Yes</small>{% else %}<span class="tki-muted">Support: No</span>{% endif %}</td>
+              <td>{% if ticket.higher_level_noc %}<strong>{{ ticket.get_higher_level_noc_display }}</strong><small>{% if ticket.noc_field_visit_done %}Field visit: Done{% else %}Field visit: No{% endif %}</small>{% else %}<span class="tki-muted">—</span>{% endif %}</td>
+              <td>{% if ticket.field_support_engineer %}<strong>{{ ticket.get_field_support_engineer_display }}</strong><small>{% if ticket.field_support_done %}Support: Done{% else %}Support: Assigned{% endif %}</small>{% else %}<span class="tki-muted">Support: No</span>{% endif %}</td>
               <td class="tki-remarks">{{ ticket.remarks|default:ticket.complaint|truncatechars:72 }}</td>
               <td><span class="tki-aging">{{ ticket.aging }}</span></td>
               <td>{% if ticket.attention %}<span class="tki-attention"><i class="bi bi-exclamation-triangle-fill"></i> Required</span>{% else %}<span class="tki-muted">Normal</span>{% endif %}</td>
