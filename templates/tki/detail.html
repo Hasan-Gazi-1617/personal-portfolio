@@ -4,7 +4,7 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/tki-monitor.css' %}">{% endblock %}
 {% block content %}
 <section class="tki-page"><div class="tki-shell tki-detail-shell">
-  <div class="tki-detail-nav"><a href="{% url 'tki_dashboard' %}"><i class="bi bi-arrow-left"></i> Dashboard</a>{% if is_tki_admin %}<a class="tki-btn" href="{% url 'tki_admin_edit' ticket.pk %}"><i class="bi bi-pencil"></i> Admin edit</a>{% endif %}</div>
+  <div class="tki-detail-nav"><a href="{% url 'tki_dashboard' %}"><i class="bi bi-arrow-left"></i> Dashboard</a>{% if can_edit_tki %}<a class="tki-btn" href="{% url 'tki_admin_edit' ticket.pk %}"><i class="bi bi-pencil"></i> Edit all fields</a>{% endif %}</div>
   {% for message in messages %}<div class="tki-alert" role="status">{{ message }}</div>{% endfor %}
   <header class="tki-ticket-head"><div><span class="tki-kicker">{{ ticket.get_priority_display }} PRIORITY</span><h1>{{ ticket.tki_id }}</h1><p>Client {{ ticket.client_id }} · Opened {{ ticket.opened_at|date:"d M Y, h:i A" }}</p></div><span class="tki-status status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></header>
   <div class="tki-detail-grid">
@@ -20,16 +20,11 @@
       <div class="tki-wide"><span>Last remarks</span><p>{{ ticket.remarks|default:"No remarks yet."|linebreaksbr }}</p></div>
       <div class="tki-wide"><span>Client complaint</span><p>{{ ticket.complaint|linebreaksbr }}</p></div>
     </article>
-    <aside class="tki-panel tki-support-action">
-      <h2>Engineer support</h2>
-      {% if not ticket.assigned_engineer %}<p>This TKI has no support engineer.</p><form method="post" action="{% url 'tki_claim' ticket.pk %}">{% csrf_token %}<button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-person-check"></i> Assign my name</button></form>
-      {% elif ticket.assigned_engineer_id == request.user.id %}<p>This TKI is assigned to you.</p><span class="tki-status is-success"><i></i>My TKI</span>
-      {% else %}<p>Assigned to {{ ticket.assigned_engineer.get_full_name|default:ticket.assigned_engineer.username }}.</p>{% endif %}
-    </aside>
+    <aside class="tki-panel tki-support-action"><h2>Current ownership</h2><p>Field support and Higher-Level NOC can be changed from the update form.</p><span class="tki-status {% if ticket.field_support_engineer %}is-success{% endif %}"><i></i>{{ ticket.get_field_support_engineer_display|default:"Not assigned" }}</span></aside>
   </div>
   {% if can_update %}
   <form class="tki-panel tki-editor" method="post" action="{% url 'tki_update' ticket.pk %}">{% csrf_token %}<div class="tki-panel-head"><div><h2>Operational update</h2><p>Update assignment, dependency, latest remarks and resolution details.</p></div></div>{{ form.non_field_errors }}<div class="tki-form-grid">{% for field in form %}<label class="{% if field.name == 'remarks' or field.name == 'findings' or field.name == 'troubleshooting' or field.name == 'resolution' %}tki-wide{% endif %}"><span>{{ field.label }}</span>{{ field }}{% for error in field.errors %}<small class="tki-error">{{ error }}</small>{% endfor %}</label>{% endfor %}</div><button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-check2-circle"></i> Save update</button></form>
   {% endif %}
-  <section class="tki-panel tki-activity"><div class="tki-panel-head"><div><h2>Activity history</h2><p>Accountability log</p></div></div>{% for activity in ticket.activities.all %}<div><span>{{ activity.created_at|date:"d M, h:i A" }}</span><strong>{{ activity.action }}</strong><p>{{ activity.actor.get_full_name|default:activity.actor.username }}{% if activity.detail %} · {{ activity.detail }}{% endif %}</p></div>{% empty %}<p class="tki-empty">No activity recorded.</p>{% endfor %}</section>
+  <section class="tki-panel tki-activity"><div class="tki-panel-head"><div><h2>Activity history</h2><p>Operational update log</p></div></div>{% for activity in ticket.activities.all %}<div><span>{{ activity.created_at|date:"d M, h:i A" }}</span><strong>{{ activity.action }}</strong><p>{% if activity.actor %}{{ activity.actor.get_full_name|default:activity.actor.username }}{% else %}Engineer entry{% endif %}{% if activity.detail %} · {{ activity.detail }}{% endif %}</p></div>{% empty %}<p class="tki-empty">No activity recorded.</p>{% endfor %}</section>
 </div></section>
 {% endblock %}

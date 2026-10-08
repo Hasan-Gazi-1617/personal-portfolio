@@ -176,9 +176,11 @@ class TkiWorkflowTests(TestCase):
             created_by=self.admin_user,
         )
 
-    def test_dashboard_requires_engineer_login(self):
+    def test_dashboard_is_available_without_login(self):
         response = self.client.get(reverse("tki_dashboard"))
-        self.assertRedirects(response, f'{reverse("tki_login")}?next={reverse("tki_dashboard")}')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ISP TKI Dashboard")
+        self.assertNotContains(response, "Logout")
 
     def test_dashboard_has_engineer_reports_and_named_teams(self):
         ComplaintTicket.objects.create(
@@ -200,8 +202,10 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(response.context["summary"]["pending"], 2)
         self.assertEqual(response.context["summary"]["dependency"], 1)
 
-    def test_admin_can_create_for_any_engineer(self):
-        self.client.force_login(self.admin_user)
+    def test_tki_can_be_created_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_create"), {
             "tki_id": "TKI-1002", "client_id": "3437",
             "opened_at": timezone.localtime().strftime("%Y-%m-%dT%H:%M"),
@@ -209,34 +213,25 @@ class TkiWorkflowTests(TestCase):
             "priority": ComplaintTicket.Priority.MEDIUM,
             "status": ComplaintTicket.Status.PENDING,
             "complaint": "Slow internet from router",
-            "assigned_engineer": self.engineer.pk,
+            "field_support_engineer": ComplaintTicket.SupportEngineer.ABIR,
+            "higher_level_noc": ComplaintTicket.NocEngineer.HASAN,
+            "remarks": "Field visit assigned",
         })
         created = ComplaintTicket.objects.get(tki_id="TKI-1002")
         self.assertRedirects(response, reverse("tki_detail", args=(created.pk,)))
-        self.assertEqual(created.assigned_engineer, self.engineer)
+        self.assertEqual(created.field_support_engineer, ComplaintTicket.SupportEngineer.ABIR)
         self.assertEqual(created.status, ComplaintTicket.Status.PENDING)
+        self.assertIsNone(created.created_by)
 
-    def test_engineer_cannot_create_tki(self):
-        self.client.force_login(self.engineer)
-        self.assertEqual(self.client.get(reverse("tki_create")).status_code, 403)
+    def test_public_user_cannot_create_or_update_tki(self):
+        self.assertRedirects(self.client.get(reverse("tki_create")), reverse("owner_login"))
+        response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {"status": ComplaintTicket.Status.PENDING})
+        self.assertRedirects(response, reverse("owner_login"))
 
-    def test_engineer_can_claim_only_unassigned_tki(self):
-        self.client.force_login(self.engineer)
-        response = self.client.post(reverse("tki_claim", args=(self.ticket.pk,)))
-        self.assertRedirects(response, reverse("tki_detail", args=(self.ticket.pk,)))
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.assigned_engineer, self.engineer)
-
-    def test_engineer_cannot_take_another_engineers_tki(self):
-        self.ticket.assigned_engineer = self.other_engineer
-        self.ticket.save()
-        self.client.force_login(self.engineer)
-        self.assertEqual(self.client.post(reverse("tki_claim", args=(self.ticket.pk,))).status_code, 403)
-
-    def test_assigned_engineer_can_resolve_with_feedback(self):
-        self.ticket.assigned_engineer = self.engineer
-        self.ticket.save()
-        self.client.force_login(self.engineer)
+    def test_tki_can_be_solved_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
             "status": ComplaintTicket.Status.SOLVED,
             "findings": "Fiber break identified.",
@@ -248,14 +243,14 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(self.ticket.status, ComplaintTicket.Status.SOLVED)
         self.assertIsNotNone(self.ticket.resolved_at)
 
-    def test_other_engineer_cannot_update_ticket(self):
-        self.ticket.assigned_engineer = self.other_engineer
-        self.ticket.save()
-        self.client.force_login(self.engineer)
+    def test_pending_tki_can_be_updated_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
             "status": ComplaintTicket.Status.PENDING,
             "findings": "Attempted access",
             "troubleshooting": "None",
             "resolution": "",
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, reverse("tki_detail", args=(self.ticket.pk,)))
