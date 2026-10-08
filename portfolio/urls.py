@@ -8,6 +8,7 @@ urlpatterns = [
     path("tki/", views.tki_dashboard, name="tki_dashboard"),
     path("tki/export/", views.tki_export_xlsx, name="tki_export_xlsx"),
     path("tki/delete-month/", views.tki_delete_month, name="tki_delete_month"),
+    path("tki/import-solved/", views.tki_import_solved, name="tki_import_solved"),
     path("tki/new/", views.tki_create, name="tki_create"),
     path("tki/<int:pk>/", views.tki_detail, name="tki_detail"),
     path("tki/<int:pk>/update/", views.tki_update, name="tki_update"),

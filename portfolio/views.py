@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
 from .models import ComplaintTicket, TicketActivity
+from .tki_import import import_solved_tsv
 
 
 def _month_bounds(raw_month):
@@ -218,6 +219,28 @@ def tki_delete_month(request):
     count = queryset.count()
     queryset.delete()
     messages.success(request, f"{count} TKI record(s) from {start.strftime('%B %Y')} were deleted.")
+    return redirect("tki_dashboard")
+
+
+@require_POST
+def tki_import_solved(request):
+    if not _owner_can_manage_tki(request):
+        messages.error(request, "Owner access is required to import TKI data.")
+        return redirect("owner_login")
+    upload = request.FILES.get("tki_file")
+    if not upload:
+        messages.error(request, "Select a .txt or .tsv file to import.")
+        return redirect("tki_dashboard")
+    if upload.size > 2 * 1024 * 1024:
+        messages.error(request, "The import file must be smaller than 2 MB.")
+        return redirect("tki_dashboard")
+    try:
+        text = upload.read().decode("utf-8-sig")
+    except UnicodeDecodeError:
+        messages.error(request, "The file must use UTF-8 text encoding.")
+        return redirect("tki_dashboard")
+    result = import_solved_tsv(text, ComplaintTicket)
+    messages.success(request, f"Solved TKI import complete: {result['created']} created, {result['updated']} updated, {result['skipped']} skipped.")
     return redirect("tki_dashboard")
 
 

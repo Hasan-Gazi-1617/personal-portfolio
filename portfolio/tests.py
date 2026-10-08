@@ -6,6 +6,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.management import call_command
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -265,6 +266,24 @@ class TkiWorkflowTests(TestCase):
         month = timezone.localdate().strftime("%Y-%m")
         self.assertRedirects(self.client.get(reverse("tki_export_xlsx"), {"month": month}), reverse("owner_login"))
         self.assertRedirects(self.client.post(reverse("tki_delete_month"), {"month": month, "confirm": "DELETE"}), reverse("owner_login"))
+
+    def test_owner_can_privately_import_solved_tsv_without_duplicates(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        header = "Sl.\tDate\tCP ID\tCustomer\tIssue\tReceived By\tSupportBy\tVisitedBy\tSaved Number\tUn Saved Number\tDetails\tFeedback\tStatus\tAction\n"
+        rows = (
+            "1.\t08 Oct 2026\tMIT-TEST-1\tTest Customer\tRouter Reset\tAbir\tAbir\t\t01000000000\t\tConfigured\t\tSolved\tOpen Update\n"
+            "2.\t08 Oct 2026\tMIT-TEST-2\tTest Customer 2\tCable Cut\tFarzana\tFarzana\tProdosh\t01000000001\t\tFiber restored\tConfirmed\tSolved\tOpen Update"
+        )
+        payload = (header + rows).encode()
+        for _ in range(2):
+            upload = SimpleUploadedFile("solved.tsv", payload, content_type="text/tab-separated-values")
+            response = self.client.post(reverse("tki_import_solved"), {"tki_file": upload})
+            self.assertRedirects(response, reverse("tki_dashboard"))
+        imported = ComplaintTicket.objects.filter(remarks__contains="Private import:", client_id__startswith="MIT-TEST")
+        self.assertEqual(imported.count(), 2)
+        self.assertFalse(imported.exclude(status=ComplaintTicket.Status.SOLVED).exists())
 
     def test_tki_can_be_solved_without_login(self):
         session = self.client.session
