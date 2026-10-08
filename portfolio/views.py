@@ -235,9 +235,12 @@ def tki_import_solved(request):
         messages.error(request, "The import file must be smaller than 2 MB.")
         return redirect("tki_dashboard")
     try:
+        # utf-8-sig accepts normal UTF-8 as well as Excel/Notepad UTF-8 files
+        # that include a byte-order mark. Unicode content, including Bangla,
+        # is preserved without transliteration.
         text = upload.read().decode("utf-8-sig")
     except UnicodeDecodeError:
-        messages.error(request, "The file must use UTF-8 text encoding.")
+        messages.error(request, "Fileটি UTF-8 encoding-এ save করুন। বাংলা লেখা UTF-8-এ সম্পূর্ণভাবে supported।")
         return redirect("tki_dashboard")
     result = import_solved_tsv(text, ComplaintTicket)
     messages.success(request, f"Solved TKI import complete: {result['created']} created, {result['updated']} updated, {result['skipped']} skipped.")
