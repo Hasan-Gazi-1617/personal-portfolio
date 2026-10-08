@@ -101,6 +101,33 @@ def tki_dashboard(request):
     for item in engineer_report:
         item["bar_percent"] = round(item["pending"] / max_pending * 100)
 
+    if report_period == "daily":
+        solved_tickets = all_tickets.filter(status=ComplaintTicket.Status.SOLVED, resolved_at__date=now.date())
+    else:
+        solved_tickets = all_tickets.filter(
+            status=ComplaintTicket.Status.SOLVED,
+            resolved_at__year=now.year,
+            resolved_at__month=now.month,
+        )
+    field_completion_report = []
+    for value, label in ComplaintTicket.SupportEngineer.choices:
+        engineer_solved = solved_tickets.filter(field_support_engineer=value)
+        field_completion_report.append({
+            "value": value,
+            "label": label,
+            "solved": engineer_solved.count(),
+            "support_done": engineer_solved.filter(field_support_done=True).count(),
+        })
+    noc_completion_report = []
+    for value, label in ComplaintTicket.NocEngineer.choices:
+        engineer_solved = solved_tickets.filter(higher_level_noc=value)
+        noc_completion_report.append({
+            "value": value,
+            "label": label,
+            "solved": engineer_solved.count(),
+            "field_visits": engineer_solved.filter(noc_field_visit_done=True).count(),
+        })
+
     # This chart is an active-work view: completed/cancelled tickets must not
     # inflate the pending dependency workload.
     pending_dependency_tickets = report_tickets.filter(status=ComplaintTicket.Status.PENDING)
@@ -124,6 +151,9 @@ def tki_dashboard(request):
         "support_engineers": ComplaintTicket.SupportEngineer.choices,
         "report_period": report_period, "engineer_report": engineer_report,
         "dependency_report": dependency_report, "dependency_gradient": dependency_gradient,
+        "pending_dependency_total": pending_dependency_tickets.exclude(dependency="").count(),
+        "field_completion_report": field_completion_report,
+        "noc_completion_report": noc_completion_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
         "current_month": now.strftime("%Y-%m"),
     })
@@ -148,7 +178,7 @@ def tki_export_xlsx(request):
     muted = "DCE7F2"
     thin = Side(style="thin", color="CAD6E2")
 
-    sheet.merge_cells("A1:L1")
+    sheet.merge_cells("A1:N1")
     sheet["A1"] = f"ISP TKI Monthly Report — {start.strftime('%B %Y')}"
     sheet["A1"].font = Font(size=18, bold=True, color="FFFFFF")
     sheet["A1"].fill = PatternFill("solid", fgColor=dark)
@@ -166,7 +196,7 @@ def tki_export_xlsx(request):
         cell.font = Font(bold=True, color=dark)
         cell.fill = PatternFill("solid", fgColor="E8F8F1")
 
-    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "Field Support Engineer", "Remarks", "Aging", "Attention", "Issue"]
+    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue"]
     for column, label in enumerate(headers, 1):
         cell = sheet.cell(5, column, label)
         cell.font = Font(bold=True, color="FFFFFF")
@@ -183,17 +213,18 @@ def tki_export_xlsx(request):
         values = [
             local_opened.date(), local_opened.time().replace(microsecond=0), safe_text(ticket.tki_id),
             safe_text(ticket.client_id), ticket.get_status_display(), ticket.get_dependency_display() or "None",
-            ticket.get_higher_level_noc_display() or "—", ticket.get_field_support_engineer_display() or "—",
+            ticket.get_higher_level_noc_display() or "—", "Done" if ticket.noc_field_visit_done else "No",
+            ticket.get_field_support_engineer_display() or "—", "Done" if ticket.field_support_done else "No",
             safe_text(ticket.remarks or ticket.complaint), ticket.aging,
             "Required" if ticket.attention else "Normal", ticket.get_category_display(),
         ]
         for column, value in enumerate(values, 1):
             cell = sheet.cell(row_number, column, value)
             cell.border = Border(bottom=thin)
-            cell.alignment = Alignment(vertical="top", wrap_text=column in {9, 12})
+            cell.alignment = Alignment(vertical="top", wrap_text=column in {11, 14})
         sheet.cell(row_number, 5).fill = PatternFill("solid", fgColor=status_colors.get(ticket.status, muted))
 
-    widths = [13, 12, 18, 16, 13, 20, 20, 23, 42, 12, 14, 22]
+    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22]
     for column, width in enumerate(widths, 1):
         sheet.column_dimensions[get_column_letter(column)].width = width
     sheet.freeze_panes = "A6"
@@ -291,6 +322,8 @@ def tki_create(request):
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
         ticket.created_by = request.user if request.user.is_authenticated else None
+        if ticket.status == ComplaintTicket.Status.SOLVED and not ticket.resolved_at:
+            ticket.resolved_at = timezone.now()
         if ticket.assigned_engineer_id:
             ticket.support_assigned_at = timezone.now()
             if not ticket.status:
