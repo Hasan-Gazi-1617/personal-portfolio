@@ -11,6 +11,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from .forms import AdminTicketForm
 from .models import ComplaintTicket
 
 TEST_STORAGES = {
@@ -232,6 +233,35 @@ class TkiWorkflowTests(TestCase):
             dependency=ComplaintTicket.Dependency.TECHNICIAN,
         ).count()
         self.assertEqual(report[ComplaintTicket.Dependency.TECHNICIAN], expected)
+
+    def test_engineer_resolution_report_counts_completed_support_and_noc_visits(self):
+        ComplaintTicket.objects.create(
+            tki_id="TKI-PERFORMANCE-1", client_id="C-PERFORMANCE", opened_at=timezone.now(),
+            status=ComplaintTicket.Status.SOLVED, resolved_at=timezone.now(),
+            field_support_engineer=ComplaintTicket.SupportEngineer.ABIR,
+            field_support_done=True,
+            higher_level_noc=ComplaintTicket.NocEngineer.HASAN,
+            noc_field_visit_done=True,
+            complaint="Solved after joint visit", created_by=self.admin_user,
+        )
+        response = self.client.get(reverse("tki_dashboard"), {"period": "daily"})
+        field_report = {item["value"]: item for item in response.context["field_completion_report"]}
+        noc_report = {item["value"]: item for item in response.context["noc_completion_report"]}
+        self.assertEqual(field_report[ComplaintTicket.SupportEngineer.ABIR]["support_done"], 1)
+        self.assertEqual(noc_report[ComplaintTicket.NocEngineer.HASAN]["field_visits"], 1)
+        self.assertContains(response, "Engineer resolution report")
+
+    def test_completion_flags_require_named_engineers(self):
+        form = AdminTicketForm(data={
+            "tki_id": "TKI-VALIDATE-DONE", "client_id": "C-DONE",
+            "opened_at": timezone.localtime().strftime("%Y-%m-%dT%H:%M"),
+            "status": ComplaintTicket.Status.PENDING, "category": ComplaintTicket.Category.OTHER,
+            "priority": ComplaintTicket.Priority.MEDIUM, "complaint": "Test",
+            "field_support_done": True, "noc_field_visit_done": True,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("field_support_engineer", form.errors)
+        self.assertIn("higher_level_noc", form.errors)
 
     def test_tki_can_be_created_without_login(self):
         session = self.client.session
