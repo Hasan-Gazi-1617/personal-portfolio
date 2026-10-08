@@ -3,9 +3,13 @@ import re
 from unittest.mock import patch
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.conf import settings
+from django.utils import timezone
+
+from .models import ComplaintTicket
 
 TEST_STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
@@ -155,3 +159,103 @@ class FrontendContractTests(TestCase):
         owner_html = self.client.get(reverse("home")).content.decode()
         self.assertIn("portal.example.test", owner_html)
         self.assertIn("olt.example.test", owner_html)
+@override_settings(SECURE_SSL_REDIRECT=False, STORAGES=TEST_STORAGES)
+class TkiWorkflowTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.admin_user = user_model.objects.create_user("hasan-admin", password="StrongPass123!", is_staff=True)
+        self.engineer = user_model.objects.create_user("engineer-one", password="StrongPass123!", first_name="Engineer", last_name="One")
+        self.other_engineer = user_model.objects.create_user("engineer-two", password="StrongPass123!", first_name="Engineer", last_name="Two")
+        self.ticket = ComplaintTicket.objects.create(
+            tki_id="TKI-1001",
+            client_id="397",
+            opened_at=timezone.now(),
+            category=ComplaintTicket.Category.FIBER,
+            priority=ComplaintTicket.Priority.HIGH,
+            complaint="ONU LOS blinking",
+            created_by=self.admin_user,
+        )
+
+    def test_dashboard_requires_engineer_login(self):
+        response = self.client.get(reverse("tki_dashboard"))
+        self.assertRedirects(response, f'{reverse("tki_login")}?next={reverse("tki_dashboard")}')
+
+    def test_dashboard_has_engineer_reports_and_named_teams(self):
+        ComplaintTicket.objects.create(
+            tki_id="TKI-REPORT-1", client_id="C-100", opened_at=timezone.now(),
+            status=ComplaintTicket.Status.PENDING,
+            dependency=ComplaintTicket.Dependency.ISP,
+            field_support_engineer=ComplaintTicket.SupportEngineer.ABIR,
+            higher_level_noc=ComplaintTicket.NocEngineer.HASAN,
+            complaint="Upstream issue", remarks="Waiting for ISP feedback",
+            attention=True, created_by=self.admin_user,
+        )
+        self.client.force_login(self.admin_user)
+        response = self.client.get(reverse("tki_dashboard"), {"period": "daily"})
+        self.assertContains(response, "ISP TKI Dashboard")
+        self.assertContains(response, "Pending per field engineer")
+        self.assertContains(response, "Pending by dependency")
+        self.assertContains(response, "Abir")
+        self.assertContains(response, "Waiting for ISP feedback")
+        self.assertEqual(response.context["summary"]["pending"], 2)
+        self.assertEqual(response.context["summary"]["dependency"], 1)
+
+    def test_admin_can_create_for_any_engineer(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.post(reverse("tki_create"), {
+            "tki_id": "TKI-1002", "client_id": "3437",
+            "opened_at": timezone.localtime().strftime("%Y-%m-%dT%H:%M"),
+            "category": ComplaintTicket.Category.ROUTER,
+            "priority": ComplaintTicket.Priority.MEDIUM,
+            "status": ComplaintTicket.Status.PENDING,
+            "complaint": "Slow internet from router",
+            "assigned_engineer": self.engineer.pk,
+        })
+        created = ComplaintTicket.objects.get(tki_id="TKI-1002")
+        self.assertRedirects(response, reverse("tki_detail", args=(created.pk,)))
+        self.assertEqual(created.assigned_engineer, self.engineer)
+        self.assertEqual(created.status, ComplaintTicket.Status.PENDING)
+
+    def test_engineer_cannot_create_tki(self):
+        self.client.force_login(self.engineer)
+        self.assertEqual(self.client.get(reverse("tki_create")).status_code, 403)
+
+    def test_engineer_can_claim_only_unassigned_tki(self):
+        self.client.force_login(self.engineer)
+        response = self.client.post(reverse("tki_claim", args=(self.ticket.pk,)))
+        self.assertRedirects(response, reverse("tki_detail", args=(self.ticket.pk,)))
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.assigned_engineer, self.engineer)
+
+    def test_engineer_cannot_take_another_engineers_tki(self):
+        self.ticket.assigned_engineer = self.other_engineer
+        self.ticket.save()
+        self.client.force_login(self.engineer)
+        self.assertEqual(self.client.post(reverse("tki_claim", args=(self.ticket.pk,))).status_code, 403)
+
+    def test_assigned_engineer_can_resolve_with_feedback(self):
+        self.ticket.assigned_engineer = self.engineer
+        self.ticket.save()
+        self.client.force_login(self.engineer)
+        response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
+            "status": ComplaintTicket.Status.SOLVED,
+            "findings": "Fiber break identified.",
+            "troubleshooting": "Fiber team restored the cable.",
+            "resolution": "Client confirmed service restoration.",
+        })
+        self.assertRedirects(response, reverse("tki_detail", args=(self.ticket.pk,)))
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, ComplaintTicket.Status.SOLVED)
+        self.assertIsNotNone(self.ticket.resolved_at)
+
+    def test_other_engineer_cannot_update_ticket(self):
+        self.ticket.assigned_engineer = self.other_engineer
+        self.ticket.save()
+        self.client.force_login(self.engineer)
+        response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
+            "status": ComplaintTicket.Status.PENDING,
+            "findings": "Attempted access",
+            "troubleshooting": "None",
+            "resolution": "",
+        })
+        self.assertEqual(response.status_code, 403)
