@@ -1,4 +1,5 @@
 import hashlib
+import unicodedata
 from datetime import datetime, timedelta
 
 from django.utils import timezone
@@ -14,7 +15,9 @@ def import_solved_tsv(text, Ticket):
     for line_number, line in enumerate(text.splitlines(), 1):
         if not line.strip() or line.lower().startswith("sl."):
             continue
-        fields = [value.strip() for value in line.split("\t")]
+        # NFC keeps Bangla vowel signs and conjuncts in one consistent Unicode
+        # representation, regardless of which editor exported the UTF-8 file.
+        fields = [unicodedata.normalize("NFC", value.strip()) for value in line.split("\t")]
         if len(fields) != 14 or not fields[0].rstrip(".").isdigit():
             skipped += 1
             continue
