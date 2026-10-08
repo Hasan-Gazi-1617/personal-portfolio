@@ -5,6 +5,13 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 
+def decode_tki_upload(data):
+    """Decode UTF-8 and the UTF-16 text format commonly exported by Excel."""
+    if data.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return data.decode("utf-16")
+    return data.decode("utf-8-sig")
+
+
 def import_solved_tsv(text, Ticket):
     field_engineers = {"abir", "faruk", "prodosh", "rukunuzzaman"}
     noc_engineers = {"farzana", "hasan", "jewel", "riaz"}
