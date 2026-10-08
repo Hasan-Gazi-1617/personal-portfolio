@@ -5,6 +5,7 @@ from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -181,6 +182,13 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "ISP TKI Dashboard")
         self.assertNotContains(response, "Logout")
+
+    def test_seed_import_is_idempotent(self):
+        call_command("import_tki_seed", verbosity=0)
+        imported_ids = ComplaintTicket.objects.filter(tki_id__startswith="TKI-2026")
+        self.assertEqual(imported_ids.count(), 41)
+        call_command("import_tki_seed", verbosity=0)
+        self.assertEqual(imported_ids.count(), 41)
 
     def test_dashboard_has_engineer_reports_and_named_teams(self):
         ComplaintTicket.objects.create(
