@@ -353,6 +353,8 @@ html:not([data-theme="light"]) section [class*="topology-background"]{opacity:.4
 /* ===== CLEAR FEATURED PROJECT INTERACTIONS ===== */
 #projects .project-card-link{cursor:pointer}
 #projects .featured-tool-card .project-visual{color:#0891b2}
+#projects .tki-tool-card .project-icon{color:#38d996;background:rgba(56,217,150,.11);border-color:rgba(56,217,150,.24)}
+html[data-theme="light"] #projects .tki-tool-card .project-icon{color:#148044;background:rgba(20,128,68,.09);border-color:rgba(20,128,68,.2)}
 #projects .featured-tool-card .project-visual i{font-size:16px}
 #projects .project-status{font-size:10.5px!important;font-weight:800;letter-spacing:.065em;white-space:nowrap}
 #projects .project-action{

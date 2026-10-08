@@ -145,10 +145,18 @@ STORAGES = {
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+MAILERS = {
+    'default': {
+        'BACKEND': (
+            'django.core.mail.backends.console.EmailBackend'
+            if DEBUG
+            else 'django.core.mail.backends.smtp.EmailBackend'
+        ),
+    },
+}
 
-# Render terminates TLS at its proxy. These settings keep authentication and
-# owner sessions on HTTPS in production without making local development hard.
+# Render terminates TLS at its proxy. Keep authentication and TKI sessions on
+# HTTPS in production while preserving straightforward local development.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
@@ -168,3 +176,7 @@ if not DEBUG:
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f'https://{render_hostname}')
+
+LOGIN_URL = "tki_login"
+LOGIN_REDIRECT_URL = "tki_dashboard"
+LOGOUT_REDIRECT_URL = "tki_login"

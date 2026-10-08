@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}ISP TKI Dashboard for Engineers{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/tki-monitor.css' %}">{% endblock %}
+{% block content %}
+<section class="tki-page">
+  <div class="tki-shell">
+    <header class="tki-page-head">
+      <div><span class="tki-kicker"><i class="bi bi-broadcast-pin"></i> ISP OPERATIONS CONTROL</span><h1>ISP TKI Dashboard</h1><p>Engineer assignment, dependency tracking and live complaint reporting in one workspace.</p></div>
+      <div class="tki-head-actions">
+        {% if is_tki_admin %}<a class="tki-btn tki-btn-primary" href="{% url 'tki_create' %}"><i class="bi bi-plus-lg"></i> New TKI Entry</a>{% endif %}
+        <form method="post" action="{% url 'tki_logout' %}">{% csrf_token %}<button class="tki-btn" type="submit"><i class="bi bi-box-arrow-right"></i> Logout</button></form>
+      </div>
+    </header>
+    {% for message in messages %}<div class="tki-alert" role="status">{{ message }}</div>{% endfor %}
+
+    <nav class="tki-report-tabs" aria-label="Report period">
+      <a href="?period=daily" class="{% if report_period == 'daily' %}is-active{% endif %}"><i class="bi bi-calendar-day"></i> Daily Report</a>
+      <a href="?period=monthly" class="{% if report_period == 'monthly' %}is-active{% endif %}"><i class="bi bi-calendar3"></i> Monthly Report</a>
+      <span>{% if report_period == 'daily' %}{% now "d M Y" %}{% else %}{% now "F Y" %}{% endif %}</span>
+    </nav>
+
+    <div class="tki-stats tki-stats-six">
+      <article><span>Total TKI</span><strong>{{ summary.total }}</strong><small>Entered in this period</small></article>
+      <article><span>Pending</span><strong class="is-amber">{{ summary.pending }}</strong><small>Waiting for action</small></article>
+      <article><span>Solved</span><strong class="is-green">{{ summary.solved }}</strong><small>Successfully completed</small></article>
+      <article><span>Cancelled</span><strong class="is-red">{{ summary.cancelled }}</strong><small>Cancelled tickets</small></article>
+      <article><span>Dependency issues</span><strong>{{ summary.dependency }}</strong><small>Blocked by a dependency</small></article>
+      <article><span>Needs attention</span><strong class="is-red">{{ summary.attention }}</strong><small>Manually highlighted</small></article>
+    </div>
+
+    <div class="tki-insights-grid">
+      <section class="tki-panel tki-chart-card">
+        <div class="tki-panel-head"><div><h2>Pending per field engineer</h2><p>Current {{ report_period }} workload</p></div><i class="bi bi-bar-chart"></i></div>
+        <div class="tki-bar-chart" role="img" aria-label="Pending tickets by field engineer">
+          {% for item in engineer_report %}
+          <div class="tki-bar-row"><div><strong>{{ item.label }}</strong><small>{{ item.solved }} solved · {{ item.total }} total</small></div><div class="tki-bar-track"><span style="width:{{ item.bar_percent }}%"></span></div><b>{{ item.pending }}</b></div>
+          {% endfor %}
+        </div>
+      </section>
+      <section class="tki-panel tki-chart-card">
+        <div class="tki-panel-head"><div><h2>Pending by dependency</h2><p>Where operational action is blocked</p></div><i class="bi bi-pie-chart"></i></div>
+        <div class="tki-pie-layout">
+          <div class="tki-pie" style="background:{{ dependency_gradient }}"><span><b>{{ summary.dependency }}</b><small>Issues</small></span></div>
+          <div class="tki-pie-legend">{% for item in dependency_report %}<div><i style="background:{{ item.color }}"></i><span>{{ item.label }}</span><b>{{ item.count }}</b></div>{% endfor %}</div>
+        </div>
+      </section>
+    </div>
+
+    <form method="get" class="tki-filter-bar">
+      <input type="hidden" name="period" value="{{ report_period }}">
+      <label><span class="visually-hidden">Search</span><input name="q" value="{{ request.GET.q }}" placeholder="Search TKI ID / Client code"></label>
+      <label><span class="visually-hidden">Engineer</span><select name="engineer"><option value="">All field engineers</option>{% for value,label in support_engineers %}<option value="{{ value }}" {% if request.GET.engineer == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="visually-hidden">Support</span><select name="support"><option value="">Field support: All</option><option value="yes" {% if request.GET.support == 'yes' %}selected{% endif %}>Engineer support: Yes</option><option value="no" {% if request.GET.support == 'no' %}selected{% endif %}>Engineer support: No</option></select></label>
+      <label><span class="visually-hidden">Status</span><select name="status"><option value="">Status: All</option>{% for value,label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+    </form>
+
+    <section class="tki-panel">
+      <div class="tki-panel-head"><div><h2>TKI operations register</h2><p>{{ tickets|length }} visible record{{ tickets|length|pluralize }}</p></div><span class="tki-live"><i></i> LIVE DATA</span></div>
+      <div class="tki-table-wrap">
+        <table class="tki-table tki-operations-table">
+          <thead><tr><th>Date</th><th>Time</th><th>TKI ID</th><th>Client code</th><th>Status</th><th>Dependency</th><th>Higher-level NOC</th><th>Field support</th><th>Remarks</th><th>Aging</th><th>Attention</th><th></th></tr></thead>
+          <tbody>
+            {% for ticket in tickets %}
+            <tr class="{% if ticket.attention %}needs-attention{% endif %}">
+              <td>{{ ticket.opened_at|date:"d M Y" }}</td><td>{{ ticket.opened_at|date:"h:i A" }}</td>
+              <td><strong>{{ ticket.tki_id }}</strong></td><td>{{ ticket.client_id }}</td>
+              <td><span class="tki-status status-{{ ticket.status }}"><i></i>{{ ticket.get_status_display }}</span></td>
+              <td>{% if ticket.dependency %}{{ ticket.get_dependency_display }}{% else %}<span class="tki-muted">None</span>{% endif %}</td>
+              <td>{% if ticket.higher_level_noc %}{{ ticket.get_higher_level_noc_display }}{% else %}<span class="tki-muted">—</span>{% endif %}</td>
+              <td>{% if ticket.field_support_engineer %}<strong>{{ ticket.get_field_support_engineer_display }}</strong><small>Support: Yes</small>{% else %}<span class="tki-muted">Support: No</span>{% endif %}</td>
+              <td class="tki-remarks">{{ ticket.remarks|default:ticket.complaint|truncatechars:72 }}</td>
+              <td><span class="tki-aging">{{ ticket.aging }}</span></td>
+              <td>{% if ticket.attention %}<span class="tki-attention"><i class="bi bi-exclamation-triangle-fill"></i> Required</span>{% else %}<span class="tki-muted">Normal</span>{% endif %}</td>
+              <td><a class="tki-row-link" href="{% url 'tki_detail' ticket.pk %}" aria-label="Open {{ ticket.tki_id }}"><i class="bi bi-arrow-up-right"></i></a></td>
+            </tr>
+            {% empty %}<tr><td colspan="12" class="tki-empty">No matching TKI records.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>
+{% endblock %}

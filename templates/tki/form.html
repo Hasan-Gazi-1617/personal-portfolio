@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ title }} | TKI Monitor{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/tki-monitor.css' %}">{% endblock %}
+{% block content %}
+<section class="tki-page"><div class="tki-shell tki-form-shell"><div class="tki-detail-nav"><a href="{% if ticket %}{% url 'tki_detail' ticket.pk %}{% else %}{% url 'tki_dashboard' %}{% endif %}"><i class="bi bi-arrow-left"></i> Back</a></div><div class="tki-panel tki-editor"><div class="tki-panel-head"><div><span class="tki-kicker">ISP TKI ENTRY</span><h1>{{ title }}</h1><p>Enter the complaint, ownership, dependency and latest operational comment.</p></div></div><form method="post">{% csrf_token %}{{ form.non_field_errors }}<div class="tki-form-grid">{% for field in form %}<label class="{% if field.name == 'remarks' or field.name == 'complaint' or field.name == 'findings' or field.name == 'troubleshooting' or field.name == 'resolution' %}tki-wide{% endif %}"><span>{{ field.label }}</span>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<small class="tki-error">{{ error }}</small>{% endfor %}</label>{% endfor %}</div><button class="tki-btn tki-btn-primary" type="submit"><i class="bi bi-check2"></i> Save TKI Entry</button></form></div></div></section>
+{% endblock %}
