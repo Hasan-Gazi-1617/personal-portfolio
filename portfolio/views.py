@@ -152,11 +152,14 @@ def tki_dashboard(request):
     dependency_gradient = "conic-gradient(" + (", ".join(gradient_stops) if gradient_stops else "#334155 0 100%") + ")"
     return render(request, "tki/dashboard.html", {
         "tickets": tickets[:150], "engineers": engineers, "workload": workload,
-        "summary": summary, "statuses": ComplaintTicket.Status.choices,
+        "summary": summary, "statuses": (
+            (ComplaintTicket.Status.PENDING, ComplaintTicket.Status.PENDING.label),
+            (ComplaintTicket.Status.SOLVED, ComplaintTicket.Status.SOLVED.label),
+        ),
         "support_engineers": ComplaintTicket.SupportEngineer.choices,
         "report_period": report_period, "engineer_report": engineer_report,
         "dependency_report": dependency_report, "dependency_gradient": dependency_gradient,
-        "pending_dependency_total": pending_dependency_tickets.exclude(dependency="").count(),
+        "pending_dependency_total": pending_dependency_tickets.exclude(dependency="").exclude(dependency=ComplaintTicket.Dependency.ISP).count(),
         "field_completion_report": field_completion_report,
         "noc_completion_report": noc_completion_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
