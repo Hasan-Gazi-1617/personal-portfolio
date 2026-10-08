@@ -32,6 +32,16 @@ class AdminTicketForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["opened_at"].input_formats = ("%Y-%m-%dT%H:%M",)
+        # TKI workflow uses only Pending and TKI Solved in the entry forms.
+        self.fields["status"].choices = (
+            (ComplaintTicket.Status.PENDING, ComplaintTicket.Status.PENDING.label),
+            (ComplaintTicket.Status.SOLVED, ComplaintTicket.Status.SOLVED.label),
+        )
+        # ISP is no longer an available dependency for new TKI entries.
+        self.fields["dependency"].choices = tuple(
+            choice for choice in ComplaintTicket.Dependency.choices
+            if choice[0] != ComplaintTicket.Dependency.ISP
+        )
         self.fields["assigned_engineer"].queryset = User.objects.filter(is_active=True, is_staff=False).order_by("first_name", "username")
         self.fields["assigned_engineer"].required = False
 
