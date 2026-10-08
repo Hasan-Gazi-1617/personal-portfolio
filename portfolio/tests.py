@@ -228,6 +228,36 @@ class TkiWorkflowTests(TestCase):
         response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {"status": ComplaintTicket.Status.PENDING})
         self.assertRedirects(response, reverse("owner_login"))
 
+    def test_owner_can_export_selected_month_as_xlsx(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        month = timezone.localdate().strftime("%Y-%m")
+        response = self.client.get(reverse("tki_export_xlsx"), {"month": month})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        self.assertIn(f"ISP-TKI-{month}.xlsx", response["Content-Disposition"])
+        self.assertTrue(response.content.startswith(b"PK"))
+
+    def test_month_delete_requires_owner_confirmation_and_is_scoped(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        old_ticket = ComplaintTicket.objects.create(
+            tki_id="TKI-OLD", client_id="OLD-1",
+            opened_at=timezone.now().replace(year=2025, month=1, day=15),
+            complaint="Old ticket", created_by=self.admin_user,
+        )
+        response = self.client.post(reverse("tki_delete_month"), {"month": "2025-01", "confirm": "DELETE"})
+        self.assertRedirects(response, reverse("tki_dashboard"))
+        self.assertFalse(ComplaintTicket.objects.filter(pk=old_ticket.pk).exists())
+        self.assertTrue(ComplaintTicket.objects.filter(pk=self.ticket.pk).exists())
+
+    def test_public_user_cannot_export_or_delete_month(self):
+        month = timezone.localdate().strftime("%Y-%m")
+        self.assertRedirects(self.client.get(reverse("tki_export_xlsx"), {"month": month}), reverse("owner_login"))
+        self.assertRedirects(self.client.post(reverse("tki_delete_month"), {"month": month, "confirm": "DELETE"}), reverse("owner_login"))
+
     def test_tki_can_be_solved_without_login(self):
         session = self.client.session
         session["owner_access"] = True
