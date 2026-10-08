@@ -16,7 +16,7 @@ class AdminTicketForm(forms.ModelForm):
         model = ComplaintTicket
         fields = (
             "tki_id", "client_id", "opened_at", "status", "dependency",
-            "higher_level_noc", "field_support_engineer", "attention", "remarks",
+            "higher_level_noc", "noc_field_visit_done", "field_support_engineer", "field_support_done", "attention", "remarks",
             "category", "priority", "isp_related", "complaint", "assigned_engineer",
             "findings", "troubleshooting", "resolution",
         )
@@ -35,11 +35,19 @@ class AdminTicketForm(forms.ModelForm):
         self.fields["assigned_engineer"].queryset = User.objects.filter(is_active=True, is_staff=False).order_by("first_name", "username")
         self.fields["assigned_engineer"].required = False
 
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("field_support_done") and not cleaned.get("field_support_engineer"):
+            self.add_error("field_support_engineer", "Select the field engineer who completed the support.")
+        if cleaned.get("noc_field_visit_done") and not cleaned.get("higher_level_noc"):
+            self.add_error("higher_level_noc", "Select the NOC engineer who completed the field visit.")
+        return cleaned
+
 
 class EngineerTicketUpdateForm(forms.ModelForm):
     class Meta:
         model = ComplaintTicket
-        fields = ("status", "dependency", "higher_level_noc", "field_support_engineer", "attention", "remarks", "findings", "troubleshooting", "resolution")
+        fields = ("status", "dependency", "higher_level_noc", "noc_field_visit_done", "field_support_engineer", "field_support_done", "attention", "remarks", "findings", "troubleshooting", "resolution")
         widgets = {
             "findings": forms.Textarea(attrs={"rows": 3}),
             "troubleshooting": forms.Textarea(attrs={"rows": 4}),
@@ -49,6 +57,10 @@ class EngineerTicketUpdateForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if cleaned.get("field_support_done") and not cleaned.get("field_support_engineer"):
+            self.add_error("field_support_engineer", "Select the field engineer who completed the support.")
+        if cleaned.get("noc_field_visit_done") and not cleaned.get("higher_level_noc"):
+            self.add_error("higher_level_noc", "Select the NOC engineer who completed the field visit.")
         if cleaned.get("status") == ComplaintTicket.Status.SOLVED:
             if not cleaned.get("findings") or not cleaned.get("troubleshooting"):
                 raise forms.ValidationError("Findings and troubleshooting are required before resolving or closing a TKI.")

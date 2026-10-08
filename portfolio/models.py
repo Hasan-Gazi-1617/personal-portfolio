@@ -58,6 +58,8 @@ class ComplaintTicket(models.Model):
     dependency = models.CharField(max_length=24, choices=Dependency.choices, blank=True, db_index=True)
     higher_level_noc = models.CharField(max_length=20, choices=NocEngineer.choices, blank=True, db_index=True)
     field_support_engineer = models.CharField(max_length=24, choices=SupportEngineer.choices, blank=True, db_index=True)
+    field_support_done = models.BooleanField(default=False, db_index=True, help_text="Selected field engineer completed support")
+    noc_field_visit_done = models.BooleanField(default=False, db_index=True, help_text="Selected NOC engineer completed a field visit")
     remarks = models.TextField(blank=True, help_text="Latest/last operational comment")
     attention = models.BooleanField(default=False, db_index=True)
     isp_related = models.BooleanField(default=False)

@@ -68,6 +68,8 @@ def import_solved_tsv(text, Ticket):
             "dependency": dependency,
             "field_support_engineer": field_engineer,
             "higher_level_noc": noc_engineer,
+            "field_support_done": bool(field_engineer),
+            "noc_field_visit_done": visited_by in noc_engineers,
             "priority": "medium",
             "category": category,
             "complaint": f"{issue_clean} — {customer}",

@@ -13,7 +13,9 @@
       <div><span>ISP related</span><strong>{% if ticket.isp_related %}Yes{% else %}No{% endif %}</strong></div>
       <div><span>Engineer support</span><strong>{% if ticket.engineer_support %}Yes{% else %}No{% endif %}</strong></div>
       <div><span>Field support engineer</span><strong>{{ ticket.get_field_support_engineer_display|default:"Not assigned" }}</strong></div>
+      <div><span>Field support status</span><strong>{% if ticket.field_support_done %}Completed{% else %}Not completed{% endif %}</strong></div>
       <div><span>Higher-level NOC</span><strong>{{ ticket.get_higher_level_noc_display|default:"Not assigned" }}</strong></div>
+      <div><span>NOC field visit</span><strong>{% if ticket.noc_field_visit_done %}Completed{% else %}Not completed{% endif %}</strong></div>
       <div><span>Dependency</span><strong>{{ ticket.get_dependency_display|default:"None" }}</strong></div>
       <div><span>Aging</span><strong>{{ ticket.aging }}</strong></div>
       <div><span>Attention</span><strong>{% if ticket.attention %}Required{% else %}Normal{% endif %}</strong></div>
