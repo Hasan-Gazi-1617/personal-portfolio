@@ -285,6 +285,32 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(imported.count(), 2)
         self.assertFalse(imported.exclude(status=ComplaintTicket.Status.SOLVED).exists())
 
+    def test_solved_tki_import_preserves_utf8_bangla_text_and_bom(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        header = "Sl.\tDate\tCP ID\tCustomer\tIssue\tReceived By\tSupportBy\tVisitedBy\tSaved Number\tUn Saved Number\tDetails\tFeedback\tStatus\tAction\n"
+        row = "1.\t08 Oct 2026\tMIT-BN-1\tমোঃ রহিম\tইন্টারনেট সংযোগ নেই\tHasan\tAbir\t\t01700000000\t\tফাইবার সংযোগ ঠিক করা হয়েছে\tগ্রাহক নিশ্চিত করেছেন\tSolved\tOpen Update"
+        upload = SimpleUploadedFile(
+            "সমাধান.tsv", (header + row).encode("utf-8-sig"),
+            content_type="text/tab-separated-values",
+        )
+        response = self.client.post(reverse("tki_import_solved"), {"tki_file": upload})
+        self.assertRedirects(response, reverse("tki_dashboard"))
+        ticket = ComplaintTicket.objects.get(client_id="MIT-BN-1")
+        self.assertEqual(ticket.status, ComplaintTicket.Status.SOLVED)
+        self.assertIn("মোঃ রহিম", ticket.complaint)
+        self.assertIn("ফাইবার সংযোগ ঠিক করা হয়েছে", ticket.remarks)
+        self.assertEqual(ticket.resolution, "গ্রাহক নিশ্চিত করেছেন")
+
+    def test_solved_tki_import_rejects_non_utf8_file_with_helpful_message(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        upload = SimpleUploadedFile("legacy.tsv", b"\xff\xfeinvalid", content_type="text/tab-separated-values")
+        response = self.client.post(reverse("tki_import_solved"), {"tki_file": upload}, follow=True)
+        self.assertContains(response, "UTF-8 encoding")
+
     def test_tki_can_be_solved_without_login(self):
         session = self.client.session
         session["owner_access"] = True
