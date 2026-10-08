@@ -8,7 +8,7 @@
     <header class="tki-page-head">
       <div><span class="tki-kicker"><i class="bi bi-broadcast-pin"></i> ISP OPERATIONS CONTROL</span><h1>ISP TKI Dashboard</h1><p>Engineer assignment, dependency tracking and live complaint reporting in one workspace.</p></div>
       <div class="tki-head-actions">
-        <a class="tki-btn tki-btn-primary" href="{% url 'tki_create' %}"><i class="bi bi-plus-lg"></i> New TKI Entry</a>
+        {% if can_edit_tki %}<a class="tki-btn tki-btn-primary" href="{% url 'tki_create' %}"><i class="bi bi-plus-lg"></i> New TKI Entry</a>{% endif %}
       </div>
     </header>
     {% for message in messages %}<div class="tki-alert" role="status">{{ message }}</div>{% endfor %}

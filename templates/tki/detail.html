@@ -4,7 +4,7 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/tki-monitor.css' %}">{% endblock %}
 {% block content %}
 <section class="tki-page"><div class="tki-shell tki-detail-shell">
-  <div class="tki-detail-nav"><a href="{% url 'tki_dashboard' %}"><i class="bi bi-arrow-left"></i> Dashboard</a><a class="tki-btn" href="{% url 'tki_admin_edit' ticket.pk %}"><i class="bi bi-pencil"></i> Edit all fields</a></div>
+  <div class="tki-detail-nav"><a href="{% url 'tki_dashboard' %}"><i class="bi bi-arrow-left"></i> Dashboard</a>{% if can_edit_tki %}<a class="tki-btn" href="{% url 'tki_admin_edit' ticket.pk %}"><i class="bi bi-pencil"></i> Edit all fields</a>{% endif %}</div>
   {% for message in messages %}<div class="tki-alert" role="status">{{ message }}</div>{% endfor %}
   <header class="tki-ticket-head"><div><span class="tki-kicker">{{ ticket.get_priority_display }} PRIORITY</span><h1>{{ ticket.tki_id }}</h1><p>Client {{ ticket.client_id }} · Opened {{ ticket.opened_at|date:"d M Y, h:i A" }}</p></div><span class="tki-status status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></header>
   <div class="tki-detail-grid">

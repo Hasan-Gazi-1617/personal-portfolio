@@ -203,6 +203,9 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(response.context["summary"]["dependency"], 1)
 
     def test_tki_can_be_created_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_create"), {
             "tki_id": "TKI-1002", "client_id": "3437",
             "opened_at": timezone.localtime().strftime("%Y-%m-%dT%H:%M"),
@@ -220,7 +223,15 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(created.status, ComplaintTicket.Status.PENDING)
         self.assertIsNone(created.created_by)
 
+    def test_public_user_cannot_create_or_update_tki(self):
+        self.assertRedirects(self.client.get(reverse("tki_create")), reverse("owner_login"))
+        response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {"status": ComplaintTicket.Status.PENDING})
+        self.assertRedirects(response, reverse("owner_login"))
+
     def test_tki_can_be_solved_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
             "status": ComplaintTicket.Status.SOLVED,
             "findings": "Fiber break identified.",
@@ -233,6 +244,9 @@ class TkiWorkflowTests(TestCase):
         self.assertIsNotNone(self.ticket.resolved_at)
 
     def test_pending_tki_can_be_updated_without_login(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
         response = self.client.post(reverse("tki_update", args=(self.ticket.pk,)), {
             "status": ComplaintTicket.Status.PENDING,
             "findings": "Attempted access",

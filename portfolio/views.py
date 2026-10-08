@@ -101,7 +101,7 @@ def tki_dashboard(request):
         "support_engineers": ComplaintTicket.SupportEngineer.choices,
         "report_period": report_period, "engineer_report": engineer_report,
         "dependency_report": dependency_report, "dependency_gradient": dependency_gradient,
-        "is_tki_admin": True,
+        "can_edit_tki": bool(request.session.get("owner_access")),
     })
 
 
@@ -109,13 +109,17 @@ def tki_detail(request, pk):
     ticket = get_object_or_404(ComplaintTicket.objects.select_related("assigned_engineer", "created_by"), pk=pk)
     form = EngineerTicketUpdateForm(instance=ticket)
     return render(request, "tki/detail.html", {
-        "ticket": ticket, "form": form, "can_update": True,
-        "is_tki_admin": True,
+        "ticket": ticket, "form": form,
+        "can_update": bool(request.session.get("owner_access")),
+        "can_edit_tki": bool(request.session.get("owner_access")),
     })
 
 
 @require_POST
 def tki_update(request, pk):
+    if not request.session.get("owner_access"):
+        messages.error(request, "Owner access is required to update TKI records.")
+        return redirect("owner_login")
     ticket = get_object_or_404(ComplaintTicket, pk=pk)
     form = EngineerTicketUpdateForm(request.POST, instance=ticket)
     if form.is_valid():
@@ -131,11 +135,14 @@ def tki_update(request, pk):
         return redirect("tki_detail", pk=ticket.pk)
     return render(request, "tki/detail.html", {
         "ticket": ticket, "form": form, "can_update": True,
-        "is_tki_admin": True,
+        "can_edit_tki": True,
     }, status=400)
 
 
 def tki_create(request):
+    if not request.session.get("owner_access"):
+        messages.error(request, "Owner access is required to create TKI records.")
+        return redirect("owner_login")
     form = AdminTicketForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
@@ -153,6 +160,9 @@ def tki_create(request):
 
 
 def tki_admin_edit(request, pk):
+    if not request.session.get("owner_access"):
+        messages.error(request, "Owner access is required to edit TKI records.")
+        return redirect("owner_login")
     ticket = get_object_or_404(ComplaintTicket, pk=pk)
     previous_engineer_id = ticket.assigned_engineer_id
     form = AdminTicketForm(request.POST or None, instance=ticket)
