@@ -45,6 +45,17 @@ class AdminTicketForm(forms.ModelForm):
         self.fields["assigned_engineer"].queryset = User.objects.filter(is_active=True, is_staff=False).order_by("first_name", "username")
         self.fields["assigned_engineer"].required = False
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["status"].choices = (
+            (ComplaintTicket.Status.PENDING, ComplaintTicket.Status.PENDING.label),
+            (ComplaintTicket.Status.SOLVED, ComplaintTicket.Status.SOLVED.label),
+        )
+        self.fields["dependency"].choices = tuple(
+            choice for choice in ComplaintTicket.Dependency.choices
+            if choice[0] != ComplaintTicket.Dependency.ISP
+        )
+
     def clean(self):
         cleaned = super().clean()
         if cleaned.get("field_support_done") and not cleaned.get("field_support_engineer"):
