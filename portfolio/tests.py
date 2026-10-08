@@ -211,6 +211,28 @@ class TkiWorkflowTests(TestCase):
         self.assertEqual(response.context["summary"]["pending"], ComplaintTicket.objects.filter(opened_at__date=timezone.localdate(), status=ComplaintTicket.Status.PENDING).count())
         self.assertEqual(response.context["summary"]["dependency"], ComplaintTicket.objects.filter(opened_at__date=timezone.localdate()).exclude(dependency="").count())
 
+    def test_pending_dependency_chart_excludes_solved_and_cancelled_tickets(self):
+        now = timezone.now()
+        ComplaintTicket.objects.create(
+            tki_id="TKI-CHART-PENDING", client_id="C-PENDING", opened_at=now,
+            status=ComplaintTicket.Status.PENDING,
+            dependency=ComplaintTicket.Dependency.TECHNICIAN,
+            complaint="Pending fiber work", created_by=self.admin_user,
+        )
+        for suffix, status in (("SOLVED", ComplaintTicket.Status.SOLVED), ("CANCELLED", ComplaintTicket.Status.CANCELLED)):
+            ComplaintTicket.objects.create(
+                tki_id=f"TKI-CHART-{suffix}", client_id=f"C-{suffix}", opened_at=now,
+                status=status, dependency=ComplaintTicket.Dependency.TECHNICIAN,
+                complaint=f"{suffix} fiber work", created_by=self.admin_user,
+            )
+        response = self.client.get(reverse("tki_dashboard"), {"period": "daily"})
+        report = {item["value"]: item["count"] for item in response.context["dependency_report"]}
+        expected = ComplaintTicket.objects.filter(
+            opened_at__date=timezone.localdate(), status=ComplaintTicket.Status.PENDING,
+            dependency=ComplaintTicket.Dependency.TECHNICIAN,
+        ).count()
+        self.assertEqual(report[ComplaintTicket.Dependency.TECHNICIAN], expected)
+
     def test_tki_can_be_created_without_login(self):
         session = self.client.session
         session["owner_access"] = True
