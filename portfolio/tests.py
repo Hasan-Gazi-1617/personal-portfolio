@@ -303,13 +303,28 @@ class TkiWorkflowTests(TestCase):
         self.assertIn("ফাইবার সংযোগ ঠিক করা হয়েছে", ticket.remarks)
         self.assertEqual(ticket.resolution, "গ্রাহক নিশ্চিত করেছেন")
 
+    def test_solved_tki_import_accepts_excel_utf16_bangla_text(self):
+        session = self.client.session
+        session["owner_access"] = True
+        session.save()
+        header = "Sl.\tDate\tCP ID\tCustomer\tIssue\tReceived By\tSupportBy\tVisitedBy\tSaved Number\tUn Saved Number\tDetails\tFeedback\tStatus\tAction\n"
+        row = "1.\t08 Oct 2026\tMIT-UTF16-1\tবাংলা গ্রাহক\tইন্টারনেট নেই\tHasan\tAbir\t\t01700000001\t\tসমস্যা সমাধান হয়েছে\tসংযোগ চালু\tSolved\tOpen Update"
+        upload = SimpleUploadedFile(
+            "excel-unicode.txt", (header + row).encode("utf-16"), content_type="text/plain"
+        )
+        response = self.client.post(reverse("tki_import_solved"), {"tki_file": upload})
+        self.assertRedirects(response, reverse("tki_dashboard"))
+        ticket = ComplaintTicket.objects.get(client_id="MIT-UTF16-1")
+        self.assertIn("বাংলা গ্রাহক", ticket.complaint)
+        self.assertEqual(ticket.status, ComplaintTicket.Status.SOLVED)
+
     def test_solved_tki_import_rejects_non_utf8_file_with_helpful_message(self):
         session = self.client.session
         session["owner_access"] = True
         session.save()
         upload = SimpleUploadedFile("legacy.tsv", b"\xff\xfeinvalid", content_type="text/tab-separated-values")
         response = self.client.post(reverse("tki_import_solved"), {"tki_file": upload}, follow=True)
-        self.assertContains(response, "UTF-8 encoding")
+        self.assertContains(response, "UTF-8 অথবা Excel Unicode Text")
 
     def test_tki_can_be_solved_without_login(self):
         session = self.client.session
