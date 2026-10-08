@@ -126,17 +126,22 @@ def tki_dashboard(request):
             "label": label,
             "solved": engineer_solved.count(),
             "field_visits": engineer_solved.filter(noc_field_visit_done=True).count(),
+            "support_done": engineer_solved.filter(noc_field_visit_done=True).count(),
         })
 
     # This chart is an active-work view: completed/cancelled tickets must not
     # inflate the pending dependency workload.
     pending_dependency_tickets = report_tickets.filter(status=ComplaintTicket.Status.PENDING)
     dependency_report = []
-    dependency_total = max(pending_dependency_tickets.exclude(dependency="").count(), 1)
-    dependency_colors = ["#32d399", "#55b8ff", "#f6bd47", "#a78bfa", "#fb7185", "#94a3b8"]
+    visible_dependencies = tuple(
+        choice for choice in ComplaintTicket.Dependency.choices
+        if choice[0] != ComplaintTicket.Dependency.ISP
+    )
+    dependency_total = max(pending_dependency_tickets.exclude(dependency="").exclude(dependency=ComplaintTicket.Dependency.ISP).count(), 1)
+    dependency_colors = ["#32d399", "#55b8ff", "#f6bd47", "#a78bfa", "#fb7185"]
     gradient_stops = []
     cursor = 0
-    for index, (value, label) in enumerate(ComplaintTicket.Dependency.choices):
+    for index, (value, label) in enumerate(visible_dependencies):
         count = pending_dependency_tickets.filter(dependency=value).count()
         percent = round(count / dependency_total * 100)
         color = dependency_colors[index]
