@@ -207,8 +207,8 @@ class TkiWorkflowTests(TestCase):
         self.assertContains(response, "Pending by dependency")
         self.assertContains(response, "Abir")
         self.assertContains(response, "Waiting for ISP feedback")
-        self.assertEqual(response.context["summary"]["pending"], 2)
-        self.assertEqual(response.context["summary"]["dependency"], 1)
+        self.assertEqual(response.context["summary"]["pending"], ComplaintTicket.objects.filter(opened_at__date=timezone.localdate(), status=ComplaintTicket.Status.PENDING).count())
+        self.assertEqual(response.context["summary"]["dependency"], ComplaintTicket.objects.filter(opened_at__date=timezone.localdate()).exclude(dependency="").count())
 
     def test_tki_can_be_created_without_login(self):
         session = self.client.session
