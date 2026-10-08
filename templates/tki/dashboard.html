@@ -45,8 +45,7 @@
     <div class="tki-stats tki-stats-six">
       <article><span>Total TKI</span><strong>{{ summary.total }}</strong><small>Entered in this period</small></article>
       <article><span>Pending</span><strong class="is-amber">{{ summary.pending }}</strong><small>Waiting for action</small></article>
-      <article><span>Solved</span><strong class="is-green">{{ summary.solved }}</strong><small>Successfully completed</small></article>
-      <article><span>Cancelled</span><strong class="is-red">{{ summary.cancelled }}</strong><small>Cancelled tickets</small></article>
+      <article><span>TKI Solved</span><strong class="is-green">{{ summary.solved }}</strong><small>Successfully completed</small></article>
       <article><span>Dependency issues</span><strong>{{ summary.dependency }}</strong><small>Blocked by a dependency</small></article>
       <article><span>Needs attention</span><strong class="is-red">{{ summary.attention }}</strong><small>Manually highlighted</small></article>
     </div>
@@ -70,15 +69,15 @@
     </div>
 
     <section class="tki-panel tki-engineer-performance">
-      <div class="tki-panel-head"><div><h2>Engineer resolution report</h2><p>{{ report_period|title }} solved TKI, completed field support and NOC visits</p></div><i class="bi bi-person-check"></i></div>
+      <div class="tki-panel-head"><div><h2>Engineer resolution report</h2><p>{{ report_period|title }} TKI solved and support completed</p></div><i class="bi bi-person-check"></i></div>
       <div class="tki-performance-grid">
         <div class="tki-performance-group">
-          <div class="tki-performance-title"><span>Field Support Engineers</span><small>Solved / Support completed</small></div>
+          <div class="tki-performance-title"><span>Field Support Engineers</span><small>TKI Solved / Support completed</small></div>
           {% for item in field_completion_report %}<article><div><strong>{{ item.label }}</strong><small>Field support team</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.support_done }}</b> done</span></article>{% endfor %}
         </div>
         <div class="tki-performance-group">
-          <div class="tki-performance-title"><span>NOC Engineers</span><small>Solved / Field visits completed</small></div>
-          {% for item in noc_completion_report %}<article><div><strong>{{ item.label }}</strong><small>NOC team</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.field_visits }}</b> visits</span></article>{% endfor %}
+          <div class="tki-performance-title"><span>NOC Engineers</span><small>TKI Solved / Support completed</small></div>
+          {% for item in noc_completion_report %}<article><div><strong>{{ item.label }}</strong><small>NOC team</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.support_done }}</b> completed</span></article>{% endfor %}
         </div>
       </div>
     </section>
@@ -96,7 +95,7 @@
       <div class="tki-panel-head"><div><h2>TKI operations register</h2><p>{{ tickets|length }} visible record{{ tickets|length|pluralize }}</p></div><span class="tki-live"><i></i> LIVE DATA</span></div>
       <div class="tki-table-wrap">
         <table class="tki-table tki-operations-table">
-          <thead><tr><th>Date</th><th>Time</th><th>TKI ID</th><th>Client code</th><th>Status</th><th>Dependency</th><th>Higher-level NOC</th><th>Field support</th><th>Remarks</th><th>Aging</th><th>Attention</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Time</th><th>TKI ID</th><th>Client Code</th><th>Status</th><th>Dependency</th><th>Higher-level NOC</th><th>Engineer Field Support</th><th>Remarks</th><th>Aging</th><th>Priority</th><th></th></tr></thead>
           <tbody>
             {% for ticket in tickets %}
             <tr class="{% if ticket.attention %}needs-attention{% endif %}">
@@ -108,7 +107,7 @@
               <td>{% if ticket.field_support_engineer %}<strong>{{ ticket.get_field_support_engineer_display }}</strong><small>{% if ticket.field_support_done %}Support: Done{% else %}Support: Assigned{% endif %}</small>{% else %}<span class="tki-muted">Support: No</span>{% endif %}</td>
               <td class="tki-remarks">{{ ticket.remarks|default:ticket.complaint|truncatechars:72 }}</td>
               <td><span class="tki-aging">{{ ticket.aging }}</span></td>
-              <td>{% if ticket.attention %}<span class="tki-attention"><i class="bi bi-exclamation-triangle-fill"></i> Required</span>{% else %}<span class="tki-muted">Normal</span>{% endif %}</td>
+              <td><span class="tki-priority priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
               <td><a class="tki-row-link" href="{% url 'tki_detail' ticket.pk %}" aria-label="Open {{ ticket.tki_id }}"><i class="bi bi-arrow-up-right"></i></a></td>
             </tr>
             {% empty %}<tr><td colspan="12" class="tki-empty">No matching TKI records.</td></tr>{% endfor %}
