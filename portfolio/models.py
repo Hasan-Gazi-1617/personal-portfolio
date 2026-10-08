@@ -22,7 +22,7 @@ class ComplaintTicket(models.Model):
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
-        SOLVED = "solved", "Solved"
+        SOLVED = "solved", "TKI Solved"
         CANCELLED = "cancelled", "Cancelled"
 
     class Dependency(models.TextChoices):
