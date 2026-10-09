@@ -181,6 +181,20 @@ class ComplaintTicket(models.Model):
 
     def save(self, *args, **kwargs):
         now = timezone.now()
+        if self.client_id and self.opened_at:
+            duplicates = type(self).objects.filter(
+                client_id__iexact=self.client_id,
+                opened_at__year=self.opened_at.year,
+                opened_at__month=self.opened_at.month,
+            )
+            if self.pk:
+                duplicates = duplicates.exclude(pk=self.pk)
+            if duplicates.exists():
+                self.status_type = self.StatusType.REPEAT
+                if not self.repeat_reason:
+                    self.repeat_reason = self.RepeatReason.OTHER
+                if "Auto-flagged: repeated Client ID" not in self.repeat_note:
+                    self.repeat_note = (self.repeat_note + "\\n" if self.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
         if not self.sla_hours:
             self.sla_hours = self.default_sla_hours(self.category)
         if self.pk:
