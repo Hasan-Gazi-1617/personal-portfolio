@@ -15,7 +15,7 @@ class AdminTicketForm(forms.ModelForm):
         model = ComplaintTicket
         fields = (
             "tki_id", "client_id", "opened_at", "category", "priority", "sla_hours",
-            "received_by", "support_by", "visited_by", "higher_level_noc",
+            "received_by", "support_by", "support_type", "visited_by", "higher_level_noc",
             "status", "dependency", "resolved_at", "field_support_engineer",
             "field_support_done", "noc_field_visit_done", "repeat_reason",
             "repeat_note", "repeat_engineer", "attention", "remarks", "isp_related",
