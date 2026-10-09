@@ -206,7 +206,7 @@ def tki_export_xlsx(request):
     muted = "DCE7F2"
     thin = Side(style="thin", color="CAD6E2")
 
-    sheet.merge_cells("A1:W1")
+    sheet.merge_cells("A1:X1")
     sheet["A1"] = f"ISP TKI Monthly Report — {start.strftime('%B %Y')}"
     sheet["A1"].font = Font(size=18, bold=True, color="FFFFFF")
     sheet["A1"].fill = PatternFill("solid", fgColor=dark)
@@ -224,7 +224,7 @@ def tki_export_xlsx(request):
         cell.font = Font(bold=True, color=dark)
         cell.fill = PatternFill("solid", fgColor="E8F8F1")
 
-    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue", "Received By", "Support By", "Support Type", "Visited By", "Solved At", "SLA Target (h)", "SLA Elapsed", "SLA Result", "Repeat Reason / Notes"]
+    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue", "Received By", "Support By", "Support Type", "Visited By", "Solved At", "Status Type", "SLA Target (h)", "SLA Elapsed", "SLA Result", "Repeat Reason / Notes"]
     for column, label in enumerate(headers, 1):
         cell = sheet.cell(5, column, label)
         cell.font = Font(bold=True, color="FFFFFF")
@@ -248,7 +248,7 @@ def tki_export_xlsx(request):
             ticket.get_received_by_display() or "—", ticket.get_support_by_display() or "—",
             ticket.get_support_type_display(), ticket.get_visited_by_display() or "—",
             timezone.localtime(ticket.resolved_at).strftime("%Y-%m-%d %H:%M") if ticket.resolved_at else "—",
-            ticket.sla_hours, ticket.sla_elapsed_display,
+            ticket.get_status_type_display(), ticket.sla_hours, ticket.sla_elapsed_display,
             "Breached" if ticket.sla_breached else "Met",
             (ticket.get_repeat_reason_display() or "—") + (": " + ticket.repeat_note if ticket.repeat_note else ""),
         ]
@@ -258,11 +258,11 @@ def tki_export_xlsx(request):
             cell.alignment = Alignment(vertical="top", wrap_text=column in {11, 14})
         sheet.cell(row_number, 5).fill = PatternFill("solid", fgColor=status_colors.get(ticket.status, muted))
 
-    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22, 16, 16, 16, 16, 20, 14, 14, 14, 38]
+    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22, 16, 16, 16, 16, 20, 12, 14, 14, 14, 38]
     for column, width in enumerate(widths, 1):
         sheet.column_dimensions[get_column_letter(column)].width = width
     sheet.freeze_panes = "A6"
-    sheet.auto_filter.ref = f"A5:W{max(sheet.max_row, 5)}"
+    sheet.auto_filter.ref = f"A5:X{max(sheet.max_row, 5)}"
     sheet.sheet_view.showGridLines = False
     sheet.page_setup.orientation = "landscape"
     sheet.page_setup.fitToWidth = 1
@@ -386,6 +386,8 @@ def tki_create(request):
             opened_at__year=ticket.opened_at.year,
             opened_at__month=ticket.opened_at.month,
         ).exists()
+        if repeat_exists:
+            ticket.status_type = ComplaintTicket.StatusType.REPEAT
         if repeat_exists and not ticket.repeat_reason:
             ticket.repeat_reason = ComplaintTicket.RepeatReason.OTHER
             ticket.repeat_note = (ticket.repeat_note + "\n" if ticket.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
