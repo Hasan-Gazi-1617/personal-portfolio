@@ -48,6 +48,11 @@ def algorithm_studio(request):
     return render(request, "algorithm_studio.html")
 
 
+def tki_fresh_dashboard(request):
+    """Temporary client-side TKI dashboard. Deliberately reads/writes no persistent storage."""
+    return render(request, "tki_fresh_dashboard.html")
+
+
 def tki_dashboard(request):
     tickets = ComplaintTicket.objects.select_related("assigned_engineer", "created_by")
     query = request.GET.get("q", "").strip()
