@@ -130,6 +130,25 @@ def tki_dashboard(request):
             "compliance": round(met / total_handled * 100) if total_handled else 0,
         })
 
+    performance_report = []
+    for value, label in ComplaintTicket.ReceivedBy.choices:
+        handled = solved_tickets.filter(support_by=value)
+        if value in dict(ComplaintTicket.SupportEngineer.choices):
+            handled = handled | solved_tickets.filter(field_support_engineer=value)
+        handled = handled.distinct()
+        met = sum(1 for item in handled if not item.sla_breached)
+        breached = max(0, handled.count() - met)
+        repeat_penalties = report_tickets.filter(
+            repeat_reason=ComplaintTicket.RepeatReason.ENGINEER,
+            repeat_engineer=value,
+        ).count()
+        score = met - breached - repeat_penalties
+        performance_report.append({
+            "value": value, "label": label, "solved": handled.count(),
+            "sla_met": met, "sla_breached": breached,
+            "repeat_penalties": repeat_penalties, "score": score,
+        })
+
     noc_completion_report = []
     for value, label in ComplaintTicket.NocEngineer.choices:
         engineer_solved = solved_tickets.filter(higher_level_noc=value)
@@ -176,6 +195,7 @@ def tki_dashboard(request):
         "field_completion_report": field_completion_report,
         "noc_completion_report": noc_completion_report,
         "phone_sla_report": phone_sla_report,
+        "performance_report": performance_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
         "current_month": now.strftime("%Y-%m"),
         "pending_tickets": tickets.filter(status=ComplaintTicket.Status.PENDING)[:100],
