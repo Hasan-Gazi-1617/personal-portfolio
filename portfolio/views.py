@@ -164,6 +164,10 @@ def tki_dashboard(request):
         "noc_completion_report": noc_completion_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
         "current_month": now.strftime("%Y-%m"),
+        "pending_tickets": tickets.filter(status=ComplaintTicket.Status.PENDING)[:100],
+        "solved_tickets": tickets.filter(status=ComplaintTicket.Status.SOLVED)[:100],
+        "repeat_issues": report_tickets.exclude(repeat_reason="").count(),
+        "repeat_engineer_issues": report_tickets.filter(repeat_reason=ComplaintTicket.RepeatReason.ENGINEER).count(),
     })
 
 
@@ -265,6 +269,31 @@ def tki_delete_month(request):
 
 
 @require_POST
+def tki_delete_range(request):
+    if not _owner_can_manage_tki(request):
+        messages.error(request, "Owner access is required to delete TKI data.")
+        return redirect("owner_login")
+    if request.POST.get("confirm", "").strip().upper() != "DELETE":
+        messages.error(request, "Type DELETE to confirm the date-range deletion.")
+        return redirect("tki_dashboard")
+    try:
+        start_date = datetime.strptime(request.POST.get("start_date", ""), "%Y-%m-%d").date()
+        end_date = datetime.strptime(request.POST.get("end_date", ""), "%Y-%m-%d").date()
+        if end_date < start_date:
+            raise ValueError("End date is before start date")
+    except (TypeError, ValueError):
+        messages.error(request, "Choose a valid start and end date.")
+        return redirect("tki_dashboard")
+    start = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+    end = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+    queryset = ComplaintTicket.objects.filter(opened_at__range=(start, end))
+    count = queryset.count()
+    queryset.delete()
+    messages.success(request, f"{count} TKI record(s) from {start_date} to {end_date} were deleted.")
+    return redirect("tki_dashboard")
+
+
+@require_POST
 def tki_import_solved(request):
     if not _owner_can_manage_tki(request):
         messages.error(request, "Owner access is required to import TKI data.")
@@ -330,6 +359,14 @@ def tki_create(request):
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
         ticket.created_by = request.user if request.user.is_authenticated else None
+        repeat_exists = ComplaintTicket.objects.filter(
+            client_id__iexact=ticket.client_id,
+            opened_at__year=ticket.opened_at.year,
+            opened_at__month=ticket.opened_at.month,
+        ).exists()
+        if repeat_exists and not ticket.repeat_reason:
+            ticket.repeat_reason = ComplaintTicket.RepeatReason.OTHER
+            ticket.repeat_note = (ticket.repeat_note + "\n" if ticket.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
         if ticket.status == ComplaintTicket.Status.SOLVED and not ticket.resolved_at:
             ticket.resolved_at = timezone.now()
         if ticket.assigned_engineer_id:
