@@ -76,6 +76,10 @@ class Command(BaseCommand):
                 "remarks": " | ".join(part for part in (contact and f"Contact: {contact}", detail) if part),
                 "attention": issue in {"Cable Cut", "Down for Resource Work"},
             }
-            _, was_created = ComplaintTicket.objects.update_or_create(tki_id=tki_id, defaults=defaults)
+            # Never overwrite an existing ticket during deploy. This command runs
+            # from build.sh on every deployment, so update_or_create would reset
+            # statuses, remarks, dependencies, and other live operational edits.
+            _, was_created = ComplaintTicket.objects.get_or_create(tki_id=tki_id, defaults=defaults)
             created += int(was_created)
-        self.stdout.write(self.style.SUCCESS(f"TKI import complete: {created} created, {len(RECORDS) - created} updated"))
+        existing = len(RECORDS) - created
+        self.stdout.write(self.style.SUCCESS(f"TKI seed import complete: {created} created, {existing} already existed (left unchanged)"))
