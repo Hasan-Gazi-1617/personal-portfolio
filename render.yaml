@@ -11,3 +11,5 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      - key: OWNER_ACCESS_KEY
+        sync: false
