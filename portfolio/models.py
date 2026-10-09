@@ -48,7 +48,7 @@ class ComplaintTicket(models.Model):
         SUPPORT = "support_engineer", "Support Engineer"
         NOC = "noc_engineer", "NOC Engineer"
         CUSTOMER = "customer", "Customer"
-        OTHER_TEAM = "manor_other_team", "Other Team"
+        OTHER_TEAM = "manor_other_team", "Manor Other Team"
 
     class SupportEngineer(models.TextChoices):
         ABIR = "abir", "Abir"
