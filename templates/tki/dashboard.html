@@ -39,6 +39,14 @@
         <label><span>Type DELETE</span><input name="confirm" autocomplete="off" placeholder="DELETE" required></label>
         <button class="tki-btn tki-btn-danger" type="submit"><i class="bi bi-trash3"></i> Delete month</button>
       </form>
+      <form method="post" action="{% url 'tki_delete_range' %}" class="tki-delete-tool" onsubmit="return confirm('This permanently deletes TKI records in the selected date range. Export a backup first. Continue?')">
+        {% csrf_token %}
+        <div><i class="bi bi-calendar-range"></i><span><strong>Delete custom date range</strong><small>Permanent action. Export a backup first.</small></span></div>
+        <label><span>Start date</span><input type="date" name="start_date" required></label>
+        <label><span>End date</span><input type="date" name="end_date" required></label>
+        <label><span>Type DELETE</span><input name="confirm" autocomplete="off" placeholder="DELETE" required></label>
+        <button class="tki-btn tki-btn-danger" type="submit"><i class="bi bi-trash3"></i> Delete range</button>
+      </form>
     </section>
     {% endif %}
 
@@ -48,6 +56,8 @@
       <article><span>TKI Solved</span><strong class="is-green">{{ summary.solved }}</strong><small>Successfully completed</small></article>
       <article><span>Dependency issues</span><strong>{{ summary.dependency }}</strong><small>Blocked by a dependency</small></article>
       <article><span>Needs attention</span><strong class="is-red">{{ summary.attention }}</strong><small>Manually highlighted</small></article>
+      <article><span>SLA breached</span><strong class="is-red">{{ sla_breaches }}</strong><small>Solved after active SLA time</small></article>
+      <article><span>Repeat Client IDs</span><strong>{{ repeat_issues }}</strong><small>{{ repeat_engineer_issues }} engineer-related</small></article>
     </div>
 
     <div class="tki-insights-grid">
@@ -81,6 +91,21 @@
         </div>
       </div>
     </section>
+
+    <div class="tki-insights-grid">
+      <section class="tki-panel">
+        <div class="tki-panel-head"><div><h2>Pending TKI</h2><p>Active cases and paused SLA tracking</p></div><span class="tki-status status-pending"><i></i> Pending</span></div>
+        <div class="tki-table-wrap"><table class="tki-table"><thead><tr><th>TKI ID / Client</th><th>Issue</th><th>Dependency</th><th>SLA</th><th>Owner</th><th>Edit</th></tr></thead><tbody>
+        {% for ticket in pending_tickets %}<tr><td><strong>{{ ticket.tki_id }}</strong><small>{{ ticket.client_id }}</small></td><td>{{ ticket.get_category_display }}</td><td>{{ ticket.get_dependency_display|default:"None" }}</td><td><strong>{{ ticket.sla_elapsed_display }} / {{ ticket.sla_hours }}h</strong>{% if ticket.dependency %}<small>SLA paused</small>{% elif ticket.sla_breached %}<small class="tki-error">Over SLA</small>{% endif %}</td><td>{{ ticket.get_support_by_display|default:ticket.get_field_support_engineer_display|default:"Unassigned" }}</td><td><a class="tki-row-link" href="{% if can_edit_tki %}{% url 'tki_admin_edit' ticket.pk %}{% else %}{% url 'tki_detail' ticket.pk %}{% endif %}">Open</a></td></tr>{% empty %}<tr><td colspan="6" class="tki-empty">No pending TKI.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+      <section class="tki-panel">
+        <div class="tki-panel-head"><div><h2>Solved TKI</h2><p>Completed records; no inline dropdown edits</p></div><span class="tki-status status-solved"><i></i> Solved</span></div>
+        <div class="tki-table-wrap"><table class="tki-table"><thead><tr><th>TKI ID / Client</th><th>Issue</th><th>Solved at</th><th>SLA</th><th>Repeat reason</th><th>View</th></tr></thead><tbody>
+        {% for ticket in solved_tickets %}<tr><td><strong>{{ ticket.tki_id }}</strong><small>{{ ticket.client_id }}</small></td><td>{{ ticket.get_category_display }}</td><td>{{ ticket.resolved_at|date:"d M, h:i A" }}</td><td>{% if ticket.sla_breached %}<span class="tki-error">Breached</span>{% else %}<span class="is-done">Met</span>{% endif %}<small>{{ ticket.sla_elapsed_display }} / {{ ticket.sla_hours }}h</small></td><td>{{ ticket.get_repeat_reason_display|default:"—" }}</td><td><a class="tki-row-link" href="{% url 'tki_detail' ticket.pk %}">View</a></td></tr>{% empty %}<tr><td colspan="6" class="tki-empty">No solved TKI.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+    </div>
 
     <form method="get" class="tki-filter-bar">
       <input type="hidden" name="period" value="{{ report_period }}">
