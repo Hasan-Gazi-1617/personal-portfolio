@@ -118,6 +118,18 @@ def tki_dashboard(request):
             "solved": engineer_solved.count(),
             "support_done": engineer_solved.filter(field_support_done=True).count(),
         })
+    phone_sla_report = []
+    phone_solved = solved_tickets.filter(support_type=ComplaintTicket.SupportType.PHONE)
+    for value, label in ComplaintTicket.ReceivedBy.choices:
+        handled = phone_solved.filter(support_by=value)
+        total_handled = handled.count()
+        met = sum(1 for item in handled if not item.sla_breached)
+        phone_sla_report.append({
+            "value": value, "label": label, "solved": total_handled,
+            "met": met, "breached": total_handled - met,
+            "compliance": round(met / total_handled * 100) if total_handled else 0,
+        })
+
     noc_completion_report = []
     for value, label in ComplaintTicket.NocEngineer.choices:
         engineer_solved = solved_tickets.filter(higher_level_noc=value)
@@ -163,6 +175,7 @@ def tki_dashboard(request):
         "pending_dependency_total": pending_dependency_tickets.exclude(dependency="").exclude(dependency=ComplaintTicket.Dependency.ISP).count(),
         "field_completion_report": field_completion_report,
         "noc_completion_report": noc_completion_report,
+        "phone_sla_report": phone_sla_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
         "current_month": now.strftime("%Y-%m"),
         "pending_tickets": tickets.filter(status=ComplaintTicket.Status.PENDING)[:100],
