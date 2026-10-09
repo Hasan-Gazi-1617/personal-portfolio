@@ -56,6 +56,11 @@ class TicketSLATests(TestCase):
             client_id="repeat-client",
             opened_at=first.opened_at + timedelta(days=1),
         )
+        self.assertEqual(first.status_type, ComplaintTicket.StatusType.NEW)
+        first.remarks = "Routine correction after repeat"
+        first.save()
+        first.refresh_from_db()
+        self.assertEqual(first.status_type, ComplaintTicket.StatusType.NEW)
         self.assertEqual(second.status_type, ComplaintTicket.StatusType.REPEAT)
         self.assertEqual(second.repeat_reason, ComplaintTicket.RepeatReason.OTHER)
         self.assertIn("Auto-flagged: repeated Client ID", second.repeat_note)
