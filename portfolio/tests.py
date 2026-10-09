@@ -192,6 +192,30 @@ class TkiWorkflowTests(TestCase):
         call_command("import_tki_seed", verbosity=0)
         self.assertEqual(imported_ids.count(), 41)
 
+    def test_seed_import_never_overwrites_existing_ticket_fields(self):
+        seeded_id = "TKI-20261008-001"
+        existing = ComplaintTicket.objects.create(
+            tki_id=seeded_id,
+            client_id="CUSTOM-CLIENT",
+            opened_at=timezone.now(),
+            status=ComplaintTicket.Status.SOLVED,
+            dependency=ComplaintTicket.Dependency.ISP,
+            complaint="My edited live complaint",
+            remarks="Keep these operator notes",
+            resolution="Customer confirmed fixed",
+            created_by=self.admin_user,
+        )
+
+        call_command("import_tki_seed", verbosity=0)
+
+        existing.refresh_from_db()
+        self.assertEqual(existing.client_id, "CUSTOM-CLIENT")
+        self.assertEqual(existing.status, ComplaintTicket.Status.SOLVED)
+        self.assertEqual(existing.dependency, ComplaintTicket.Dependency.ISP)
+        self.assertEqual(existing.complaint, "My edited live complaint")
+        self.assertEqual(existing.remarks, "Keep these operator notes")
+        self.assertEqual(existing.resolution, "Customer confirmed fixed")
+
     def test_dashboard_has_engineer_reports_and_named_teams(self):
         ComplaintTicket.objects.create(
             tki_id="TKI-REPORT-1", client_id="C-100", opened_at=timezone.now(),
