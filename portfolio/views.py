@@ -150,6 +150,7 @@ def tki_dashboard(request):
             cursor += percent
         dependency_report.append({"value": value, "label": label, "count": count, "percent": percent, "color": color})
     dependency_gradient = "conic-gradient(" + (", ".join(gradient_stops) if gradient_stops else "#334155 0 100%") + ")"
+    sla_breaches = sum(1 for item in report_tickets if item.status == ComplaintTicket.Status.SOLVED and item.sla_breached)
     return render(request, "tki/dashboard.html", {
         "tickets": tickets[:150], "engineers": engineers, "workload": workload,
         "summary": summary, "statuses": (
@@ -166,6 +167,8 @@ def tki_dashboard(request):
         "current_month": now.strftime("%Y-%m"),
         "pending_tickets": tickets.filter(status=ComplaintTicket.Status.PENDING)[:100],
         "solved_tickets": tickets.filter(status=ComplaintTicket.Status.SOLVED)[:100],
+        "sla_breaches": sla_breaches,
+        "sla_compliant_solved": max(0, report_tickets.filter(status=ComplaintTicket.Status.SOLVED).count() - sla_breaches),
         "repeat_issues": report_tickets.exclude(repeat_reason="").count(),
         "repeat_engineer_issues": report_tickets.filter(repeat_reason=ComplaintTicket.RepeatReason.ENGINEER).count(),
     })
