@@ -191,8 +191,9 @@ class ComplaintTicket(models.Model):
                 if is_paused and not was_paused:
                     self.dependency_started_at = now
                 elif was_paused and not is_paused:
+                    pause_end = self.resolved_at or now
                     self.dependency_paused_seconds = old.dependency_paused_seconds + max(
-                        0, int((now - old.dependency_started_at).total_seconds())
+                        0, int((pause_end - old.dependency_started_at).total_seconds())
                     )
                     self.dependency_started_at = None
                 elif is_paused:
