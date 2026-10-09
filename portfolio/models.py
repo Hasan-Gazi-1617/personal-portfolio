@@ -181,7 +181,8 @@ class ComplaintTicket(models.Model):
 
     def save(self, *args, **kwargs):
         now = timezone.now()
-        if self.client_id and self.opened_at:
+        # Only flag the newly logged repeat, not the original ticket when it is edited.
+        if self._state.adding and self.client_id and self.opened_at:
             duplicates = type(self).objects.filter(
                 client_id__iexact=self.client_id,
                 opened_at__year=self.opened_at.year,
