@@ -118,6 +118,52 @@ def tki_dashboard(request):
             "solved": engineer_solved.count(),
             "support_done": engineer_solved.filter(field_support_done=True).count(),
         })
+    phone_sla_report = []
+    phone_solved = solved_tickets.filter(support_type=ComplaintTicket.SupportType.PHONE)
+    for value, label in ComplaintTicket.ReceivedBy.choices:
+        handled = phone_solved.filter(support_by=value)
+        total_handled = handled.count()
+        met = sum(1 for item in handled if not item.sla_breached)
+        phone_sla_report.append({
+            "value": value, "label": label, "solved": total_handled,
+            "met": met, "breached": total_handled - met,
+            "compliance": round(met / total_handled * 100) if total_handled else 0,
+        })
+
+    field_rating_report = []
+    for value, label in ComplaintTicket.SupportEngineer.choices:
+        handled = solved_tickets.filter(field_support_engineer=value)
+        met = sum(1 for item in handled if not item.sla_breached)
+        breached = max(0, handled.count() - met)
+        repeat_penalties = report_tickets.filter(
+            repeat_reason=ComplaintTicket.RepeatReason.ENGINEER,
+            repeat_engineer=value,
+        ).count()
+        field_rating_report.append({
+            "value": value, "label": label, "solved": handled.count(),
+            "sla_met": met, "sla_breached": breached,
+            "repeat_penalties": repeat_penalties, "score": met - breached - repeat_penalties,
+        })
+
+    performance_report = []
+    for value, label in ComplaintTicket.ReceivedBy.choices:
+        handled = solved_tickets.filter(support_by=value)
+        if value in dict(ComplaintTicket.SupportEngineer.choices):
+            handled = handled | solved_tickets.filter(field_support_engineer=value)
+        handled = handled.distinct()
+        met = sum(1 for item in handled if not item.sla_breached)
+        breached = max(0, handled.count() - met)
+        repeat_penalties = report_tickets.filter(
+            repeat_reason=ComplaintTicket.RepeatReason.ENGINEER,
+            repeat_engineer=value,
+        ).count()
+        score = met - breached - repeat_penalties
+        performance_report.append({
+            "value": value, "label": label, "solved": handled.count(),
+            "sla_met": met, "sla_breached": breached,
+            "repeat_penalties": repeat_penalties, "score": score,
+        })
+
     noc_completion_report = []
     for value, label in ComplaintTicket.NocEngineer.choices:
         engineer_solved = solved_tickets.filter(higher_level_noc=value)
@@ -150,6 +196,7 @@ def tki_dashboard(request):
             cursor += percent
         dependency_report.append({"value": value, "label": label, "count": count, "percent": percent, "color": color})
     dependency_gradient = "conic-gradient(" + (", ".join(gradient_stops) if gradient_stops else "#334155 0 100%") + ")"
+    sla_breaches = sum(1 for item in report_tickets if item.status == ComplaintTicket.Status.SOLVED and item.sla_breached)
     return render(request, "tki/dashboard.html", {
         "tickets": tickets[:150], "engineers": engineers, "workload": workload,
         "summary": summary, "statuses": (
@@ -162,8 +209,17 @@ def tki_dashboard(request):
         "pending_dependency_total": pending_dependency_tickets.exclude(dependency="").exclude(dependency=ComplaintTicket.Dependency.ISP).count(),
         "field_completion_report": field_completion_report,
         "noc_completion_report": noc_completion_report,
+        "phone_sla_report": phone_sla_report,
+        "performance_report": performance_report,
+        "field_rating_report": field_rating_report,
         "can_edit_tki": bool(request.session.get("owner_access")),
         "current_month": now.strftime("%Y-%m"),
+        "pending_tickets": tickets.filter(status=ComplaintTicket.Status.PENDING)[:100],
+        "solved_tickets": tickets.filter(status=ComplaintTicket.Status.SOLVED)[:100],
+        "sla_breaches": sla_breaches,
+        "sla_compliant_solved": max(0, report_tickets.filter(status=ComplaintTicket.Status.SOLVED).count() - sla_breaches),
+        "repeat_issues": report_tickets.exclude(repeat_reason="").count(),
+        "repeat_engineer_issues": report_tickets.filter(repeat_reason=ComplaintTicket.RepeatReason.ENGINEER).count(),
     })
 
 
@@ -186,7 +242,7 @@ def tki_export_xlsx(request):
     muted = "DCE7F2"
     thin = Side(style="thin", color="CAD6E2")
 
-    sheet.merge_cells("A1:N1")
+    sheet.merge_cells("A1:X1")
     sheet["A1"] = f"ISP TKI Monthly Report — {start.strftime('%B %Y')}"
     sheet["A1"].font = Font(size=18, bold=True, color="FFFFFF")
     sheet["A1"].fill = PatternFill("solid", fgColor=dark)
@@ -204,7 +260,7 @@ def tki_export_xlsx(request):
         cell.font = Font(bold=True, color=dark)
         cell.fill = PatternFill("solid", fgColor="E8F8F1")
 
-    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue"]
+    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue", "Received By", "Support By", "Support Type", "Visited By", "Solved At", "Status Type", "SLA Target (h)", "SLA Elapsed", "SLA Result", "Repeat Reason / Notes"]
     for column, label in enumerate(headers, 1):
         cell = sheet.cell(5, column, label)
         cell.font = Font(bold=True, color="FFFFFF")
@@ -225,6 +281,12 @@ def tki_export_xlsx(request):
             ticket.get_field_support_engineer_display() or "—", "Done" if ticket.field_support_done else "No",
             safe_text(ticket.remarks or ticket.complaint), ticket.aging,
             "Required" if ticket.attention else "Normal", ticket.get_category_display(),
+            ticket.get_received_by_display() or "—", ticket.get_support_by_display() or "—",
+            ticket.get_support_type_display(), ticket.get_visited_by_display() or "—",
+            timezone.localtime(ticket.resolved_at).strftime("%Y-%m-%d %H:%M") if ticket.resolved_at else "—",
+            ticket.get_status_type_display(), ticket.sla_hours, ticket.sla_elapsed_display,
+            "Breached" if ticket.sla_breached else "Met",
+            (ticket.get_repeat_reason_display() or "—") + (": " + ticket.repeat_note if ticket.repeat_note else ""),
         ]
         for column, value in enumerate(values, 1):
             cell = sheet.cell(row_number, column, value)
@@ -232,11 +294,11 @@ def tki_export_xlsx(request):
             cell.alignment = Alignment(vertical="top", wrap_text=column in {11, 14})
         sheet.cell(row_number, 5).fill = PatternFill("solid", fgColor=status_colors.get(ticket.status, muted))
 
-    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22]
+    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22, 16, 16, 16, 16, 20, 12, 14, 14, 14, 38]
     for column, width in enumerate(widths, 1):
         sheet.column_dimensions[get_column_letter(column)].width = width
     sheet.freeze_panes = "A6"
-    sheet.auto_filter.ref = f"A5:L{max(sheet.max_row, 5)}"
+    sheet.auto_filter.ref = f"A5:X{max(sheet.max_row, 5)}"
     sheet.sheet_view.showGridLines = False
     sheet.page_setup.orientation = "landscape"
     sheet.page_setup.fitToWidth = 1
@@ -261,6 +323,31 @@ def tki_delete_month(request):
     count = queryset.count()
     queryset.delete()
     messages.success(request, f"{count} TKI record(s) from {start.strftime('%B %Y')} were deleted.")
+    return redirect("tki_dashboard")
+
+
+@require_POST
+def tki_delete_range(request):
+    if not _owner_can_manage_tki(request):
+        messages.error(request, "Owner access is required to delete TKI data.")
+        return redirect("owner_login")
+    if request.POST.get("confirm", "").strip().upper() != "DELETE":
+        messages.error(request, "Type DELETE to confirm the date-range deletion.")
+        return redirect("tki_dashboard")
+    try:
+        start_date = datetime.strptime(request.POST.get("start_date", ""), "%Y-%m-%d").date()
+        end_date = datetime.strptime(request.POST.get("end_date", ""), "%Y-%m-%d").date()
+        if end_date < start_date:
+            raise ValueError("End date is before start date")
+    except (TypeError, ValueError):
+        messages.error(request, "Choose a valid start and end date.")
+        return redirect("tki_dashboard")
+    start = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+    end = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+    queryset = ComplaintTicket.objects.filter(opened_at__range=(start, end))
+    count = queryset.count()
+    queryset.delete()
+    messages.success(request, f"{count} TKI record(s) from {start_date} to {end_date} were deleted.")
     return redirect("tki_dashboard")
 
 
@@ -330,6 +417,16 @@ def tki_create(request):
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
         ticket.created_by = request.user if request.user.is_authenticated else None
+        repeat_exists = ComplaintTicket.objects.filter(
+            client_id__iexact=ticket.client_id,
+            opened_at__year=ticket.opened_at.year,
+            opened_at__month=ticket.opened_at.month,
+        ).exists()
+        if repeat_exists:
+            ticket.status_type = ComplaintTicket.StatusType.REPEAT
+        if repeat_exists and not ticket.repeat_reason:
+            ticket.repeat_reason = ComplaintTicket.RepeatReason.OTHER
+            ticket.repeat_note = (ticket.repeat_note + "\n" if ticket.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
         if ticket.status == ComplaintTicket.Status.SOLVED and not ticket.resolved_at:
             ticket.resolved_at = timezone.now()
         if ticket.assigned_engineer_id:
