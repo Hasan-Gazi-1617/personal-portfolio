@@ -1,6 +1,12 @@
 from django.db import migrations, models
 
 
+def normalize_legacy_statuses(apps, schema_editor):
+    Ticket = apps.get_model("portfolio", "ComplaintTicket")
+    Ticket.objects.filter(status__in=["open", "assigned", "in_progress", "feedback_pending"]).update(status="pending")
+    Ticket.objects.filter(status__in=["resolved", "closed"]).update(status="solved")
+
+
 class Migration(migrations.Migration):
     dependencies = [("portfolio", "0001_initial")]
 
@@ -9,6 +15,7 @@ class Migration(migrations.Migration):
             model_name="complaintticket", name="status",
             field=models.CharField(choices=[("pending","Pending"),("solved","TKI Solved"),("cancelled","Cancelled")], db_index=True, default="pending", max_length=24),
         ),
+        migrations.RunPython(normalize_legacy_statuses, migrations.RunPython.noop),
         migrations.AddField(
             model_name="complaintticket", name="dependency",
             field=models.CharField(blank=True, choices=[("technician","Technician"),("isp","ISP"),("support_engineer","Support Engineer"),("noc_engineer","NOC Engineer"),("customer","Customer"),("manor_other_team","Other Team")], db_index=True, max_length=24),
