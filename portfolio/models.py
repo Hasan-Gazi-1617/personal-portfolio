@@ -116,7 +116,7 @@ class ComplaintTicket(models.Model):
     troubleshooting = models.TextField(blank=True)
     resolution = models.TextField(blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
-    sla_hours = models.PositiveSmallIntegerField(default=0, help_text="SLA target in hours; can be overridden per ticket.")
+    sla_hours = models.PositiveSmallIntegerField(default=4, help_text="SLA target in hours; can be overridden per ticket.")
     dependency_started_at = models.DateTimeField(null=True, blank=True)
     dependency_paused_seconds = models.PositiveBigIntegerField(default=0)
     repeat_reason = models.CharField(max_length=20, choices=RepeatReason.choices, blank=True)
