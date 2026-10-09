@@ -62,6 +62,11 @@ class ComplaintTicket(models.Model):
         JEWEL = "jewel", "Jewel"
         RIAZ = "riaz", "Riaz"
 
+    class SupportType(models.TextChoices):
+        PHONE = "phone", "Phone Support"
+        FIELD = "field", "Field Support"
+        NOC = "noc", "NOC Support"
+
     class RepeatReason(models.TextChoices):
         CUSTOMER = "customer", "Customer-related"
         ENGINEER = "engineer", "Engineer-related"
@@ -90,6 +95,7 @@ class ComplaintTicket(models.Model):
     higher_level_noc = models.CharField(max_length=20, choices=NocEngineer.choices, blank=True, db_index=True)
     received_by = models.CharField(max_length=24, choices=ReceivedBy.choices, blank=True, db_index=True)
     support_by = models.CharField(max_length=24, choices=ReceivedBy.choices, blank=True, db_index=True)
+    support_type = models.CharField(max_length=12, choices=SupportType.choices, default=SupportType.PHONE, db_index=True)
     visited_by = models.CharField(max_length=24, choices=ReceivedBy.choices, blank=True, db_index=True)
     field_support_engineer = models.CharField(max_length=24, choices=SupportEngineer.choices, blank=True, db_index=True)
     field_support_done = models.BooleanField(default=False, db_index=True)
@@ -126,9 +132,11 @@ class ComplaintTicket(models.Model):
         return bool(self.field_support_engineer or self.assigned_engineer_id)
 
     @staticmethod
-    def default_sla_hours(category):
+    def default_sla_hours(category, support_type="phone"):
         if category == "fiber":
             return 4
+        if support_type == "phone":
+            return 1
         if category in {"password", "billing"}:
             return 1
         if category in {"wifi", "gaming", "website", "browsing", "bandwidth", "slow"}:
