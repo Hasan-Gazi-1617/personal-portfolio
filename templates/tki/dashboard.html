@@ -114,6 +114,13 @@
       </div></div>
     </section>
 
+    <section class="tki-panel tki-engineer-performance">
+      <div class="tki-panel-head"><div><h2>Engineer performance rating</h2><p>+1 for SLA met, -1 for SLA breach, -1 for engineer-error repeat</p></div><i class="bi bi-award"></i></div>
+      <div class="tki-performance-grid"><div class="tki-performance-group">
+      {% for item in performance_report %}<article><div><strong>{{ item.label }}</strong><small>{{ item.solved }} solved · {{ item.sla_met }} SLA met · {{ item.sla_breached }} breached</small></div><span>Repeat penalties <b>{{ item.repeat_penalties }}</b></span><span class="is-done">Score <b>{{ item.score }}</b></span></article>{% endfor %}
+      </div></div>
+    </section>
+
     <form method="get" class="tki-filter-bar">
       <input type="hidden" name="period" value="{{ report_period }}">
       <label><span class="visually-hidden">Search</span><input name="q" value="{{ request.GET.q }}" placeholder="Search TKI ID / Client code"></label>
