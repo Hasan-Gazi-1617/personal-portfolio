@@ -6,6 +6,27 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
+            model_name="complaintticket", name="status",
+            field=models.CharField(choices=[("pending","Pending"),("solved","TKI Solved"),("cancelled","Cancelled")], db_index=True, default="pending", max_length=24),
+        ),
+        migrations.AddField(
+            model_name="complaintticket", name="dependency",
+            field=models.CharField(blank=True, choices=[("technician","Technician"),("isp","ISP"),("support_engineer","Support Engineer"),("noc_engineer","NOC Engineer"),("customer","Customer"),("manor_other_team","Other Team")], db_index=True, max_length=24),
+        ),
+        migrations.AddField(
+            model_name="complaintticket", name="higher_level_noc",
+            field=models.CharField(blank=True, choices=[("farzana","Farzana"),("hasan","Hasan"),("jewel","Jewel"),("riaz","Riaz")], db_index=True, max_length=20),
+        ),
+        migrations.AddField(
+            model_name="complaintticket", name="field_support_engineer",
+            field=models.CharField(blank=True, choices=[("abir","Abir"),("faruk","Faruk"),("prodosh","Prodosh"),("rukunuzzaman","Rukunuzzaman")], db_index=True, max_length=24),
+        ),
+        migrations.AddField("complaintticket", "field_support_done", models.BooleanField(db_index=True, default=False, help_text="Selected field engineer completed support")),
+        migrations.AddField("complaintticket", "noc_field_visit_done", models.BooleanField(db_index=True, default=False, help_text="Selected NOC engineer completed a field visit")),
+        migrations.AddField("complaintticket", "remarks", models.TextField(blank=True, help_text="Latest/last operational comment")),
+        migrations.AddField("complaintticket", "attention", models.BooleanField(db_index=True, default=False)),
+
+        migrations.AlterField(
             model_name="complaintticket",
             name="category",
             field=models.CharField(
