@@ -206,7 +206,7 @@ def tki_export_xlsx(request):
     muted = "DCE7F2"
     thin = Side(style="thin", color="CAD6E2")
 
-    sheet.merge_cells("A1:N1")
+    sheet.merge_cells("A1:W1")
     sheet["A1"] = f"ISP TKI Monthly Report — {start.strftime('%B %Y')}"
     sheet["A1"].font = Font(size=18, bold=True, color="FFFFFF")
     sheet["A1"].fill = PatternFill("solid", fgColor=dark)
@@ -224,7 +224,7 @@ def tki_export_xlsx(request):
         cell.font = Font(bold=True, color=dark)
         cell.fill = PatternFill("solid", fgColor="E8F8F1")
 
-    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue"]
+    headers = ["Date", "Time", "TKI ID", "Client Code", "Status", "Dependency", "Higher-Level NOC", "NOC Field Visit", "Field Support Engineer", "Field Support Done", "Remarks", "Aging", "Attention", "Issue", "Received By", "Support By", "Support Type", "Visited By", "Solved At", "SLA Target (h)", "SLA Elapsed", "SLA Result", "Repeat Reason / Notes"]
     for column, label in enumerate(headers, 1):
         cell = sheet.cell(5, column, label)
         cell.font = Font(bold=True, color="FFFFFF")
@@ -245,6 +245,12 @@ def tki_export_xlsx(request):
             ticket.get_field_support_engineer_display() or "—", "Done" if ticket.field_support_done else "No",
             safe_text(ticket.remarks or ticket.complaint), ticket.aging,
             "Required" if ticket.attention else "Normal", ticket.get_category_display(),
+            ticket.get_received_by_display() or "—", ticket.get_support_by_display() or "—",
+            ticket.get_support_type_display(), ticket.get_visited_by_display() or "—",
+            timezone.localtime(ticket.resolved_at).strftime("%Y-%m-%d %H:%M") if ticket.resolved_at else "—",
+            ticket.sla_hours, ticket.sla_elapsed_display,
+            "Breached" if ticket.sla_breached else "Met",
+            (ticket.get_repeat_reason_display() or "—") + (": " + ticket.repeat_note if ticket.repeat_note else ""),
         ]
         for column, value in enumerate(values, 1):
             cell = sheet.cell(row_number, column, value)
@@ -252,11 +258,11 @@ def tki_export_xlsx(request):
             cell.alignment = Alignment(vertical="top", wrap_text=column in {11, 14})
         sheet.cell(row_number, 5).fill = PatternFill("solid", fgColor=status_colors.get(ticket.status, muted))
 
-    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22]
+    widths = [13, 12, 18, 16, 13, 20, 20, 16, 23, 18, 42, 12, 14, 22, 16, 16, 16, 16, 20, 14, 14, 14, 38]
     for column, width in enumerate(widths, 1):
         sheet.column_dimensions[get_column_letter(column)].width = width
     sheet.freeze_panes = "A6"
-    sheet.auto_filter.ref = f"A5:L{max(sheet.max_row, 5)}"
+    sheet.auto_filter.ref = f"A5:W{max(sheet.max_row, 5)}"
     sheet.sheet_view.showGridLines = False
     sheet.page_setup.orientation = "landscape"
     sheet.page_setup.fitToWidth = 1
