@@ -107,6 +107,13 @@
       </section>
     </div>
 
+    <section class="tki-panel tki-engineer-performance">
+      <div class="tki-panel-head"><div><h2>Phone Support SLA by engineer</h2><p>{{ report_period|title }} solved phone-support tickets</p></div><i class="bi bi-stopwatch"></i></div>
+      <div class="tki-performance-grid"><div class="tki-performance-group">
+      {% for item in phone_sla_report %}<article><div><strong>{{ item.label }}</strong><small>{{ item.compliance }}% SLA compliance</small></div><span><b>{{ item.solved }}</b> solved</span><span class="is-done"><b>{{ item.met }}</b> met</span><span><b>{{ item.breached }}</b> breached</span></article>{% endfor %}
+      </div></div>
+    </section>
+
     <form method="get" class="tki-filter-bar">
       <input type="hidden" name="period" value="{{ report_period }}">
       <label><span class="visually-hidden">Search</span><input name="q" value="{{ request.GET.q }}" placeholder="Search TKI ID / Client code"></label>
