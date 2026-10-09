@@ -194,7 +194,7 @@ class ComplaintTicket(models.Model):
                 if not self.repeat_reason:
                     self.repeat_reason = self.RepeatReason.OTHER
                 if "Auto-flagged: repeated Client ID" not in self.repeat_note:
-                    self.repeat_note = (self.repeat_note + "\\n" if self.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
+                    self.repeat_note = (self.repeat_note + "\n" if self.repeat_note else "") + "Auto-flagged: repeated Client ID in the same month; classify reason."
         if not self.sla_hours:
             self.sla_hours = self.default_sla_hours(self.category)
         if self.pk:
