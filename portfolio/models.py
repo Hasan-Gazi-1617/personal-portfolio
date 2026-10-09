@@ -62,6 +62,11 @@ class ComplaintTicket(models.Model):
         JEWEL = "jewel", "Jewel"
         RIAZ = "riaz", "Riaz"
 
+    class StatusType(models.TextChoices):
+        NEW = "new", "New"
+        FOLLOW_UP = "follow_up", "Follow-up"
+        REPEAT = "repeat", "Repeat"
+
     class SupportType(models.TextChoices):
         PHONE = "phone", "Phone Support"
         FIELD = "field", "Field Support"
@@ -91,6 +96,7 @@ class ComplaintTicket(models.Model):
     category = models.CharField(max_length=24, choices=Category.choices, default=Category.OTHER)
     priority = models.CharField(max_length=12, choices=Priority.choices, default=Priority.MEDIUM)
     status = models.CharField(max_length=24, choices=Status.choices, default=Status.PENDING, db_index=True)
+    status_type = models.CharField(max_length=12, choices=StatusType.choices, default=StatusType.NEW, db_index=True)
     dependency = models.CharField(max_length=24, choices=Dependency.choices, blank=True, db_index=True)
     higher_level_noc = models.CharField(max_length=20, choices=NocEngineer.choices, blank=True, db_index=True)
     received_by = models.CharField(max_length=24, choices=ReceivedBy.choices, blank=True, db_index=True)
