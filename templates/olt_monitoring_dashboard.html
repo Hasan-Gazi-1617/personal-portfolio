@@ -13,7 +13,7 @@
 .olt-card{border:1px solid rgba(148,163,184,.22);border-radius:16px;padding:18px;background:rgba(15,23,42,.55);backdrop-filter:blur(10px);min-width:0}
 html[data-theme="light"] .olt-card{background:rgba(255,255,255,.88);border-color:rgba(71,85,105,.2)}
 .olt-kpi-label{font-size:.78rem;opacity:.75;text-transform:uppercase;letter-spacing:.07em;font-weight:750}
-.olt-kpi{font-size:2rem;font-weight:850;margin-top:7px;line-height:1.2}
+.olt-kpi{font-size:2rem;font-weight:850;margin-top:7px;line-height:1.2}.olt-fresh{background:rgba(16,185,129,.13);color:#10b981}.olt-stale{background:rgba(245,158,11,.13);color:#d97706}
 .olt-section-title{font-size:1.15rem;font-weight:800;margin:0 0 14px}
 .olt-table-wrap{overflow-x:auto}
 .olt-table{width:100%;border-collapse:collapse;min-width:600px}
@@ -34,13 +34,13 @@ html[data-theme="light"] .olt-card{background:rgba(255,255,255,.88);border-color
       <h1 class="olt-title">OLT Monitoring Dashboard</h1>
       <p class="olt-sub">Huawei · VSOL · CDATA · Other vendors. Monitor OLT and PON/ONU state once your Local PC collector is connected.</p>
     </div>
-    <div class="olt-status"><span class="olt-dot"></span>{% if last_seen %}Last collector update: {{ last_seen|date:"d M Y, H:i:s" }}{% else %}Collector not connected{% endif %}</div>
+    <div class="olt-status"><span class="olt-pill {% if collector_connected %}olt-fresh{% else %}olt-stale{% endif %}">{% if collector_connected %}Collector connected{% elif last_seen %}Collector stale{% else %}Collector not connected{% endif %}</span>{% if last_seen %}<span>Last report: {{ last_seen|date:"d M Y, H:i:s" }}</span>{% endif %}</div>
   </div>
   <div class="olt-grid">
     <div class="olt-card"><div class="olt-kpi-label">Registered OLTs</div><div class="olt-kpi">{{ totals.olts }}</div></div>
     <div class="olt-card"><div class="olt-kpi-label">ONU Online</div><div class="olt-kpi" style="color:#10b981">{{ totals.online }}</div></div>
     <div class="olt-card"><div class="olt-kpi-label">ONU Offline</div><div class="olt-kpi" style="color:#ef4444">{{ totals.offline }}</div></div>
-    <div class="olt-card"><div class="olt-kpi-label">Recent events · 24h</div><div class="olt-kpi">{{ totals.events }}</div></div>
+    <div class="olt-card"><div class="olt-kpi-label">ONU Unknown</div><div class="olt-kpi">{{ totals.unknown }}</div></div><div class="olt-card"><div class="olt-kpi-label">Events · 24h</div><div class="olt-kpi">{{ totals.events }}</div></div>
   </div>
   <section class="olt-card" style="margin-bottom:18px">
     <h2 class="olt-section-title">OLT inventory</h2>
@@ -50,7 +50,15 @@ html[data-theme="light"] .olt-card{background:rgba(255,255,255,.88);border-color
     </tbody></table></div>
     {% else %}<div class="olt-empty"><strong>No OLT data received yet.</strong><p class="olt-note">The dashboard is ready, but it is not reporting live status until a Local PC collector is configured and sends authenticated data. No demo data is shown as real.</p></div>{% endif %}
   </section>
-  <section class="olt-card" style="margin-bottom:18px">
+    <section class="olt-card" style="margin-bottom:18px">
+    <h2 class="olt-section-title">PON port status summary</h2>
+    {% if pon_summary %}
+    <div class="olt-table-wrap"><table class="olt-table"><thead><tr><th>OLT</th><th>PON port</th><th>Total ONU</th><th>Online</th><th>Offline</th><th>Unknown</th></tr></thead><tbody>
+    {% for pon in pon_summary %}<tr><td><strong>{{ pon.olt__name }}</strong><br><span class="olt-note">{{ pon.olt__identifier }}</span></td><td>{{ pon.pon_port|default:"Unassigned" }}</td><td>{{ pon.total_count }}</td><td><span class="olt-pill olt-online">{{ pon.online_count }}</span></td><td><span class="olt-pill olt-offline">{{ pon.offline_count }}</span></td><td><span class="olt-pill olt-unknown">{{ pon.unknown_count }}</span></td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="olt-empty olt-note">PON summaries will appear after the collector sends ONU records with their PON port identifiers.</div>{% endif %}
+  </section>
+<section class="olt-card" style="margin-bottom:18px">
     <h2 class="olt-section-title">Recent ONU status changes</h2>
     {% if recent_events %}<div class="olt-table-wrap"><table class="olt-table"><thead><tr><th>Time</th><th>OLT</th><th>PON</th><th>ONU</th><th>Event</th></tr></thead><tbody>{% for event in recent_events %}<tr><td>{{ event.occurred_at|date:"d M, H:i:s" }}</td><td>{{ event.olt.name }}</td><td>{{ event.pon_port|default:"—" }}</td><td>{{ event.onu_id }}</td><td><span class="olt-pill olt-{{ event.event_type }}">{{ event.get_event_type_display }}</span></td></tr>{% endfor %}</tbody></table></div>
     {% else %}<div class="olt-empty olt-note">No online/offline transitions recorded yet.</div>{% endif %}
