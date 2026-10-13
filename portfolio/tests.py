@@ -5,7 +5,6 @@ from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -185,36 +184,10 @@ class TkiWorkflowTests(TestCase):
         self.assertContains(response, "ISP TKI Dashboard")
         self.assertNotContains(response, "Logout")
 
-    def test_seed_import_is_idempotent(self):
-        call_command("import_tki_seed", verbosity=0)
-        imported_ids = ComplaintTicket.objects.filter(tki_id__startswith="TKI-2026")
-        self.assertEqual(imported_ids.count(), 41)
-        call_command("import_tki_seed", verbosity=0)
-        self.assertEqual(imported_ids.count(), 41)
+    def test_retired_seed_import_command_is_not_registered(self):
+        from django.core.management import get_commands
 
-    def test_seed_import_never_overwrites_existing_ticket_fields(self):
-        seeded_id = "TKI-20261008-001"
-        existing = ComplaintTicket.objects.create(
-            tki_id=seeded_id,
-            client_id="CUSTOM-CLIENT",
-            opened_at=timezone.now(),
-            status=ComplaintTicket.Status.SOLVED,
-            dependency=ComplaintTicket.Dependency.ISP,
-            complaint="My edited live complaint",
-            remarks="Keep these operator notes",
-            resolution="Customer confirmed fixed",
-            created_by=self.admin_user,
-        )
-
-        call_command("import_tki_seed", verbosity=0)
-
-        existing.refresh_from_db()
-        self.assertEqual(existing.client_id, "CUSTOM-CLIENT")
-        self.assertEqual(existing.status, ComplaintTicket.Status.SOLVED)
-        self.assertEqual(existing.dependency, ComplaintTicket.Dependency.ISP)
-        self.assertEqual(existing.complaint, "My edited live complaint")
-        self.assertEqual(existing.remarks, "Keep these operator notes")
-        self.assertEqual(existing.resolution, "Customer confirmed fixed")
+        self.assertNotIn("import_tki_seed", get_commands())
 
     def test_dashboard_has_engineer_reports_and_named_teams(self):
         ComplaintTicket.objects.create(

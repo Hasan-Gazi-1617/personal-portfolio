@@ -20,7 +20,6 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py import_tki_seed
 python manage.py runserver
 ```
 
@@ -28,7 +27,7 @@ Open http://127.0.0.1:8000/.
 
 ## Render deployment
 
-This repository includes `render.yaml` and `build.sh` for Render Blueprint deployment. The build runs dependency installation, static collection, migrations, and the initial TKI seed import.
+This repository includes `render.yaml` and `build.sh` for Render Blueprint deployment. The build runs dependency installation, static collection, and database migrations. Retired legacy seed tickets are not automatically recreated.
 
 Set/check these environment variables in Render Dashboard:
 
@@ -44,9 +43,9 @@ SQLite is a file, not a managed database service. On Render, a Free web service 
 
 Because the project is intentionally staying on SQLite, verify the Render service's storage configuration before relying on it for live operational records. Persistent disks may require a paid service plan. Do not assume the data is durable unless a persistent disk is actually attached and the SQLite file is stored on its mount path.
 
-## Seed data safety
+## TKI data safety
 
-The build process runs `python manage.py import_tki_seed` on each deployment. The command is designed to create only missing seed tickets and leave existing tickets untouched, so deploying should not reset the statuses, remarks, or dependencies of existing seeded records.
+Legacy seed-ticket auto-import has been retired so deleted records do not return on fresh deployments. Use the private solved-TKI TSV import workflow for current records. Deployments should never silently recreate the old seed register.
 
 ## Suggested pre-live checks
 

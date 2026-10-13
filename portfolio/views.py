@@ -1,4 +1,6 @@
 import os
+import json
+import hmac
 import logging
 import secrets
 import time
@@ -8,15 +10,16 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
 logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
-from .models import ComplaintTicket, TicketActivity
+from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -507,3 +510,155 @@ def owner_logout(request):
     request.session.pop("owner_access", None)
     request.session.cycle_key()
     return redirect("home")
+
+
+# Private OLT monitoring dashboard. Live data is accepted only from a token-authenticated collector.
+from django.db import transaction
+from django.db.models import Count, Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import hmac
+import json
+from datetime import timedelta
+
+from .models import OLTDevice, ONUStatus, OLTEvent
+
+
+def _owner_required(request):
+    if not request.session.get("owner_access"):
+        return redirect("owner_login")
+    return None
+
+
+def olt_monitoring_dashboard(request):
+    denied = _owner_required(request)
+    if denied:
+        return denied
+
+    devices = list(OLTDevice.objects.annotate(
+        online_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.ONLINE)),
+        offline_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.OFFLINE)),
+        unknown_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.UNKNOWN)),
+    ))
+    last_seen = OLTDevice.objects.order_by("-last_seen").values_list("last_seen", flat=True).first()
+    now = timezone.now()
+    totals = {
+        "olts": len(devices),
+        "online": sum(device.online_count for device in devices),
+        "offline": sum(device.offline_count for device in devices),
+        "unknown": sum(device.unknown_count for device in devices),
+        "events": OLTEvent.objects.filter(occurred_at__gte=now - timedelta(hours=24)).count(),
+    }
+    pon_summary = list(
+        ONUStatus.objects.values("olt__name", "olt__identifier", "pon_port")
+        .annotate(
+            total_count=Count("id"),
+            online_count=Count("id", filter=Q(status=ONUStatus.Status.ONLINE)),
+            offline_count=Count("id", filter=Q(status=ONUStatus.Status.OFFLINE)),
+            unknown_count=Count("id", filter=Q(status=ONUStatus.Status.UNKNOWN)),
+        )
+        .order_by("olt__name", "pon_port")
+    )
+    return render(request, "olt_monitoring_dashboard.html", {
+        "devices": devices,
+        "last_seen": last_seen,
+        "collector_connected": bool(last_seen and last_seen >= now - timedelta(minutes=10)),
+        "totals": totals,
+        "pon_summary": pon_summary,
+        "recent_events": OLTEvent.objects.select_related("olt").order_by("-occurred_at")[:30],
+    })
+
+@csrf_exempt
+@require_POST
+def olt_ingest(request):
+    expected = os.environ.get("OLT_INGEST_TOKEN", "")
+    auth = request.headers.get("Authorization", "")
+    supplied = auth[7:] if auth.startswith("Bearer ") else ""
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    if len(request.body) > 2 * 1024 * 1024:
+        return JsonResponse({"error": "Payload too large (maximum 2 MiB)"}, status=413)
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({"error": "Expected a JSON payload"}, status=400)
+    if not isinstance(payload, dict) or not isinstance(payload.get("olt"), dict) or not isinstance(payload.get("onus"), list):
+        return JsonResponse({"error": "Payload must contain an olt object and onus array"}, status=400)
+    info = payload["olt"]
+    identifier = str(info.get("identifier", "")).strip()
+    name = str(info.get("name", "")).strip()
+    vendor = str(info.get("vendor", "other")).strip().lower()
+    if not identifier or len(identifier) > 80 or not name or len(name) > 120:
+        return JsonResponse({"error": "OLT identifier (max 80) and name (max 120) are required"}, status=400)
+    if vendor not in {"huawei", "vsol", "cdata", "other", "zte"}:
+        vendor = "other"
+    try:
+        pon_count = int(info.get("pon_port_count", 0))
+        if not 0 <= pon_count <= 4096:
+            raise ValueError
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "pon_port_count must be between 0 and 4096"}, status=400)
+    raw_ip = info.get("management_ip")
+    normalized_ip = None
+    if raw_ip:
+        import ipaddress
+        try:
+            normalized_ip = str(ipaddress.ip_address(raw_ip))
+        except ValueError:
+            return JsonResponse({"error": "Invalid management_ip"}, status=400)
+    if len(payload["onus"]) > 20000:
+        return JsonResponse({"error": "Maximum 20,000 ONU records per report"}, status=413)
+    normalized = []
+    seen = set()
+    for item in payload["onus"]:
+        if not isinstance(item, dict):
+            return JsonResponse({"error": "Every ONU record must be an object"}, status=400)
+        onu_id = str(item.get("id", "")).strip()
+        status = str(item.get("status", "unknown")).strip().lower()
+        port = str(item.get("pon_port", "")).strip()[:40]
+        serial = str(item.get("serial_number", "")).strip()[:100]
+        if not onu_id or len(onu_id) > 100 or status not in {"online", "offline", "unknown"}:
+            return JsonResponse({"error": "Each ONU needs an id (max 100) and valid status"}, status=400)
+        if onu_id in seen:
+            return JsonResponse({"error": "Duplicate ONU id in report"}, status=400)
+        seen.add(onu_id)
+        normalized.append((onu_id, status, port, serial))
+
+    now = timezone.now()
+    with transaction.atomic():
+        olt, _ = OLTDevice.objects.get_or_create(identifier=identifier, defaults={"name": name, "vendor": vendor})
+        olt.name = name
+        olt.vendor = vendor
+        olt.location = str(info.get("location", ""))[:160]
+        olt.pon_port_count = pon_count
+        olt.management_ip = normalized_ip
+        olt.last_seen = now
+        olt.save()
+        created = 0
+        updated = 0
+        events = 0
+        for onu_id, status, port, serial in normalized:
+            onu, is_new = ONUStatus.objects.get_or_create(
+                olt=olt, onu_id=onu_id,
+                defaults={"pon_port": port, "status": status, "serial_number": serial, "last_seen": now},
+            )
+            if is_new:
+                created += 1
+                if status in {"online", "offline"}:
+                    OLTEvent.objects.create(olt=olt, onu_id=onu_id, pon_port=port, event_type=status, occurred_at=now, details="Initial observed state")
+                    events += 1
+                continue
+            previous = onu.status
+            if previous != status:
+                if previous in {"online", "offline"} and status in {"online", "offline"}:
+                    OLTEvent.objects.create(olt=olt, onu_id=onu_id, pon_port=port, event_type=status, occurred_at=now, details=f"State changed from {previous}")
+                    events += 1
+                onu.status_changed_at = now
+            onu.pon_port = port
+            onu.status = status
+            onu.serial_number = serial
+            onu.last_seen = now
+            onu.save()
+            updated += 1
+    return JsonResponse({"ok": True, "olt": identifier, "created_onus": created, "updated_onus": updated, "events_created": events, "received_at": now.isoformat()})

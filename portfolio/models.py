@@ -234,3 +234,65 @@ class TicketActivity(models.Model):
 
     def __str__(self):
         return f"{self.ticket.tki_id}: {self.action}"
+
+
+class OLTDevice(models.Model):
+    VENDOR_CHOICES = [("huawei", "Huawei"), ("vsol", "VSOL"), ("cdata", "CDATA"), ("zte", "ZTE"), ("other", "Other")]
+    identifier = models.SlugField(max_length=80, unique=True)
+    name = models.CharField(max_length=120)
+    vendor = models.CharField(max_length=40, choices=VENDOR_CHOICES, default="other")
+    location = models.CharField(max_length=160, blank=True)
+    management_ip = models.GenericIPAddressField(blank=True, null=True)
+    pon_port_count = models.PositiveSmallIntegerField(default=0)
+    is_enabled = models.BooleanField(default=True)
+    last_seen = models.DateTimeField(blank=True, null=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_vendor_display()})"
+
+
+class ONUStatus(models.Model):
+    class Status(models.TextChoices):
+        ONLINE = "online", "Online"
+        OFFLINE = "offline", "Offline"
+        UNKNOWN = "unknown", "Unknown"
+
+    olt = models.ForeignKey(OLTDevice, on_delete=models.CASCADE, related_name="onus")
+    onu_id = models.CharField(max_length=100)
+    pon_port = models.CharField(max_length=40, blank=True)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.UNKNOWN, db_index=True)
+    serial_number = models.CharField(max_length=100, blank=True)
+    last_seen = models.DateTimeField(blank=True, null=True)
+    status_changed_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("olt__name", "pon_port", "onu_id")
+        constraints = [models.UniqueConstraint(fields=("olt", "onu_id"), name="unique_onu_per_olt")]
+
+    def __str__(self):
+        return f"{self.olt.identifier} / {self.onu_id} ({self.status})"
+
+
+class OLTEvent(models.Model):
+    class EventType(models.TextChoices):
+        ONLINE = "online", "Online"
+        OFFLINE = "offline", "Offline"
+
+    olt = models.ForeignKey(OLTDevice, on_delete=models.CASCADE, related_name="events")
+    onu_id = models.CharField(max_length=100)
+    pon_port = models.CharField(max_length=40, blank=True)
+    event_type = models.CharField(max_length=12, choices=EventType.choices)
+    occurred_at = models.DateTimeField(db_index=True)
+    details = models.CharField(max_length=240, blank=True)
+
+    class Meta:
+        ordering = ("-occurred_at",)
+
+    def __str__(self):
+        return f"{self.olt.name} {self.onu_id}: {self.event_type} at {self.occurred_at}"
