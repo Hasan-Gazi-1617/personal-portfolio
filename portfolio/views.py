@@ -1,4 +1,6 @@
 import os
+import json
+import hmac
 import logging
 import secrets
 import time
@@ -8,15 +10,16 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
 logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
-from .models import ComplaintTicket, TicketActivity
+from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
