@@ -535,22 +535,39 @@ def olt_monitoring_dashboard(request):
     denied = _owner_required(request)
     if denied:
         return denied
+
     devices = list(OLTDevice.objects.annotate(
         online_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.ONLINE)),
         offline_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.OFFLINE)),
+        unknown_count=Count("onus", filter=Q(onus__status=ONUStatus.Status.UNKNOWN)),
     ))
     last_seen = OLTDevice.objects.order_by("-last_seen").values_list("last_seen", flat=True).first()
+    now = timezone.now()
     totals = {
         "olts": len(devices),
-        "online": sum(d.online_count for d in devices),
-        "offline": sum(d.offline_count for d in devices),
-        "events": OLTEvent.objects.filter(occurred_at__gte=timezone.now() - timedelta(hours=24)).count(),
+        "online": sum(device.online_count for device in devices),
+        "offline": sum(device.offline_count for device in devices),
+        "unknown": sum(device.unknown_count for device in devices),
+        "events": OLTEvent.objects.filter(occurred_at__gte=now - timedelta(hours=24)).count(),
     }
+    pon_summary = list(
+        ONUStatus.objects.values("olt__name", "olt__identifier", "pon_port")
+        .annotate(
+            total_count=Count("id"),
+            online_count=Count("id", filter=Q(status=ONUStatus.Status.ONLINE)),
+            offline_count=Count("id", filter=Q(status=ONUStatus.Status.OFFLINE)),
+            unknown_count=Count("id", filter=Q(status=ONUStatus.Status.UNKNOWN)),
+        )
+        .order_by("olt__name", "pon_port")
+    )
     return render(request, "olt_monitoring_dashboard.html", {
-        "devices": devices, "last_seen": last_seen, "totals": totals,
+        "devices": devices,
+        "last_seen": last_seen,
+        "collector_connected": bool(last_seen and last_seen >= now - timedelta(minutes=10)),
+        "totals": totals,
+        "pon_summary": pon_summary,
         "recent_events": OLTEvent.objects.select_related("olt").order_by("-occurred_at")[:30],
     })
-
 
 @csrf_exempt
 @require_POST
