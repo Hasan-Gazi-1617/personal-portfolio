@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}OLT Monitoring | Hasan NOC{% endblock %}
+{% block content %}
+<style>
+.olt-page{max-width:1240px;margin:0 auto;padding:115px 22px 70px;position:relative;z-index:3;color:var(--text-color,#e8eef7)}
+.olt-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:26px}
+.olt-eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#38bdf8;font-weight:800}
+.olt-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:850;margin:.35rem 0}
+.olt-sub{opacity:.76;max-width:720px}
+.olt-status{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(148,163,184,.35);border-radius:999px;padding:8px 12px;font-size:.85rem}
+.olt-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block}
+.olt-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
+.olt-card{border:1px solid rgba(148,163,184,.22);border-radius:16px;padding:18px;background:rgba(15,23,42,.55);backdrop-filter:blur(10px);min-width:0}
+html[data-theme="light"] .olt-card{background:rgba(255,255,255,.88);border-color:rgba(71,85,105,.2)}
+.olt-kpi-label{font-size:.78rem;opacity:.75;text-transform:uppercase;letter-spacing:.07em;font-weight:750}
+.olt-kpi{font-size:2rem;font-weight:850;margin-top:7px;line-height:1.2}
+.olt-section-title{font-size:1.15rem;font-weight:800;margin:0 0 14px}
+.olt-table-wrap{overflow-x:auto}
+.olt-table{width:100%;border-collapse:collapse;min-width:600px}
+.olt-table th,.olt-table td{text-align:left;padding:12px 10px;border-bottom:1px solid rgba(148,163,184,.2);font-size:.9rem}
+.olt-table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.olt-pill{display:inline-block;border-radius:999px;padding:4px 9px;font-size:.75rem;font-weight:800}
+.olt-online{background:rgba(16,185,129,.15);color:#10b981}.olt-offline{background:rgba(239,68,68,.15);color:#ef4444}.olt-unknown{background:rgba(245,158,11,.15);color:#d97706}
+.olt-empty{padding:25px 16px;text-align:center;border:1px dashed rgba(148,163,184,.42);border-radius:12px;opacity:.84}
+.olt-note{font-size:.86rem;opacity:.78;line-height:1.65}
+.olt-link{color:#38bdf8;text-decoration:none;font-weight:750}
+@media(max-width:760px){.olt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.olt-page{padding-top:95px}.olt-card{padding:14px}}
+@media(max-width:420px){.olt-grid{gap:9px}.olt-kpi{font-size:1.6rem}.olt-kpi-label{font-size:.68rem}}
+</style>
+<main class="olt-page">
+  <div class="olt-head">
+    <div>
+      <div class="olt-eyebrow">Private infrastructure · Owner access</div>
+      <h1 class="olt-title">OLT Monitoring Dashboard</h1>
+      <p class="olt-sub">Huawei · VSOL · CDATA · Other vendors. Monitor OLT and PON/ONU state once your Local PC collector is connected.</p>
+    </div>
+    <div class="olt-status"><span class="olt-dot"></span>{% if last_seen %}Last collector update: {{ last_seen|date:"d M Y, H:i:s" }}{% else %}Collector not connected{% endif %}</div>
+  </div>
+  <div class="olt-grid">
+    <div class="olt-card"><div class="olt-kpi-label">Registered OLTs</div><div class="olt-kpi">{{ totals.olts }}</div></div>
+    <div class="olt-card"><div class="olt-kpi-label">ONU Online</div><div class="olt-kpi" style="color:#10b981">{{ totals.online }}</div></div>
+    <div class="olt-card"><div class="olt-kpi-label">ONU Offline</div><div class="olt-kpi" style="color:#ef4444">{{ totals.offline }}</div></div>
+    <div class="olt-card"><div class="olt-kpi-label">Recent events · 24h</div><div class="olt-kpi">{{ totals.events }}</div></div>
+  </div>
+  <section class="olt-card" style="margin-bottom:18px">
+    <h2 class="olt-section-title">OLT inventory</h2>
+    {% if devices %}
+    <div class="olt-table-wrap"><table class="olt-table"><thead><tr><th>OLT / Location</th><th>Vendor</th><th>PON ports</th><th>ONU online</th><th>ONU offline</th><th>Last report</th></tr></thead><tbody>
+    {% for device in devices %}<tr><td><strong>{{ device.name }}</strong><br><span class="olt-note">{{ device.location|default:"Location not set" }}</span></td><td>{{ device.vendor|upper }}</td><td>{{ device.pon_port_count }}</td><td>{{ device.online_count }}</td><td>{{ device.offline_count }}</td><td>{% if device.last_seen %}{{ device.last_seen|date:"d M, H:i:s" }}{% else %}Never{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="olt-empty"><strong>No OLT data received yet.</strong><p class="olt-note">The dashboard is ready, but it is not reporting live status until a Local PC collector is configured and sends authenticated data. No demo data is shown as real.</p></div>{% endif %}
+  </section>
+  <section class="olt-card" style="margin-bottom:18px">
+    <h2 class="olt-section-title">Recent ONU status changes</h2>
+    {% if recent_events %}<div class="olt-table-wrap"><table class="olt-table"><thead><tr><th>Time</th><th>OLT</th><th>PON</th><th>ONU</th><th>Event</th></tr></thead><tbody>{% for event in recent_events %}<tr><td>{{ event.occurred_at|date:"d M, H:i:s" }}</td><td>{{ event.olt.name }}</td><td>{{ event.pon_port|default:"—" }}</td><td>{{ event.onu_id }}</td><td><span class="olt-pill olt-{{ event.event_type }}">{{ event.get_event_type_display }}</span></td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<div class="olt-empty olt-note">No online/offline transitions recorded yet.</div>{% endif %}
+  </section>
+  <p class="olt-note">Collector status is based on the most recent authenticated report. SNMP/SSH discovery is not enabled automatically; the vendor, firmware and available management protocol must be verified before configuring a collector.</p>
+  <p><a class="olt-link" href="{% url 'home' %}">← Back to portfolio</a></p>
+</main>
+{% endblock %}
