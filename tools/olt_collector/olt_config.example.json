@@ -1,0 +1,27 @@
+{
+  "olt": {
+    "identifier": "replace-with-unique-olt-id",
+    "name": "Replace with OLT name",
+    "vendor": "huawei",
+    "location": "POP location",
+    "management_ip": "192.0.2.10",
+    "pon_port_count": 16
+  },
+  "snmp": {
+    "version": "2c",
+    "community_env": "OLT_SNMP_COMMUNITY",
+    "timeout_seconds": 2,
+    "retries": 1,
+    "command_timeout_seconds": 60
+  },
+  "oids": {
+    "status": "REPLACE_WITH_VENDOR_MIB_ONU_STATUS_COLUMN_OID",
+    "onu_id": "",
+    "pon_port": "REPLACE_WITH_VENDOR_MIB_PON_PORT_COLUMN_OID",
+    "serial_number": "REPLACE_WITH_VENDOR_MIB_SERIAL_COLUMN_OID"
+  },
+  "status_map": {
+    "REPLACE_WITH_ONLINE_ENUM_VALUE": "online",
+    "REPLACE_WITH_OFFLINE_ENUM_VALUE": "offline"
+  }
+}
