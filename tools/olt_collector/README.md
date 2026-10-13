@@ -1,47 +1,48 @@
-# Local PC OLT collector — integration contract
+# Local PC OLT collector
 
-The Django dashboard and authenticated ingestion endpoint are the first implementation stage. This folder documents the local-agent contract; it does **not** claim to poll hardware yet.
+The SNMP poller runs on an authorized Local PC, reads the OLT's configured ONU tables, normalizes the result, and sends it to the private Django dashboard over HTTPS. It does not open an inbound port.
 
-## Why a local collector
+## Model-specific setup is required
 
-The portfolio is hosted on Render, while OLT management IPs are normally reachable only from the NOC/local network. The collector should run on an authorized Local PC that can reach the OLT management plane, then send outbound HTTPS requests to Django. Do not expose OLT management interfaces to the public internet.
+Huawei, VSOL, CDATA and different firmware releases may use different ONU table OIDs, row indexes and status enumerations. Obtain the MIB for the exact model/firmware and verify each OID/status value. The example configuration contains placeholders and intentionally cannot poll until configured. Do not guess OIDs.
 
-## Before enabling vendor polling
+## Requirements
 
-For each Huawei, VSOL, CDATA or other OLT, confirm the exact model, firmware, management IP/reachability and whether SNMP (preferably read-only SNMPv3) or SSH/CLI access is approved. Protocol is currently unknown, so no SNMP OIDs or CLI parsing assumptions are enabled by this first stage.
+- Python 3.10+
+- Net-SNMP command-line tools including `snmpwalk`
+- Read-only SNMP access from the collector PC to the OLT management IP
+- HTTPS access from the collector PC to the Render dashboard
 
-## Ingestion API
+## Setup
 
-- Endpoint: `POST /api/olt/ingest/`
-- Authentication: `Authorization: Bearer <OLT_INGEST_TOKEN>`
-- Configure a long random `OLT_INGEST_TOKEN` environment variable on Render and keep the same secret only on the trusted collector PC.
-- Content type: `application/json`
-- Payload is limited by the endpoint to 2 MiB.
+1. Copy `olt_config.example.json` to `olt_config.json`.
+2. Fill in OLT identity, management IP, PON count, exact model-specific OIDs and verified status mapping.
+3. Set environment variables locally, never in Git:
+   - `OLT_CONFIG_FILE=olt_config.json`
+   - `OLT_SNMP_COMMUNITY` (or the environment variable named in `snmp.community_env`)
+   - `OLT_DASHBOARD_URL=https://YOUR-RENDER-HOST`
+   - `OLT_INGEST_TOKEN` (the same long random secret configured in Render Environment settings)
+4. Test manually in PowerShell:
 
-Example payload (test format only; not real/live data):
+   ```powershell
+   $env:OLT_CONFIG_FILE = ".\olt_config.json"
+   $env:OLT_SNMP_COMMUNITY = "YOUR_READ_ONLY_COMMUNITY"
+   $env:OLT_DASHBOARD_URL = "https://YOUR-RENDER-HOST"
+   $env:OLT_INGEST_TOKEN = "YOUR_LONG_RANDOM_INGEST_SECRET"
+   python .\poll_snmp.py
+   ```
 
-```json
-{
-  "olt": {
-    "identifier": "pop-a-olt-01",
-    "name": "POP A OLT 01",
-    "vendor": "Huawei",
-    "location": "POP A",
-    "management_ip": "192.0.2.10",
-    "pon_port_count": 16
-  },
-  "onus": [
-    {"id": "onu-001", "pon_port": "0/1/1", "status": "online", "serial_number": "EXAMPLE0001"},
-    {"id": "onu-002", "pon_port": "0/1/1", "status": "offline", "serial_number": "EXAMPLE0002"}
-  ]
-}
-```
+5. Compare the dashboard counts against the OLT CLI before scheduling recurring polls.
 
-Accepted ONU status values are `online`, `offline`, and `unknown`. Each report represents the current observed state for the included ONUs. Events are created when a known ONU changes between online and offline. The API does not delete unseen ONUs; a vendor adapter must report a complete inventory or explicitly handle stale records.
+## OID mapping
 
-## Safety checklist
+- `oids.status` is the operational-status column.
+- Optional `onu_id`, `pon_port` and `serial_number` columns must share the status column's row suffix.
+- `status_map` maps the exact raw SNMP value to `online`, `offline` or `unknown`.
+- If the ONU ID column is omitted, the row suffix is used.
 
-- Use read-only monitoring credentials and least privilege.
-- Keep management IPs and credentials out of public HTML, source control and logs.
-- Do not put the ingestion token in browser JavaScript.
-- Do not set up polling until the device model/protocol and allowed access method are confirmed.
+## Security
+
+SNMP v1/v2c communities are not encrypted. Use only on a trusted management network or VPN with a dedicated read-only community restricted to the collector PC's IP. Keep both SNMP community and dashboard token out of Git, screenshots and chat. Never expose OLT management interfaces to the public internet. The poller sends outbound HTTPS only.
+
+The existing `send_snapshot.py` remains available when another approved poller already generates a validated JSON snapshot.
