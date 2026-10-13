@@ -7,7 +7,13 @@ from django.urls import reverse
 from .models import OLTDevice, ONUStatus, OLTEvent
 
 
-@override_settings(\n    SECURE_SSL_REDIRECT=False,\n    STORAGES={\n        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},\n        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},\n    },\n)
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    },
+)
 class OLTMonitoringTests(TestCase):
     def setUp(self):
         session = self.client.session
