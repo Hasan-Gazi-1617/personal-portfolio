@@ -579,6 +579,14 @@ def olt_ingest(request):
             raise ValueError
     except (TypeError, ValueError):
         return JsonResponse({"error": "pon_port_count must be between 0 and 4096"}, status=400)
+    raw_ip = info.get("management_ip")
+    normalized_ip = None
+    if raw_ip:
+        import ipaddress
+        try:
+            normalized_ip = str(ipaddress.ip_address(raw_ip))
+        except ValueError:
+            return JsonResponse({"error": "Invalid management_ip"}, status=400)
     if len(payload["onus"]) > 20000:
         return JsonResponse({"error": "Maximum 20,000 ONU records per report"}, status=413)
     normalized = []
@@ -604,15 +612,7 @@ def olt_ingest(request):
         olt.vendor = vendor
         olt.location = str(info.get("location", ""))[:160]
         olt.pon_port_count = pon_count
-        raw_ip = info.get("management_ip")
-        if raw_ip:
-            import ipaddress
-            try:
-                olt.management_ip = str(ipaddress.ip_address(raw_ip))
-            except ValueError:
-                return JsonResponse({"error": "Invalid management_ip"}, status=400)
-        else:
-            olt.management_ip = None
+        olt.management_ip = normalized_ip
         olt.last_seen = now
         olt.save()
         created = 0
