@@ -4,8 +4,6 @@ import hmac
 import logging
 import secrets
 import time
-import urllib.error
-import urllib.request
 from calendar import monthrange
 from datetime import datetime
 from io import BytesIO
@@ -41,73 +39,6 @@ def _owner_can_manage_tki(request):
 
 def home(request):
     return render(request, "home.html")
-
-
-@require_POST
-def contact_send(request):
-    """Send portfolio contact messages through Resend's HTTPS API."""
-    name = request.POST.get("name", "").strip()
-    sender_email = request.POST.get("email", "").strip()
-    subject = request.POST.get("subject", "").strip()
-    message = request.POST.get("message", "").strip()
-
-    # Honeypot field for basic bot filtering.
-    if request.POST.get("website", "").strip():
-        return redirect("/#contact")
-
-    if not name or len(name) > 120 or not sender_email or len(sender_email) > 254:
-        messages.error(request, "Please provide your name and a valid email address.")
-        return redirect("/#contact")
-    if not subject or len(subject) > 180 or not message or len(message) > 8000:
-        messages.error(request, "Please enter a subject and a message (maximum 8,000 characters).")
-        return redirect("/#contact")
-
-    from django.core.validators import validate_email
-    from django.core.exceptions import ValidationError
-
-    try:
-        validate_email(sender_email)
-    except ValidationError:
-        messages.error(request, "Please provide a valid email address.")
-        return redirect("/#contact")
-
-    api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    recipient = os.environ.get("PUBLIC_CONTACT_EMAIL", "mh.jewel.1617@gmail.com").strip()
-    from_email = os.environ.get("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
-
-    if not api_key:
-        logger.error("Contact form is not configured: RESEND_API_KEY is missing.")
-        messages.error(request, "The contact service is temporarily unavailable. Please try again later or email me directly.")
-        return redirect("/#contact")
-
-    payload = {
-        "from": from_email,
-        "to": [recipient],
-        "reply_to": sender_email,
-        "subject": f"Portfolio contact: {subject}",
-        "text": f"New portfolio contact message\n\nName: {name}\nEmail: {sender_email}\nSubject: {subject}\n\nMessage:\n{message}",
-    }
-    req = urllib.request.Request(
-        "https://api.resend.com/emails",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=12) as response:
-            if response.status not in (200, 201):
-                raise RuntimeError(f"Resend returned HTTP {response.status}")
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, RuntimeError) as exc:
-        logger.error("Portfolio contact email failed: %s", exc)
-        messages.error(request, "Your message could not be sent right now. Please try again later or use the email link.")
-        return redirect("/#contact")
-
-    messages.success(request, "Thanks! Your message has been sent successfully.")
-    return redirect("/#contact")
 
 
 def mikrotik_generator(request):
