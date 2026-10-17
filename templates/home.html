@@ -4014,6 +4014,63 @@ document.addEventListener(
 .contact-flash.error{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fca5a5}
 html[data-theme="light"] .contact-form .form-control{background:#fff;color:#123524;border-color:rgba(21,128,61,.25)}
 html[data-theme="light"] .contact-form .form-label{color:#315844}
+
+/* ===== INTERACTIVE NOC INCIDENT LAB ===== */
+.noc-lab-wrap{margin-top:38px;padding-top:30px;border-top:1px solid rgba(148,163,184,.2)}
+.noc-lab-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.noc-lab-kicker{display:inline-flex;align-items:center;gap:8px;color:#5eead4;font-size:10px;font-weight:800;letter-spacing:1.8px}
+.noc-lab-title{margin:9px 0 8px;font-size:clamp(24px,3vw,32px);font-weight:800}
+.noc-lab-intro{max-width:650px;color:var(--text-muted,#94a3b8);margin:0}
+.noc-lab-training{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:8px 11px;border:1px solid rgba(45,212,191,.28);border-radius:9px;background:rgba(20,184,166,.08);color:#5eead4;font-size:10px;font-weight:800;letter-spacing:.8px}
+.noc-lab{border:1px solid rgba(45,212,191,.2);border-radius:18px;padding:18px;background:linear-gradient(135deg,rgba(15,23,42,.88),rgba(10,20,33,.94));box-shadow:0 20px 50px rgba(0,0,0,.14)}
+.noc-lab-scenarios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:15px}
+.noc-scenario-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 12px;border:1px solid rgba(148,163,184,.2);border-radius:10px;background:rgba(148,163,184,.045);color:#aebdce;font-size:12px;font-weight:700;transition:all .2s ease}
+.noc-scenario-btn i{font-size:16px;color:#7dd3fc}
+.noc-scenario-btn:hover,.noc-scenario-btn:focus-visible{border-color:rgba(45,212,191,.55);color:#f8fafc}
+.noc-scenario-btn.is-active{background:rgba(20,184,166,.13);border-color:rgba(45,212,191,.6);color:#ccfbf1;box-shadow:inset 0 0 0 1px rgba(45,212,191,.08)}
+.noc-lab-console{border:1px solid rgba(148,163,184,.16);border-radius:14px;padding:20px;background:rgba(2,6,23,.28)}
+.noc-lab-console-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.noc-lab-eyebrow{font-size:9px;font-weight:800;letter-spacing:1.7px;color:#7c91a9}
+.noc-lab-console h4{margin:6px 0 0;font-size:20px;font-weight:800;color:#f1f5f9}
+.noc-lab-severity{padding:6px 9px;border:1px solid rgba(251,191,36,.25);border-radius:7px;background:rgba(251,191,36,.08);color:#fcd34d;font-size:9px;font-weight:800;letter-spacing:.8px}
+.noc-lab-description{margin:12px 0 20px;color:#a9b7c8;font-size:13px;line-height:1.7}
+.noc-lab-progress-meta{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;color:#8fa1b6;font-size:11px}
+.noc-lab-progress-meta strong{color:#d7e2ee;font-weight:700}
+.noc-lab-progress{height:6px;overflow:hidden;border-radius:99px;background:rgba(148,163,184,.15);margin-bottom:17px}
+.noc-lab-progress span{display:block;width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#14b8a6,#67e8f9);transition:width .25s ease}
+.noc-lab-checklist{display:grid;gap:9px}
+.noc-check-step{display:flex;width:100%;align-items:flex-start;gap:12px;padding:13px 14px;border:1px solid rgba(148,163,184,.17);border-radius:10px;background:rgba(15,23,42,.55);color:#dbe5ef;text-align:left;transition:border-color .2s ease,background .2s ease}
+.noc-check-step:hover{border-color:rgba(45,212,191,.4)}
+.noc-check-number{flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:7px;color:#8fa1b6;font-size:11px;font-weight:800}
+.noc-check-copy{display:block;min-width:0;flex:1}
+.noc-check-title{display:block;font-size:12px;font-weight:800;color:#e7eef7;margin:1px 0 4px}
+.noc-check-detail{display:block;color:#91a2b6;font-size:11px;line-height:1.55}
+.noc-check-step.is-complete{border-color:rgba(52,211,153,.32);background:rgba(16,185,129,.07)}
+.noc-check-step.is-complete .noc-check-number{border-color:rgba(52,211,153,.45);background:rgba(16,185,129,.13);color:#6ee7b7}
+.noc-check-step.is-complete .noc-check-title{color:#a7f3d0}
+.noc-lab-result{display:flex;align-items:flex-start;gap:10px;margin-top:16px;padding:12px 13px;border:1px solid rgba(125,211,252,.2);border-radius:10px;background:rgba(14,165,233,.06);color:#b7d8ea;font-size:12px;line-height:1.6}
+.noc-lab-result i{margin-top:1px;color:#7dd3fc}
+.noc-lab-result.is-complete{border-color:rgba(52,211,153,.3);background:rgba(16,185,129,.08);color:#a7f3d0}
+.noc-lab-result.is-complete i{color:#6ee7b7}
+.noc-lab-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;color:#8294a8;font-size:10px}
+.noc-lab-actions>span{display:flex;align-items:center;gap:7px}
+.noc-lab-actions>span i{color:#5eead4}
+.noc-lab-reset{padding:8px 10px;border:1px solid rgba(148,163,184,.2);border-radius:8px;background:transparent;color:#b7c4d3;font-size:10px;font-weight:700}
+.noc-lab-reset:hover{border-color:rgba(45,212,191,.5);color:#5eead4}
+.noc-lab-disclaimer{margin:12px 2px 0;color:var(--text-muted,#94a3b8);font-size:10px}
+.noc-lab-disclaimer i{margin-right:5px}
+html[data-theme="light"] .noc-lab{background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(239,250,243,.98));border-color:rgba(21,128,61,.2);box-shadow:0 18px 45px rgba(21,128,61,.08)}
+html[data-theme="light"] .noc-lab-console{background:rgba(255,255,255,.76);border-color:rgba(21,128,61,.15)}
+html[data-theme="light"] .noc-lab-console h4,html[data-theme="light"] .noc-check-title{color:#123524}
+html[data-theme="light"] .noc-lab-description,html[data-theme="light"] .noc-check-detail{color:#496b59}
+html[data-theme="light"] .noc-lab-progress-meta strong{color:#173c28}
+html[data-theme="light"] .noc-check-step{background:rgba(255,255,255,.8);border-color:rgba(21,128,61,.15);color:#173c28}
+html[data-theme="light"] .noc-check-step.is-complete{background:rgba(16,185,129,.08)}
+html[data-theme="light"] .noc-scenario-btn{color:#315844;border-color:rgba(21,128,61,.2);background:#fff}
+html[data-theme="light"] .noc-scenario-btn.is-active{background:rgba(16,185,129,.1);color:#166534;border-color:rgba(21,128,61,.45)}
+html[data-theme="light"] .noc-lab-result{color:#315844}
+@media(max-width:600px){.noc-lab-heading{flex-direction:column}.noc-lab{padding:11px}.noc-lab-console{padding:13px}.noc-lab-scenarios{grid-template-columns:1fr}.noc-scenario-btn{justify-content:flex-start}.noc-lab-actions{align-items:flex-start;flex-direction:column}.noc-lab-console-top{align-items:flex-start}.noc-lab-severity{font-size:8px}}
+
 </style>
 
 
@@ -4141,37 +4198,61 @@ html[data-theme="light"] .contact-form .form-label{color:#315844}
 
             </div>
 
-            <div class="contact-form-wrap">
-                <h3 class="contact-form-title">Send me a message</h3>
-                <p class="contact-form-intro">Your message will be sent securely through the website.</p>
-                <form method="post" action="{% url 'contact_send' %}" class="contact-form">
-                    {% csrf_token %}
-                    <div class="contact-honeypot" aria-hidden="true">
-                        <label for="contact-website">Leave this field empty</label>
-                        <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off">
+            <div class="noc-lab-wrap">
+                <div class="noc-lab-heading">
+                    <div>
+                        <span class="noc-lab-kicker"><i class="bi bi-activity"></i> INTERACTIVE MINI PROJECT</span>
+                        <h3 class="noc-lab-title">NOC Incident Lab</h3>
+                        <p class="noc-lab-intro">Work through a simulated network incident using a structured troubleshooting workflow.</p>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="contact-name" class="form-label">Your name</label>
-                            <input class="form-control" id="contact-name" name="name" type="text" maxlength="120" autocomplete="name" required>
+                    <span class="noc-lab-training"><i class="bi bi-shield-check"></i> TRAINING MODE</span>
+                </div>
+
+                <div class="noc-lab" id="noc-incident-lab">
+                    <div class="noc-lab-scenarios" role="group" aria-label="Choose a simulated network incident">
+                        <button type="button" class="noc-scenario-btn is-active" data-scenario="internet" aria-pressed="true">
+                            <i class="bi bi-globe2"></i><span>Internet Down</span>
+                        </button>
+                        <button type="button" class="noc-scenario-btn" data-scenario="latency" aria-pressed="false">
+                            <i class="bi bi-speedometer2"></i><span>High Latency</span>
+                        </button>
+                        <button type="button" class="noc-scenario-btn" data-scenario="onu" aria-pressed="false">
+                            <i class="bi bi-hdd-network"></i><span>ONU Offline</span>
+                        </button>
+                    </div>
+
+                    <div class="noc-lab-console">
+                        <div class="noc-lab-console-top">
+                            <div>
+                                <span class="noc-lab-eyebrow">ACTIVE SCENARIO</span>
+                                <h4 id="noc-scenario-title">ISP internet outage</h4>
+                            </div>
+                            <span class="noc-lab-severity" id="noc-scenario-severity">HIGH PRIORITY</span>
                         </div>
-                        <div class="col-md-6">
-                            <label for="contact-email" class="form-label">Your email</label>
-                            <input class="form-control" id="contact-email" name="email" type="email" maxlength="254" autocomplete="email" required>
+                        <p class="noc-lab-description" id="noc-scenario-description">Multiple customers report no internet access. Begin with scope and upstream connectivity before changing configuration.</p>
+
+                        <div class="noc-lab-progress-meta">
+                            <span>Investigation progress</span>
+                            <strong id="noc-lab-progress-label">0 of 4 checks complete</strong>
                         </div>
-                        <div class="col-12">
-                            <label for="contact-subject" class="form-label">Subject</label>
-                            <input class="form-control" id="contact-subject" name="subject" type="text" maxlength="180" required>
+                        <div class="noc-lab-progress" role="progressbar" aria-label="Investigation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="noc-lab-progress">
+                            <span id="noc-lab-progress-bar"></span>
                         </div>
-                        <div class="col-12">
-                            <label for="contact-message" class="form-label">Message</label>
-                            <textarea class="form-control" id="contact-message" name="message" rows="5" maxlength="8000" required></textarea>
+
+                        <div class="noc-lab-checklist" id="noc-lab-checklist" aria-label="Troubleshooting checklist"></div>
+
+                        <div class="noc-lab-result" id="noc-lab-result" aria-live="polite">
+                            <i class="bi bi-info-circle"></i>
+                            <span>Complete the checks to finish this simulated investigation. No live network is connected.</span>
                         </div>
-                        <div class="col-12">
-                            <button class="contact-submit-btn" type="submit"><i class="bi bi-send"></i> Send Message</button>
+
+                        <div class="noc-lab-actions">
+                            <span><i class="bi bi-lightning-charge"></i> Think first. Verify before changing.</span>
+                            <button type="button" id="noc-lab-reset" class="noc-lab-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset scenario</button>
                         </div>
                     </div>
-                </form>
+                    <p class="noc-lab-disclaimer"><i class="bi bi-info-circle"></i> This is a browser-based learning demo, not a live monitoring or diagnostic tool.</p>
+                </div>
             </div>
 
         </div>
@@ -4181,6 +4262,142 @@ html[data-theme="light"] .contact-form .form-label{color:#315844}
 </section>
 
 
+
+
+<script>
+(function () {
+    const root = document.getElementById("noc-incident-lab");
+    if (!root) return;
+
+    const scenarios = {
+        internet: {
+            title: "ISP internet outage",
+            severity: "HIGH PRIORITY",
+            description: "Multiple customers report no internet access. Start by identifying the outage scope, then verify the upstream path before changing configuration.",
+            completion: "Investigation workflow complete. In a real incident, correlate these checks with monitoring data and escalate to the upstream provider if the fault is outside your network.",
+            steps: [
+                ["Confirm the impact scope", "Check whether one customer, one PON, one site, or the whole network is affected."],
+                ["Check interfaces and uplinks", "Review interface state, errors, optical levels where relevant, and recent link events."],
+                ["Verify routing and gateway reachability", "Inspect BGP/OSPF neighbour state and test reachability to the next hop."],
+                ["Review recent changes and escalate", "Compare the timeline with changes; capture evidence before rollback or upstream escalation."]
+            ]
+        },
+        latency: {
+            title: "High latency / packet loss",
+            severity: "PERFORMANCE",
+            description: "Users report slow applications and intermittent packet loss. Establish where the degradation begins before assuming the link is congested.",
+            completion: "Latency investigation checklist complete. In a real network, compare time-series graphs and repeat tests from more than one point before deciding on a cause.",
+            steps: [
+                ["Measure baseline latency and loss", "Test from multiple sources and compare the results with the normal baseline."],
+                ["Locate the first degraded hop", "Use traceroute/MTR carefully and distinguish router ICMP rate-limiting from forwarded traffic loss."],
+                ["Inspect utilization and interface errors", "Check bandwidth graphs, queue drops, CRC errors, discards, and CPU load."],
+                ["Correlate time and affected services", "Compare incident timestamps with traffic peaks, maintenance, and upstream reports."]
+            ]
+        },
+        onu: {
+            title: "Customer ONU offline",
+            severity: "ACCESS NETWORK",
+            description: "One customer ONU appears offline. Verify the customer-side and PON context before concluding that the ONU itself is faulty.",
+            completion: "Access-network checklist complete. In a real case, record optical readings and the affected PON/ONU identifiers before arranging physical support.",
+            steps: [
+                ["Check whether the issue is isolated", "Compare other ONUs on the same PON and check for a shared outage."],
+                ["Review ONU and OLT events", "Check last-seen time, LOS/LOF events, registration state, and the correct PON port."],
+                ["Verify optical path and physical connections", "Review Rx/Tx optical levels where available; confirm power, patching, and fibre condition."],
+                ["Confirm service configuration", "Verify VLAN/service profile and recent provisioning changes before replacing hardware."]
+            ]
+        }
+    };
+
+    let activeScenario = "internet";
+    let completed = new Set();
+    const title = document.getElementById("noc-scenario-title");
+    const severity = document.getElementById("noc-scenario-severity");
+    const description = document.getElementById("noc-scenario-description");
+    const checklist = document.getElementById("noc-lab-checklist");
+    const progress = document.getElementById("noc-lab-progress");
+    const progressBar = document.getElementById("noc-lab-progress-bar");
+    const progressLabel = document.getElementById("noc-lab-progress-label");
+    const result = document.getElementById("noc-lab-result");
+
+    function updateProgress() {
+        const scenario = scenarios[activeScenario];
+        const total = scenario.steps.length;
+        const count = completed.size;
+        const percent = Math.round((count / total) * 100);
+        progress.setAttribute("aria-valuenow", String(percent));
+        progressBar.style.width = percent + "%";
+        progressLabel.textContent = count + " of " + total + " checks complete";
+        result.classList.toggle("is-complete", count === total);
+        if (count === total) {
+            result.innerHTML = '<i class="bi bi-check-circle"></i><span></span>';
+            result.querySelector("span").textContent = scenario.completion;
+        } else {
+            result.innerHTML = '<i class="bi bi-info-circle"></i><span></span>';
+            result.querySelector("span").textContent = "Complete the checks to finish this simulated investigation. No live network is connected.";
+        }
+    }
+
+    function renderScenario() {
+        const scenario = scenarios[activeScenario];
+        title.textContent = scenario.title;
+        severity.textContent = scenario.severity;
+        description.textContent = scenario.description;
+        checklist.innerHTML = "";
+
+        scenario.steps.forEach(function (step, index) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "noc-check-step" + (completed.has(index) ? " is-complete" : "");
+            button.setAttribute("aria-pressed", completed.has(index) ? "true" : "false");
+
+            const number = document.createElement("span");
+            number.className = "noc-check-number";
+            number.textContent = completed.has(index) ? "✓" : String(index + 1);
+
+            const copy = document.createElement("span");
+            copy.className = "noc-check-copy";
+            const heading = document.createElement("span");
+            heading.className = "noc-check-title";
+            heading.textContent = step[0];
+            const detail = document.createElement("span");
+            detail.className = "noc-check-detail";
+            detail.textContent = step[1];
+            copy.appendChild(heading);
+            copy.appendChild(detail);
+            button.appendChild(number);
+            button.appendChild(copy);
+            button.addEventListener("click", function () {
+                if (completed.has(index)) completed.delete(index);
+                else completed.add(index);
+                renderScenario();
+            });
+            checklist.appendChild(button);
+        });
+
+        document.querySelectorAll(".noc-scenario-btn").forEach(function (button) {
+            const selected = button.dataset.scenario === activeScenario;
+            button.classList.toggle("is-active", selected);
+            button.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
+        updateProgress();
+    }
+
+    document.querySelectorAll(".noc-scenario-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            activeScenario = button.dataset.scenario;
+            completed = new Set();
+            renderScenario();
+        });
+    });
+
+    document.getElementById("noc-lab-reset").addEventListener("click", function () {
+        completed = new Set();
+        renderScenario();
+    });
+
+    renderScenario();
+})();
+</script>
 
 <script src="{% static 'js/network-topology.js' %}"></script>
 
