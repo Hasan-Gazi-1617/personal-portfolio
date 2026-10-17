@@ -3992,438 +3992,59 @@ document.addEventListener(
 
 </section>
 <style>
-
-/* ===== PACKET PATH EXPLORER ===== */
-.packet-playground{padding:70px 0 64px;position:relative;overflow:hidden}
-.packet-playground:before{content:"";position:absolute;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(20,184,166,.09),transparent 68%);top:-180px;right:-100px;pointer-events:none}
-.packet-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;margin-bottom:26px;position:relative}
-.packet-kicker{display:inline-flex;align-items:center;gap:8px;color:#2dd4bf;font-size:10px;font-weight:800;letter-spacing:2px}
-.packet-title{font-size:clamp(28px,4vw,42px);font-weight:850;letter-spacing:-1.2px;margin:10px 0}
-.packet-intro{max-width:650px;color:var(--text-muted,#94a3b8);margin:0;line-height:1.75;font-size:14px}
-.packet-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(45,212,191,.24);border-radius:99px;background:rgba(20,184,166,.08);color:#5eead4;font-size:10px;font-weight:800;white-space:nowrap}
-.packet-shell{position:relative;border:1px solid rgba(148,163,184,.2);border-radius:22px;overflow:hidden;background:linear-gradient(135deg,rgba(9,19,31,.97),rgba(13,28,43,.97));box-shadow:0 24px 70px rgba(0,0,0,.17)}
-.packet-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-bottom:1px solid rgba(148,163,184,.15);background:rgba(2,6,23,.28)}
-.packet-modes{display:flex;flex-wrap:wrap;gap:7px}
-.packet-mode{border:1px solid rgba(148,163,184,.2);border-radius:8px;padding:9px 12px;background:transparent;color:#9fb0c3;font-size:11px;font-weight:750;transition:all .2s ease}
-.packet-mode:hover,.packet-mode:focus-visible{border-color:rgba(45,212,191,.55);color:#e6fffb}
-.packet-mode.is-active{background:rgba(20,184,166,.14);border-color:rgba(45,212,191,.55);color:#99f6e4}
-.packet-toolbar-actions{display:flex;align-items:center;gap:9px}
-.packet-live{display:inline-flex;align-items:center;gap:7px;color:#86efac;font-size:10px;font-weight:800;letter-spacing:.8px}
-.packet-live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.7);animation:packet-pulse 1.8s infinite}
-.packet-fault-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(251,146,60,.28);border-radius:9px;padding:10px 12px;background:rgba(234,88,12,.09);color:#fdba74;font-size:11px;font-weight:800}
-.packet-fault-btn:hover{background:rgba(234,88,12,.16);border-color:rgba(251,146,60,.55)}
-.packet-canvas{padding:18px 18px 10px;position:relative}
-.packet-canvas-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 4px 8px}
-.packet-canvas-label{font-size:9px;color:#7f93a9;letter-spacing:1.7px;font-weight:800}
-.packet-route-state{font-size:10px;font-weight:800;color:#5eead4}
-.packet-svg{display:block;width:100%;height:auto;min-height:170px;overflow:visible}
-.packet-svg .route-base{fill:none;stroke:rgba(148,163,184,.22);stroke-width:3;stroke-linecap:round}
-.packet-svg .route-active{fill:none;stroke:#2dd4bf;stroke-width:3;stroke-linecap:round;stroke-dasharray:7 10;animation:packet-flow 1.2s linear infinite;transition:stroke .2s ease}
-.packet-svg .route-active.is-broken{stroke:#fb7185;stroke-dasharray:5 9;animation:none;opacity:.9}
-.packet-svg .node-halo{fill:rgba(45,212,191,.08);stroke:rgba(45,212,191,.28);stroke-width:1.5;transition:all .2s ease}
-.packet-svg .network-node{cursor:pointer;outline:none}
-.packet-svg .network-node:hover .node-halo,.packet-svg .network-node:focus .node-halo{fill:rgba(45,212,191,.17);stroke:#5eead4;stroke-width:2.5}
-.packet-svg .network-node.is-selected .node-halo{fill:rgba(45,212,191,.18);stroke:#99f6e4;stroke-width:2.5}
-.packet-svg .network-node.is-fault .node-halo{fill:rgba(244,63,94,.14);stroke:#fb7185;stroke-width:2.5}
-.packet-svg .node-icon{fill:#c8f7ef;font-size:20px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.packet-svg .node-name{fill:#e2eaf3;font-size:12px;font-weight:750;text-anchor:middle}
-.packet-svg .node-sub{fill:#8195aa;font-size:9px;text-anchor:middle}
-.packet-svg .packet-particle{fill:#a7f3d0;filter:drop-shadow(0 0 5px rgba(45,212,191,.85))}
-.packet-svg .packet-particle.alt{fill:#7dd3fc;animation-delay:-.7s}
-.packet-svg .packet-particle.is-paused{display:none}
-.packet-lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px;padding:12px 18px 18px}
-.packet-inspector,.packet-health{border:1px solid rgba(148,163,184,.16);border-radius:14px;padding:17px;background:rgba(2,6,23,.22);min-width:0}
-.packet-panel-eyebrow{font-size:9px;font-weight:800;letter-spacing:1.6px;color:#7f93a9}
-.packet-inspector-title{font-size:17px;font-weight:800;color:#f1f5f9;margin:7px 0}
-.packet-inspector-copy{font-size:12px;line-height:1.7;color:#9aadc0;margin:0}
-.packet-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.packet-meta-chip{padding:6px 8px;border-radius:6px;background:rgba(148,163,184,.08);color:#b8c9d9;font-size:9px;font-weight:750}
-.packet-health-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:7px 0 14px}
-.packet-health-title{font-size:16px;font-weight:800;color:#f1f5f9;margin:0}
-.packet-status{font-size:9px;font-weight:850;letter-spacing:.8px;color:#86efac}
-.packet-status.is-fault{color:#fda4af}
-.packet-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.packet-metric{padding:10px 9px;border-radius:9px;background:rgba(148,163,184,.055);border:1px solid rgba(148,163,184,.1)}
-.packet-metric-label{display:block;font-size:9px;color:#8195aa;margin-bottom:6px}
-.packet-metric-value{font-size:16px;font-weight:850;color:#dffaf5;letter-spacing:-.3px}
-.packet-footnote{margin:0;padding:0 20px 16px;color:#71859a;font-size:10px;line-height:1.6}
-@keyframes packet-flow{to{stroke-dashoffset:-34}}
-@keyframes packet-pulse{50%{opacity:.4;box-shadow:0 0 3px rgba(74,222,128,.25)}}
-html[data-theme="light"] .packet-shell{background:linear-gradient(135deg,#fbfffd,#eff8f5);border-color:rgba(21,128,61,.18);box-shadow:0 24px 60px rgba(21,128,61,.08)}
-html[data-theme="light"] .packet-toolbar{background:rgba(21,128,61,.035);border-color:rgba(21,128,61,.12)}
-html[data-theme="light"] .packet-mode{color:#496b59;border-color:rgba(21,128,61,.2)}
-html[data-theme="light"] .packet-mode.is-active{background:rgba(16,185,129,.1);color:#166534;border-color:rgba(21,128,61,.4)}
-html[data-theme="light"] .packet-svg .route-base{stroke:rgba(21,128,61,.18)}
-html[data-theme="light"] .packet-svg .node-halo{fill:rgba(16,185,129,.07);stroke:rgba(21,128,61,.28)}
-html[data-theme="light"] .packet-svg .node-icon{fill:#166534}
-html[data-theme="light"] .packet-svg .node-name{fill:#173c28}
-html[data-theme="light"] .packet-svg .node-sub{fill:#668171}
-html[data-theme="light"] .packet-inspector,html[data-theme="light"] .packet-health{background:rgba(255,255,255,.75);border-color:rgba(21,128,61,.14)}
-html[data-theme="light"] .packet-inspector-title,html[data-theme="light"] .packet-health-title{color:#123524}
-html[data-theme="light"] .packet-inspector-copy{color:#496b59}
-html[data-theme="light"] .packet-metric{background:rgba(21,128,61,.035);border-color:rgba(21,128,61,.1)}
-html[data-theme="light"] .packet-metric-value{color:#166534}
-html[data-theme="light"] .packet-meta-chip{background:rgba(21,128,61,.07);color:#315844}
-@media(max-width:700px){.packet-playground{padding:48px 0}.packet-heading{align-items:flex-start;flex-direction:column}.packet-toolbar{align-items:flex-start;flex-direction:column}.packet-toolbar-actions{width:100%;justify-content:space-between}.packet-canvas{padding:13px 7px 4px}.packet-lower{grid-template-columns:1fr;padding:8px 12px 13px}.packet-inspector,.packet-health{padding:14px}.packet-svg .node-name{font-size:13px}.packet-svg .node-sub{font-size:10px}.packet-metrics{gap:6px}.packet-metric{padding:9px 7px}.packet-metric-value{font-size:14px}}
-@media(prefers-reduced-motion:reduce){.packet-svg .route-active,.packet-live-dot{animation:none}.packet-svg .route-active{stroke-dasharray:5 7}}
+.engineering-principles{position:relative;overflow:hidden;padding:92px 0 100px;background:linear-gradient(145deg,#0a1524 0%,#0d1d2e 55%,#0a1726 100%);isolation:isolate}
+.engineering-principles:before{content:"";position:absolute;width:460px;height:460px;right:-140px;top:-180px;border:1px solid rgba(94,234,212,.13);border-radius:50%;box-shadow:0 0 0 38px rgba(94,234,212,.025),0 0 0 78px rgba(94,234,212,.018);z-index:-1}
+.engineering-principles .principles-kicker{display:flex;align-items:center;gap:10px;color:#5eead4;font-size:10px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase}
+.engineering-principles .principles-kicker:before{content:"";width:28px;height:1px;background:#5eead4}
+.engineering-principles .principles-heading{max-width:800px;margin:22px 0 18px;color:#f3f7fb;font:700 clamp(36px,5vw,62px)/1.06 "Space Grotesk",sans-serif;letter-spacing:-2.6px}
+.engineering-principles .principles-heading span{color:#5eead4}
+.engineering-principles .principles-intro{max-width:590px;color:#93a7bc;font-size:14px;line-height:1.9}
+.principles-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:42px}
+.principle-card{position:relative;min-height:228px;padding:27px;border:1px solid rgba(148,163,184,.16);border-radius:16px;background:linear-gradient(150deg,rgba(22,39,58,.88),rgba(11,26,42,.88));transition:transform .25s ease,border-color .25s ease,background .25s ease}
+.principle-card:hover{transform:translateY(-5px);border-color:rgba(94,234,212,.48);background:linear-gradient(150deg,rgba(22,51,65,.92),rgba(11,30,45,.95))}
+.principle-index{display:flex;align-items:center;justify-content:space-between;color:#5eead4;font:700 11px "Space Grotesk",sans-serif;letter-spacing:1.3px}
+.principle-index i{font-size:21px}
+.principle-card h3{margin:34px 0 11px;color:#f1f5f9;font:650 22px "Space Grotesk",sans-serif;letter-spacing:-.5px}
+.principle-card p{margin:0;color:#8ea3b8;font-size:12px;line-height:1.85}
+.principles-signoff{display:flex;align-items:center;gap:14px;margin-top:28px;color:#647b91;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase}
+.principles-signoff:before{content:"";width:46px;height:1px;background:linear-gradient(90deg,#5eead4,transparent)}
+html[data-theme="light"] .engineering-principles{background:linear-gradient(145deg,#eaf8ef,#f6fcf8 60%,#e5f5eb)}
+html[data-theme="light"] .engineering-principles .principles-heading{color:#123524}
+html[data-theme="light"] .engineering-principles .principles-intro{color:#496b59}
+html[data-theme="light"] .principle-card{background:rgba(255,255,255,.88);border-color:rgba(21,128,61,.16);box-shadow:0 16px 38px rgba(21,128,61,.06)}
+html[data-theme="light"] .principle-card h3{color:#123524}
+html[data-theme="light"] .principle-card p{color:#496b59}
+html[data-theme="light"] .principle-index{color:#15803d}
+@media(max-width:767px){.engineering-principles{padding:68px 0}.principles-grid{grid-template-columns:1fr}.principle-card{min-height:0;padding:23px}.principle-card h3{margin-top:22px}.engineering-principles .principles-heading{letter-spacing:-1.6px}}
 </style>
 
-<!-- INTERACTIVE PROJECT: PACKET PATH EXPLORER -->
-<section id="packet-playground" class="packet-playground section-padding">
+<section id="engineering-principles" class="engineering-principles">
     <div class="container">
-        <div class="packet-heading">
-            <div>
-                <span class="packet-kicker"><i class="bi bi-diagram-3"></i> INTERACTIVE NETWORK PLAYGROUND</span>
-                <h2 class="packet-title">Packet Path <span>Explorer</span></h2>
-                <p class="packet-intro">Follow a packet through a simulated ISP network. Switch traffic types, inspect each device, and introduce a fault to see how the path changes.</p>
-            </div>
-            <span class="packet-badge"><i class="bi bi-cpu"></i> BUILT FOR NETWORK ENTHUSIASTS</span>
+        <div class="principles-kicker">THE ENGINEERING MINDSET</div>
+        <h2 class="principles-heading">Reliable networks start with <span>clear thinking.</span></h2>
+        <p class="principles-intro">My approach combines practical ISP operations with careful troubleshooting and useful automation—so the goal is not just to restore a service, but to understand why it failed.</p>
+        <div class="principles-grid">
+            <article class="principle-card">
+                <div class="principle-index"><span>01 / OBSERVE</span><i class="bi bi-eye"></i></div>
+                <h3>See the full picture.</h3>
+                <p>Correlate alarms, optical levels, interface counters and customer impact before jumping to a conclusion.</p>
+            </article>
+            <article class="principle-card">
+                <div class="principle-index"><span>02 / UNDERSTAND</span><i class="bi bi-diagram-3"></i></div>
+                <h3>Find the real cause.</h3>
+                <p>Trace symptoms across access, aggregation and core layers to separate the root cause from the visible symptom.</p>
+            </article>
+            <article class="principle-card">
+                <div class="principle-index"><span>03 / IMPROVE</span><i class="bi bi-gear-wide-connected"></i></div>
+                <h3>Make the fix repeatable.</h3>
+                <p>Document what worked, reduce repetitive effort and turn recurring operational tasks into better tools and workflows.</p>
+            </article>
         </div>
-
-        <div class="packet-shell" id="packet-path-explorer">
-            <div class="packet-toolbar">
-                <div class="packet-modes" role="group" aria-label="Choose traffic flow">
-                    <button type="button" class="packet-mode is-active" data-flow="internet" aria-pressed="true">Internet traffic</button>
-                    <button type="button" class="packet-mode" data-flow="pppoe" aria-pressed="false">PPPoE session</button>
-                    <button type="button" class="packet-mode" data-flow="gpon" aria-pressed="false">GPON access</button>
-                </div>
-                <div class="packet-toolbar-actions">
-                    <span class="packet-live"><span class="packet-live-dot"></span> SIMULATION RUNNING</span>
-                    <button type="button" class="packet-fault-btn" id="packet-fault-toggle"><i class="bi bi-lightning-charge"></i> Inject a fault</button>
-                </div>
-            </div>
-
-            <div class="packet-canvas">
-                <div class="packet-canvas-head">
-                    <span class="packet-canvas-label">SIMULATED TOPOLOGY / CLICK ANY NODE</span>
-                    <span class="packet-route-state" id="packet-route-state">PATH HEALTHY</span>
-                </div>
-                <svg class="packet-svg" viewBox="0 0 900 270" role="img" aria-label="Interactive simulated network topology showing client, ONU, OLT, core router, and internet">
-                    <defs>
-                        <linearGradient id="packet-route-gradient" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stop-color="#38bdf8"/><stop offset="55%" stop-color="#2dd4bf"/><stop offset="100%" stop-color="#a7f3d0"/>
-                        </linearGradient>
-                    </defs>
-                    <path class="route-base" d="M90 112 H810"/>
-                    <path class="route-active" data-link="client-onu" d="M90 112 H270"/>
-                    <path class="route-active" data-link="onu-olt" d="M270 112 H450"/>
-                    <path class="route-active" data-link="olt-core" d="M450 112 H630"/>
-                    <path class="route-active" data-link="core-internet" d="M630 112 H810"/>
-                    <circle class="packet-particle" r="4"><animateMotion dur="3s" repeatCount="indefinite" path="M90 112 H810"/></circle>
-                    <circle class="packet-particle alt" r="3"><animateMotion dur="3s" begin="-1.5s" repeatCount="indefinite" path="M90 112 H810"/></circle>
-
-                    <g class="network-node is-selected" data-node="client" role="button" tabindex="0" aria-label="Inspect customer router" transform="translate(90 112)">
-                        <circle class="node-halo" r="30"/><text class="node-icon" y="1">⌂</text>
-                        <text class="node-name" y="55">Customer</text><text class="node-sub" y="72">LAN / CPE</text>
-                    </g>
-                    <g class="network-node" data-node="onu" role="button" tabindex="0" aria-label="Inspect ONU" transform="translate(270 112)">
-                        <circle class="node-halo" r="30"/><text class="node-icon" y="1">▤</text>
-                        <text class="node-name" y="55">ONU</text><text class="node-sub" y="72">Optical endpoint</text>
-                    </g>
-                    <g class="network-node" data-node="olt" role="button" tabindex="0" aria-label="Inspect OLT" transform="translate(450 112)">
-                        <circle class="node-halo" r="30"/><text class="node-icon" y="1">▥</text>
-                        <text class="node-name" y="55">OLT / PON</text><text class="node-sub" y="72">Access layer</text>
-                    </g>
-                    <g class="network-node" data-node="core" role="button" tabindex="0" aria-label="Inspect core router" transform="translate(630 112)">
-                        <circle class="node-halo" r="30"/><text class="node-icon" y="1">⇄</text>
-                        <text class="node-name" y="55">Core / BNG</text><text class="node-sub" y="72">Routing layer</text>
-                    </g>
-                    <g class="network-node" data-node="internet" role="button" tabindex="0" aria-label="Inspect internet gateway" transform="translate(810 112)">
-                        <circle class="node-halo" r="30"/><text class="node-icon" y="1">◎</text>
-                        <text class="node-name" y="55">Internet</text><text class="node-sub" y="72">Upstream</text>
-                    </g>
-                    <text x="180" y="42" class="node-sub" text-anchor="middle">FIBRE / ETHERNET</text>
-                    <text x="360" y="42" class="node-sub" text-anchor="middle">GPON</text>
-                    <text x="540" y="42" class="node-sub" text-anchor="middle">VLAN / PPPoE</text>
-                    <text x="720" y="42" class="node-sub" text-anchor="middle">TRANSIT</text>
-                    <text x="450" y="238" class="node-sub" text-anchor="middle" id="packet-flow-caption">CLIENT → ACCESS → CORE → INTERNET</text>
-                </svg>
-            </div>
-
-            <div class="packet-lower">
-                <div class="packet-inspector" aria-live="polite">
-                    <span class="packet-panel-eyebrow">NODE INSPECTOR</span>
-                    <h3 class="packet-inspector-title" id="packet-node-title">Customer router</h3>
-                    <p class="packet-inspector-copy" id="packet-node-copy">The customer edge device sends traffic into the access network. Check LAN connectivity, gateway settings, and whether the issue affects one device or the entire site.</p>
-                    <div class="packet-meta" id="packet-node-meta"><span class="packet-meta-chip">Layer 2 / 3</span><span class="packet-meta-chip">First-hop checks</span></div>
-                </div>
-                <div class="packet-health">
-                    <span class="packet-panel-eyebrow">PATH TELEMETRY</span>
-                    <div class="packet-health-top">
-                        <h3 class="packet-health-title">Link status</h3>
-                        <span class="packet-status" id="packet-health-status">ALL LINKS UP</span>
-                    </div>
-                    <div class="packet-metrics">
-                        <div class="packet-metric"><span class="packet-metric-label">Latency</span><strong class="packet-metric-value" id="packet-latency">12 ms</strong></div>
-                        <div class="packet-metric"><span class="packet-metric-label">Packet loss</span><strong class="packet-metric-value" id="packet-loss">0.0%</strong></div>
-                        <div class="packet-metric"><span class="packet-metric-label">Hops</span><strong class="packet-metric-value" id="packet-hops">5</strong></div>
-                    </div>
-                </div>
-            </div>
-            <p class="packet-footnote"><i class="bi bi-info-circle"></i> Concept demo with illustrative metrics only. It does not query routers, monitor live traffic, or modify any real network equipment.</p>
-        </div>
+        <div class="principles-signoff">Practical operations · Thoughtful troubleshooting · Continuous improvement</div>
     </div>
 </section>
 
-<!-- =====================================================
-     CONTACT
-===================================================== -->
 
-<section id="contact"
-         class="contact-section section-padding">
-
-
-
-
-    <div class="container">
-
-
-        <div class="contact-box">
-
-            <div class="row align-items-center g-5">
-
-
-                <div class="col-lg-7">
-
-                    <span class="section-label">
-                        GET IN TOUCH
-                    </span>
-
-
-                    <h2 class="contact-title">
-
-                        Let's talk about
-
-                        <span>
-                            networking & technology.
-                        </span>
-
-                    </h2>
-
-
-                    <p class="contact-description">
-
-                        Interested in networking,
-                        infrastructure, NOC operations
-                        or technical collaboration?
-                        Feel free to reach out.
-
-                    </p>
-
-                </div>
-
-
-
-                <div class="col-lg-5">
-
-                    <div class="contact-links">
-
-
-                       <a href="mailto:{{ public_email }}"
-                                class="contact-link"
-                                target="_blank"
-                                rel="noopener noreferrer">
-
-                                    <div class="contact-link-icon">
-                                        <i class="bi bi-envelope"></i>
-                                    </div>
-
-                                    <div>
-                                        <small>EMAIL</small>
-
-                                        <strong>
-                                            {{ public_email|default:"Email available on request" }}
-                                        </strong>
-                                    </div>
-
-                                    <i class="bi bi-arrow-up-right"></i>
-
-                                </a>
-
-
-
-                        <a href="https://www.linkedin.com/in/hasan1617/"
-                            class="contact-link"
-                            target="_blank"
-                            rel="noopener noreferrer">
-
-                                <div class="contact-link-icon">
-                                    <i class="bi bi-linkedin"></i>
-                                </div>
-
-                                <div>
-                                    <small>LINKEDIN</small>
-
-                                    <strong>
-                                        LinkedIn Profile
-                                    </strong>
-                                </div>
-
-                                <i class="bi bi-arrow-up-right"></i>
-
-                        </a>
-
-
-
-                        <a href="https://github.com/Hasan-Gazi-1617"
-                           class="contact-link">
-
-                            <div class="contact-link-icon">
-
-                                <i class="bi bi-github"></i>
-
-                            </div>
-
-
-                            <div>
-
-                                <small>
-                                    GITHUB
-                                </small>
-
-                                <strong>
-                                    View my projects
-                                </strong>
-
-                            </div>
-
-
-                            <i class="bi bi-arrow-up-right"></i>
-
-                        </a>
-
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-
-<script>
-(function () {
-    const root = document.getElementById("packet-path-explorer");
-    if (!root) return;
-
-    const nodes = {
-        client: {title:"Customer router", copy:"The customer edge device sends traffic into the access network. Check LAN connectivity, gateway settings, and whether the issue affects one device or the entire site.", tags:["Layer 2 / 3","First-hop checks"]},
-        onu: {title:"Optical Network Unit (ONU)", copy:"The ONU converts optical signals to the customer Ethernet handoff. Check power, LOS indicators, registration state, patching, and received optical levels before replacing hardware.", tags:["Optical signal","Customer endpoint"]},
-        olt: {title:"Optical Line Terminal (OLT)", copy:"The OLT aggregates ONUs across a PON. Check PON port state, optical budget, dying-gasp/LOS events, service profile, VLAN mapping, and whether neighbouring ONUs are affected.", tags:["GPON access","PON aggregation"]},
-        core: {title:"Core router / BNG", copy:"The core routes traffic and may terminate PPPoE sessions. Check subscriber session state, address assignment, route tables, next-hop reachability, interface errors, and upstream policy.", tags:["Routing / PPPoE","Core services"]},
-        internet: {title:"Upstream / Internet", copy:"The upstream edge connects the ISP to external networks. Validate gateway reachability, BGP peer state where applicable, DNS resolution, and whether the issue is destination-specific or network-wide.", tags:["Transit / peering","External reachability"]}
-    };
-    const faults = [
-        {node:"onu", link:"client-onu", label:"ONU LOS", latency:"—", loss:"100%", hops:"1", message:"ONU optical path is down. Customer traffic cannot reach the OLT.", status:"ACCESS LINK DOWN"},
-        {node:"olt", link:"onu-olt", label:"OLT / PON fault", latency:"—", loss:"100%", hops:"2", message:"Access aggregation is unavailable. Multiple ONUs on the affected PON may be impacted.", status:"PON DEGRADED"},
-        {node:"core", link:"olt-core", label:"Core uplink down", latency:"—", loss:"100%", hops:"3", message:"Access is present, but traffic cannot reach the routing / subscriber edge.", status:"CORE LINK DOWN"},
-        {node:"internet", link:"core-internet", label:"Upstream unreachable", latency:"—", loss:"100%", hops:"4", message:"The local access and core path is available, but the simulated upstream link has failed.", status:"UPSTREAM DOWN"}
-    ];
-    const flowCopy = {
-        internet:{caption:"CLIENT → ACCESS → CORE → INTERNET",latency:"12 ms",hops:"5",node:"client"},
-        pppoe:{caption:"DISCOVERY → SESSION → BNG → ROUTE",latency:"18 ms",hops:"4",node:"core"},
-        gpon:{caption:"ONU → PON → OLT → SERVICE VLAN",latency:"4 ms",hops:"3",node:"onu"}
-    };
-    let activeFlow = "internet";
-    let faultIndex = -1;
-    let selectedNode = "client";
-
-    const title = document.getElementById("packet-node-title");
-    const copy = document.getElementById("packet-node-copy");
-    const meta = document.getElementById("packet-node-meta");
-    const status = document.getElementById("packet-health-status");
-    const routeState = document.getElementById("packet-route-state");
-    const latency = document.getElementById("packet-latency");
-    const loss = document.getElementById("packet-loss");
-    const hops = document.getElementById("packet-hops");
-    const faultButton = document.getElementById("packet-fault-toggle");
-    const caption = document.getElementById("packet-flow-caption");
-
-    function renderInspector() {
-        const node = nodes[selectedNode];
-        title.textContent = node.title;
-        copy.textContent = node.copy;
-        meta.replaceChildren();
-        node.tags.forEach(function (tag) {
-            const chip = document.createElement("span");
-            chip.className = "packet-meta-chip";
-            chip.textContent = tag;
-            meta.appendChild(chip);
-        });
-        root.querySelectorAll(".network-node").forEach(function (el) {
-            el.classList.toggle("is-selected", el.dataset.node === selectedNode);
-            el.classList.toggle("is-fault", faultIndex >= 0 && el.dataset.node === faults[faultIndex].node);
-        });
-    }
-
-    function renderState() {
-        const flow = flowCopy[activeFlow];
-        const fault = faultIndex >= 0 ? faults[faultIndex] : null;
-        caption.textContent = flow.caption;
-        root.querySelectorAll(".packet-mode").forEach(function (el) {
-            const active = el.dataset.flow === activeFlow;
-            el.classList.toggle("is-active", active);
-            el.setAttribute("aria-pressed", active ? "true" : "false");
-        });
-        root.querySelectorAll(".route-active").forEach(function (el) {
-            el.classList.toggle("is-broken", Boolean(fault && el.dataset.link === fault.link));
-        });
-        latency.textContent = fault ? fault.latency : flow.latency;
-        loss.textContent = fault ? fault.loss : "0.0%";
-        hops.textContent = fault ? fault.hops : flow.hops;
-        status.textContent = fault ? fault.status : "ALL LINKS UP";
-        status.classList.toggle("is-fault", Boolean(fault));
-        routeState.textContent = fault ? fault.label.toUpperCase() : "PATH HEALTHY";
-        routeState.style.color = fault ? "#fb7185" : "";
-        faultButton.innerHTML = fault
-            ? '<i class="bi bi-arrow-counterclockwise"></i> Clear simulated fault'
-            : '<i class="bi bi-lightning-charge"></i> Inject a fault';
-        renderInspector();
-    }
-
-    root.querySelectorAll(".packet-mode").forEach(function (button) {
-        button.addEventListener("click", function () {
-            activeFlow = button.dataset.flow;
-            if (activeFlow === "pppoe") selectedNode = "core";
-            else if (activeFlow === "gpon") selectedNode = "onu";
-            else selectedNode = "client";
-            renderState();
-        });
-    });
-
-    root.querySelectorAll(".network-node").forEach(function (node) {
-        function selectNode() {
-            selectedNode = node.dataset.node;
-            renderInspector();
-        }
-        node.addEventListener("click", selectNode);
-        node.addEventListener("keydown", function (event) {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                selectNode();
-            }
-        });
-    });
-
-    faultButton.addEventListener("click", function () {
-        faultIndex = faultIndex < 0 ? 0 : faultIndex + 1;
-        if (faultIndex >= faults.length) faultIndex = -1;
-        if (faultIndex >= 0) selectedNode = faults[faultIndex].node;
-        renderState();
-    });
-
-    renderState();
-})();
-</script>
 
 <script src="{% static 'js/network-topology.js' %}"></script>
 
