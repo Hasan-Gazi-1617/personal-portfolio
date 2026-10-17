@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("contact/send/", views.contact_send, name="contact_send"),
     path("owner/olt-monitoring/", views.olt_monitoring_dashboard, name="olt_monitoring_dashboard"),
     path("api/olt/ingest/", views.olt_ingest, name="olt_ingest"),
     path("projects/mikrotik-config-generator/", views.mikrotik_generator, name="mikrotik_generator"),
