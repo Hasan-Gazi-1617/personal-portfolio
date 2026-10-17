@@ -3998,6 +3998,25 @@ document.addEventListener(
 <section id="contact"
          class="contact-section section-padding">
 
+<style>
+.contact-form-wrap{margin-top:38px;padding-top:30px;border-top:1px solid rgba(148,163,184,.2)}
+.contact-form-title{font-size:clamp(22px,3vw,30px);font-weight:700;margin-bottom:8px}
+.contact-form-intro{color:var(--text-muted,#94a3b8);margin-bottom:22px}
+.contact-form .form-label{color:var(--text-secondary,#cbd5e1);font-size:13px;font-weight:600}
+.contact-form .form-control{background:rgba(15,23,42,.58);border:1px solid rgba(148,163,184,.28);border-radius:10px;color:var(--text-primary,#f8fafc);padding:12px 14px}
+.contact-form .form-control:focus{border-color:#2dd4bf;box-shadow:0 0 0 .2rem rgba(45,212,191,.12)}
+.contact-form textarea{resize:vertical}
+.contact-submit-btn{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:10px;padding:12px 20px;background:#14b8a6;color:#06201e;font-weight:800;transition:transform .2s ease,background .2s ease}
+.contact-submit-btn:hover{transform:translateY(-2px);background:#2dd4bf}
+.contact-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.contact-flash{padding:12px 15px;border-radius:10px;margin:0 0 18px;font-size:14px}
+.contact-flash.success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#86efac}
+.contact-flash.error{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fca5a5}
+html[data-theme="light"] .contact-form .form-control{background:#fff;color:#123524;border-color:rgba(21,128,61,.25)}
+html[data-theme="light"] .contact-form .form-label{color:#315844}
+</style>
+
+
     <div class="container">
 
 
@@ -4120,6 +4139,39 @@ document.addEventListener(
 
                 </div>
 
+            </div>
+
+            <div class="contact-form-wrap">
+                <h3 class="contact-form-title">Send me a message</h3>
+                <p class="contact-form-intro">Your message will be sent securely through the website.</p>
+                <form method="post" action="{% url 'contact_send' %}" class="contact-form">
+                    {% csrf_token %}
+                    <div class="contact-honeypot" aria-hidden="true">
+                        <label for="contact-website">Leave this field empty</label>
+                        <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="contact-name" class="form-label">Your name</label>
+                            <input class="form-control" id="contact-name" name="name" type="text" maxlength="120" autocomplete="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contact-email" class="form-label">Your email</label>
+                            <input class="form-control" id="contact-email" name="email" type="email" maxlength="254" autocomplete="email" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="contact-subject" class="form-label">Subject</label>
+                            <input class="form-control" id="contact-subject" name="subject" type="text" maxlength="180" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="contact-message" class="form-label">Message</label>
+                            <textarea class="form-control" id="contact-message" name="message" rows="5" maxlength="8000" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button class="contact-submit-btn" type="submit"><i class="bi bi-send"></i> Send Message</button>
+                        </div>
+                    </div>
+                </form>
             </div>
 
         </div>
