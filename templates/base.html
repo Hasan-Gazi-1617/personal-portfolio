@@ -815,6 +815,13 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
 <!-- ================= MAIN ================= -->
 <main id="mainContent" tabindex="-1">
+    {% if messages %}
+    <div class="container" style="padding-top:18px;">
+        {% for message in messages %}
+        <div class="contact-flash {{ message.tags|default:'error' }}" role="status">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}
     {% endblock %}
 </main>
