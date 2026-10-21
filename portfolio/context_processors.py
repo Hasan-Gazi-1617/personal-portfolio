@@ -72,7 +72,7 @@ def _build_olt_locations(private_links):
     for olt_name, vendor, pon_entries in OLT_LOCATION_MAP:
         # Environment labels identify OLTs by their numeric menu ID (for example,
         # "OLT VSOL EPON:10"), not necessarily by the text "OLT 10".
-        olt_number_match = re.search(r"\\d+", olt_name)
+        olt_number_match = re.search(r"\d+", olt_name)
         olt_number = olt_number_match.group(0) if olt_number_match else ""
         url = next(
             (
@@ -85,7 +85,7 @@ def _build_olt_locations(private_links):
                     or (
                         olt_number
                         and re.search(
-                            rf":\\s*{re.escape(olt_number)}\\s*$",
+                            rf":\s*{re.escape(olt_number)}\s*$",
                             str(endpoint.get("label", "")).strip(),
                         )
                     )
