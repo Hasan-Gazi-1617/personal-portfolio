@@ -15,7 +15,7 @@ OLT_LOCATION_MAP = [
     ("OLT 10", "VSOL", [
         ("Rikabibazar", 1), ("Kazitula", 2), ("Shukria Market", 3), ("Mirzajangal", 4),
     ]),
-    ("OLT 11", "Vsol-Old", [
+    ("OLT 11", "VSOL-OLD", [
         ("Muttalib Villa", 1), ("Kazi Elias", 2), ("Kalighat Old", 3), ("Kalighat New", 4),
     ]),
     ("OLT 12", "C-DATA", [
@@ -31,21 +31,21 @@ OLT_LOCATION_MAP = [
         ("Baluchor", 4), ("Soudaghortula-Mirabazar", 5), ("Uposhohor-D Block", 6),
         ("Chowkidekhi", 7), ("Borobazar- S. Eidgah", 8),
     ]),
-    ("OLT 16", "", [
+    ("OLT 16", "C-DATA", [
         ("Modinamarket-Pathantula", 1), ("Bagbari", 2), ("Sagordighirpar", 3),
         ("Kalibari", 4), ("Neharipara", 5), ("Borobari", 6),
         ("Shamimabad", 7), ("Nobabroad", 8),
     ]),
-    ("OLT 17", "", [
+    ("OLT 17", "C-DATA", [
         ("Mejortila", 1), ("Khadimpara", 2), ("Surmagate, Doloipara", 3),
     ]),
-    ("OLT 18", "", [
+    ("OLT 18", "C-DATA", [
         ("Akhalia, Surma Abashik", 1), ("Mahmudabad- Chorugaw, Shahebergaw", 2),
         ("Thanabari, Shinning City", 3), ("Haydorpur, Khaligaw", 4),
         ("N. Khurumkhola, Uttorpirpur", 5), ("Pirpur", 6),
         ("Tukerbazar, Shahpur", 7), ("Tukergaw, Nuagaw", 8),
     ]),
-    ("OLT 19", "", [
+    ("OLT 19", "C-DATA", [
         ("Subidbazar", 1), ("Kodomtoli new", 2), ("Dariapara, Jallarpar", 3),
         ("Shibgonj", 4), ("Baruthkhana", 5), ("Dorgah, Mirermoydan", 6),
         ("Uposhohor Block-F-J", 7), ("Niorpool to Mendibag", 8),
