@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,26 @@ def _build_olt_locations(private_links):
     menu = private_links.get("olt_menu", []) if isinstance(private_links, dict) else []
     locations = []
     for olt_name, vendor, pon_entries in OLT_LOCATION_MAP:
+        # Environment labels identify OLTs by their numeric menu ID (for example,
+        # "OLT VSOL EPON:10"), not necessarily by the text "OLT 10".
+        olt_number_match = re.search(r"\\d+", olt_name)
+        olt_number = olt_number_match.group(0) if olt_number_match else ""
         url = next(
             (
                 str(endpoint.get("url", ""))
                 for endpoint in menu
                 if isinstance(endpoint, dict)
-                and olt_name.casefold() in str(endpoint.get("label", "")).casefold()
                 and endpoint.get("url")
+                and (
+                    olt_name.casefold() in str(endpoint.get("label", "")).casefold()
+                    or (
+                        olt_number
+                        and re.search(
+                            rf":\\s*{re.escape(olt_number)}\\s*$",
+                            str(endpoint.get("label", "")).strip(),
+                        )
+                    )
+                )
             ),
             "",
         )
