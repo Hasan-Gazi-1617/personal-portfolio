@@ -102,26 +102,9 @@ def private_navigation(request):
         }
 
     private_links = _json_env("PRIVATE_NAV_LINKS_JSON", {})
-    configured_locations = _json_env("OLT_LOCATIONS_JSON", [])
-    if not isinstance(configured_locations, list):
-        configured_locations = []
-    # Always include the built-in PON map; environment-configured entries are
-    # appended so an empty/stale OLT_LOCATIONS_JSON cannot hide the new locations.
-    mapped_locations = _build_olt_locations(private_links)
-    known_keys = {
-        (str(item.get("location", "")).strip().casefold(),
-         str(item.get("olt", "")).strip().casefold(),
-         str(item.get("port", "")).strip().casefold())
-        for item in mapped_locations
-    }
-    extra_locations = [
-        item for item in configured_locations
-        if isinstance(item, dict) and
-        (str(item.get("location", "")).strip().casefold(),
-         str(item.get("olt", "")).strip().casefold(),
-         str(item.get("port", "")).strip().casefold()) not in known_keys
-    ]
-    olt_locations = mapped_locations + extra_locations
+    # Use only the maintained OLT_LOCATION_MAP. Do not append OLT_LOCATIONS_JSON:
+    # stale environment entries can reintroduce old/duplicate PON locations in search.
+    olt_locations = _build_olt_locations(private_links)
 
     return {
         "private_links": private_links,
