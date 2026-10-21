@@ -1020,16 +1020,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Prefer location-name matches. Only search OLT/PON fields when no
-        // location matches the query, so old/irrelevant areas do not clutter results.
-        const locationMatches = oltLocations.filter(function (item) {
+        // Search ONLY location names. Do not show old/unrelated OLT or port
+        // matches when the user is searching for a specific area.
+        const matches = oltLocations.filter(function (item) {
             return String(item.location || '').toLowerCase().includes(term);
-        });
-        const matches = locationMatches.length ? locationMatches : oltLocations.filter(function (item) {
-            return [item.olt, item.pop, item.port]
-                .join(' ')
-                .toLowerCase()
-                .includes(term);
         });
 
         // Remove duplicate rows that may come from both built-in and env-configured lists.
