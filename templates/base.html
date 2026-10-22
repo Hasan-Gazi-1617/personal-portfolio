@@ -545,6 +545,13 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
 <!-- OLT SEARCH READABILITY OVERRIDES -->
 <style>
+    /* Move the brand logo a little farther left on wide screens. */
+    @media (min-width: 1200px) {
+        .navbar-custom > .container > .brand-logo {
+            transform: translateX(-36px);
+        }
+    }
+
     .olt-search-input {
         font-size: 14px !important;
         min-height: 40px;
