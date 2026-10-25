@@ -1027,10 +1027,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Search ONLY location names. Do not show old/unrelated OLT or port
-        // matches when the user is searching for a specific area.
+        // Allow searching by location, OLT number/name, or PON port.
+        // Matching OLT/port should return the locations belonging to it.
         const matches = oltLocations.filter(function (item) {
-            return String(item.location || '').toLowerCase().includes(term);
+            return (
+                String(item.location || '').toLowerCase().includes(term) ||
+                String(item.olt || '').toLowerCase().includes(term) ||
+                String(item.port || '').toLowerCase().includes(term) ||
+                String(item.pop || '').toLowerCase().includes(term)
+            );
         });
 
         // Remove duplicate rows that may come from both built-in and env-configured lists.
