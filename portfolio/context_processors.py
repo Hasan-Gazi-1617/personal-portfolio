@@ -41,7 +41,7 @@ OLT_LOCATION_MAP = [
     ]),
     ("OLT 18", "C-DATA", [
         ("Akhalia, Surma Abashik", 1), ("Mahmudabad- Chorugaw, Shahebergaw", 2),
-        ("Thanabari, Shinning City", 3), ("Haydorpur, Khaligaw", 4),
+        ("Thanabari, Shinning City, Taker Bari, Shiber Bazar, Badaghat", 3), ("Haydorpur, Khaligaw", 4),
         ("N. Khurumkhola, Uttorpirpur", 5), ("Pirpur", 6),
         ("Tukerbazar, Shahpur", 7), ("Tukergaw, Nuagaw", 8),
     ]),
