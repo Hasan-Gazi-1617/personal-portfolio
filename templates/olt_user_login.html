@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}OLT User Login | Hasan{% endblock %}
+
+{% block content %}
+<section class="owner-login-section">
+    <div class="owner-login-card">
+        <div class="owner-login-icon"><i class="bi bi-hdd-network"></i></div>
+        <span class="owner-login-eyebrow">LIMITED ACCESS</span>
+        <h1>OLT User Login</h1>
+        <p>Sign in to use OLT Search and configured OLT links. Admin View and private databases are not included.</p>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="owner-login-alert" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="post" class="owner-login-form">
+            {% csrf_token %}
+            <label for="oltUsername">Username</label>
+            <input type="text" name="username" id="oltUsername" autocomplete="username" required autofocus>
+            <label for="oltPassword" style="margin-top:16px;">Password</label>
+            <input type="password" name="password" id="oltPassword" autocomplete="current-password" required>
+            <button type="submit" class="btn btn-primary-custom owner-login-submit">Sign in to OLT tools <i class="bi bi-arrow-right"></i></button>
+        </form>
+        <a href="{% url 'home' %}" class="owner-login-back"><i class="bi bi-arrow-left"></i> Back to portfolio</a>
+    </div>
+</section>
+{% endblock %}
