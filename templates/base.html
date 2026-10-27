@@ -822,16 +822,25 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                     </ul>
                 </li>
                 {% else %}
-                <li class="nav-item admin-view-item">
-                    <a class="nav-link admin-view-link" href="{% url 'owner_login' %}">
-                        <i class="bi bi-shield-lock"></i>
-                        <span>Admin View</span>
-                    </a>
+                {% if request.session.olt_user_access %}
+                <li class="nav-item dropdown manor-dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="oltOnlyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">OLT</a>
+                    <ul class="dropdown-menu manor-menu" aria-labelledby="oltOnlyDropdown">
+                        {% for endpoint in private_links.olt_menu %}
+                        <li><a class="dropdown-item" href="{{ endpoint.url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-hdd-network"></i><span>{{ endpoint.label }}</span></a></li>
+                        {% empty %}
+                        <li><span class="dropdown-item disabled">No OLT links configured</span></li>
+                        {% endfor %}
+                    </ul>
                 </li>
+                {% else %}
+                <li class="nav-item admin-view-item"><a class="nav-link admin-view-link" href="{% url 'owner_login' %}"><i class="bi bi-shield-lock"></i><span>Admin View</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'olt_user_login' %}"><i class="bi bi-hdd-network"></i><span>OLT User Login</span></a></li>
+                {% endif %}
                 {% endif %}
             </ul>
 
-            {% if request.session.owner_access %}
+            {% if request.session.owner_access or request.session.olt_user_access %}
             <!-- OLT LOCATION SEARCH -->
             <div class="olt-location-search" id="oltLocationSearch">
                 <div class="olt-search-shell">
@@ -872,6 +881,12 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                 <button type="submit" class="owner-logout-btn" aria-label="Lock private tools" title="Lock private tools">
                     <i class="bi bi-lock"></i>
                 </button>
+            </form>
+            {% endif %}
+            {% if request.session.olt_user_access %}
+            <form method="post" action="{% url 'olt_user_logout' %}" class="owner-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="owner-logout-btn" aria-label="Log out of OLT tools" title="Log out of OLT tools"><i class="bi bi-box-arrow-right"></i></button>
             </form>
             {% endif %}
 
@@ -967,7 +982,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- ================= OLT LOCATION SEARCH JS ================= -->
-{% if request.session.owner_access %}
+{% if request.session.owner_access or request.session.olt_user_access %}
 {{ olt_locations|json_script:"olt-location-data" }}
 {% endif %}
 <script>

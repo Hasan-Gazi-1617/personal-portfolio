@@ -107,7 +107,7 @@ def _build_olt_locations(private_links):
 def private_navigation(request):
     """Expose private infrastructure links only inside an unlocked owner session."""
     public_email = os.environ.get("PUBLIC_CONTACT_EMAIL", "").strip() or DEFAULT_PUBLIC_EMAIL
-    if not request.session.get("owner_access"):
+    if not request.session.get("owner_access") and not request.session.get("olt_user_access"):
         return {
             "private_links": {},
             "olt_locations": [],
@@ -115,7 +115,12 @@ def private_navigation(request):
             "networking_lessons_url": os.environ.get("NETWORKING_LESSONS_URL", "#"),
         }
 
-    private_links = _json_env("PRIVATE_NAV_LINKS_JSON", {})
+    configured_links = _json_env("PRIVATE_NAV_LINKS_JSON", {})
+    if request.session.get("owner_access"):
+        private_links = configured_links
+    else:
+        # OLT-only users must not receive other private navigation links.
+        private_links = {"olt_menu": configured_links.get("olt_menu", [])} if isinstance(configured_links, dict) else {}
     # Use only the maintained OLT_LOCATION_MAP. Do not append OLT_LOCATIONS_JSON:
     # stale environment entries can reintroduce old/duplicate PON locations in search.
     olt_locations = _build_olt_locations(private_links)

@@ -18,5 +18,7 @@ urlpatterns = [
     path("tki/<int:pk>/update/", views.tki_update, name="tki_update"),
     path("tki/<int:pk>/admin-edit/", views.tki_admin_edit, name="tki_admin_edit"),
     path("owner-login/", views.owner_login, name="owner_login"),
+    path("olt-user-login/", views.olt_user_login, name="olt_user_login"),
+    path("olt-user-logout/", views.olt_user_logout, name="olt_user_logout"),
     path("owner-logout/", views.owner_logout, name="owner_logout"),
 ]
