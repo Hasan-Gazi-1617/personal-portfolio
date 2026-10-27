@@ -22,7 +22,7 @@ OLT_LOCATION_MAP = [
         ("Housing Estate", 1), ("Pirmoholla", 1), ("Amberkhana", 1), ("Boroikandi", 2), ("Rikabibazar-Munshi Para, Kuarpar", 3),("Shukria Market", 5)
     ]),
     ("OLT 14", "C-DATA", [
-        ("Galleria, Rajamension", 1), ("Millennium, Asia Market, Mitali Mansion", 2),
+        ("Galleria, Raja mansion", 1), ("Millennium, Asia Market, Mitali Mansion", 2),
         ("Noyashorok", 3), ("Taltola", 4), ("Sheikhghat", 5),
         ("Lamabazr, Bhatalia", 6), ("Vhartokhola-Chondipul", 7), ("Kumarpara", 8),
     ]),
@@ -41,14 +41,14 @@ OLT_LOCATION_MAP = [
     ]),
     ("OLT 18", "C-DATA", [
         ("Akhalia, Surma Abashik", 1), ("Mahmudabad- Chorugaw, Shahebergaw", 2),
-        ("Thanabari, Shinning City, Taker Bari, Shiber Bazar, Badaghat", 3), ("Haydorpur, Khaligaw", 4),
-        ("N. Khurumkhola, Uttorpirpur", 5), ("Pirpur", 6),
-        ("Tukerbazar, Shahpur", 7), ("Tukergaw, Nuagaw", 8),
+        ("Thanabari", 3), ("Shining City", 3), ("Taker Bari", 3), ("Shiber Bazar", 3), ("Badaghat", 3) ("Haydorpur", 4),("Khaligaw", 4),
+        ("N. Khurumkhola", 5), ("Uttorpirpur", 5), ("Pirpur", 6),
+        ("Tukerbazar", 7), ("Shahpur", 7), ("Tukergaw", 8), ("Nuagaw", 8),
     ]),
     ("OLT 19", "C-DATA", [
         ("Subidbazar", 1), ("Kodomtoli new", 2), ("Dariapara, Jallarpar", 3),
         ("Shibgonj", 4), ("Baruthkhana", 5), ("Dorgah, Mirermoydan", 6),
-        ("Uposhohor Block-F-J", 7), ("Niorpool to Mendibag", 8),
+        ("Uposhohor Block-F-J", 7), ("Naiorpool to Mendibag", 8),
     ]),
 ]
 
