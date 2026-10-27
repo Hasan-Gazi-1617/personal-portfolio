@@ -471,6 +471,45 @@ def tki_admin_edit(request, pk):
 
 
 @require_http_methods(["GET", "POST"])
+def olt_user_login(request):
+    """Limited login for OLT search and configured OLT links only."""
+    if request.session.get("olt_user_access"):
+        return redirect("home")
+    if request.method == "POST":
+        now = int(time.time())
+        attempts = [stamp for stamp in request.session.get("olt_user_login_attempts", []) if now - stamp < 15 * 60]
+        if len(attempts) >= 5:
+            messages.error(request, "Too many attempts. Please wait 15 minutes and try again.")
+            request.session["olt_user_login_attempts"] = attempts
+            return render(request, "olt_user_login.html", status=429)
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+        configured_username = os.environ.get("OLT_USER_USERNAME", "")
+        configured_password = os.environ.get("OLT_USER_PASSWORD", "")
+        username_ok = bool(configured_username) and secrets.compare_digest(username, configured_username)
+        password_ok = bool(configured_password) and secrets.compare_digest(password, configured_password)
+        if username_ok and password_ok:
+            request.session.cycle_key()
+            request.session["olt_user_access"] = True
+            request.session.set_expiry(60 * 60 * 24 * 7)
+            request.session.pop("olt_user_login_attempts", None)
+            return redirect("home")
+        attempts.append(now)
+        request.session["olt_user_login_attempts"] = attempts
+        logger.warning("Rejected OLT-only login attempt", extra={"client_ip": request.META.get("REMOTE_ADDR", "unknown"), "attempt_count": len(attempts)})
+        messages.error(request, "Invalid username or password.")
+    return render(request, "olt_user_login.html")
+
+
+@require_POST
+def olt_user_logout(request):
+    request.session.pop("olt_user_access", None)
+    request.session.pop("olt_user_login_attempts", None)
+    request.session.cycle_key()
+    return redirect("home")
+
+
+@require_http_methods(["GET", "POST"])
 def owner_login(request):
     if request.session.get("owner_access"):
         return redirect("home")
