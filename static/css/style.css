@@ -2058,3 +2058,203 @@ border-color:rgba(148,163,184,.16)!important;box-shadow:0 12px 34px rgba(0,0,0,.
         margin: 8px 0 0;
     }
 }
+
+
+/* =========================================================
+   SITE-WIDE RESPONSIVE FIX
+   Applies to all pages that extend base.html, not only navbar.
+========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html { width: 100%; max-width: 100%; overflow-x: clip; }
+body { width: 100%; max-width: 100%; overflow-x: clip; }
+main, section, header, footer, nav, .container, .container-fluid,
+.row, [class*="col-"] { min-width: 0; }
+img, picture, video, canvas, iframe, embed, object {
+    max-width: 100%;
+}
+img, video { height: auto; }
+pre, code { overflow-wrap: anywhere; }
+p, h1, h2, h3, h4, h5, h6, a, span, small, strong {
+    overflow-wrap: anywhere;
+}
+table { max-width: 100%; }
+.table-responsive, .table-wrap, .table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+input, select, textarea, button { max-width: 100%; }
+input, select, textarea { min-width: 0; }
+.container {
+    padding-left: clamp(12px, 2.8vw, 24px);
+    padding-right: clamp(12px, 2.8vw, 24px);
+}
+.row {
+    --bs-gutter-x: clamp(1rem, 2.5vw, 2rem);
+}
+
+/* Flexible repeated cards/grids */
+.expertise-grid, .projects-grid, .project-grid, .certifications-grid,
+.skills-grid, .services-grid, .lesson-resources-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+.tech-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.hero-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+.hero-section { min-height: min(100vh, 900px); }
+.hero-title, .section-title, .contact-title { overflow-wrap: anywhere; }
+.hero-description { width: 100%; max-width: 620px; }
+.profile-wrapper { width: min(100%, 390px); }
+.profile-image-container { height: clamp(260px, 38vw, 430px); }
+.experience-header { flex-wrap: wrap; }
+.contact-box { min-width: 0; }
+.contact-links, .contact-link { min-width: 0; }
+.footer-bottom { flex-wrap: wrap; gap: 8px 20px; }
+.olt-location-search { min-width: 0; max-width: 100%; }
+.olt-search-shell, .olt-search-input { min-width: 0; }
+.olt-search-panel { max-width: min(92vw, 430px); }
+.dropdown-menu { max-width: min(92vw, 380px); }
+.dropdown-item { white-space: normal; overflow-wrap: anywhere; }
+
+/* Large tablets and small laptops */
+@media (max-width: 1199.98px) {
+    .hero-title { letter-spacing: -2px; }
+    .section-padding, .contact-section {
+        padding-top: clamp(58px, 8vw, 90px);
+        padding-bottom: clamp(58px, 8vw, 90px);
+    }
+}
+
+/* Tablet / mobile navigation and content */
+@media (max-width: 991.98px) {
+    .navbar-custom .container, .navbar-custom .container-fluid {
+        max-width: 100%;
+    }
+    .navbar-collapse {
+        flex-basis: 100%;
+        width: 100%;
+        padding-top: 14px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+    }
+    .navbar-nav {
+        flex-wrap: wrap;
+        align-items: stretch;
+        width: 100%;
+        gap: 3px;
+    }
+    .navbar-nav .nav-item { max-width: 100%; }
+    .navbar-nav .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        white-space: normal;
+        padding: 10px 12px !important;
+    }
+    .navbar-nav .dropdown-menu {
+        position: static !important;
+        float: none;
+        width: 100%;
+        max-width: 100%;
+        margin: 4px 0 8px;
+        transform: none !important;
+    }
+    .manor-dropdown .submenu-menu {
+        position: static !important;
+        width: 100%;
+        min-width: 0;
+        margin: 5px 0 8px !important;
+    }
+    .olt-location-search {
+        width: 100%;
+        flex: 1 1 100%;
+        margin: 10px 0;
+    }
+    .olt-search-panel { width: 100%; max-width: 100%; }
+    .connect-btn, .theme-toggle, .owner-logout-form {
+        margin: 8px 8px 8px 0;
+    }
+    .hero-section {
+        min-height: auto;
+        padding-top: 70px;
+        padding-bottom: 55px;
+    }
+    .hero-section .row { row-gap: 40px; }
+    .profile-wrapper { margin: 0 auto; }
+    .profile-image-container { height: clamp(300px, 48vw, 390px); }
+    .experience-header { align-items: flex-start; }
+    .contact-box { padding: clamp(22px, 4vw, 45px); }
+}
+
+/* Phones */
+@media (max-width: 767.98px) {
+    .brand-logo { font-size: 23px; }
+    .hero-section { padding-top: 48px; padding-bottom: 48px; }
+    .hero-title {
+        font-size: clamp(35px, 9.5vw, 56px);
+        line-height: 1.08;
+        letter-spacing: -1.5px;
+        margin-bottom: 20px;
+    }
+    .hero-intro { font-size: 10px; letter-spacing: 2px; }
+    .hero-description { font-size: 14px; line-height: 1.8; }
+    .hero-buttons { gap: 10px; flex-wrap: wrap; }
+    .hero-buttons a, .hero-buttons button { max-width: 100%; }
+    .hero-social { flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+    .profile-wrapper { max-width: min(86vw, 330px); }
+    .profile-image-container { height: clamp(280px, 88vw, 360px); }
+    .floating-card { max-width: 48%; padding: 9px 10px; gap: 7px; }
+    .floating-card-one { left: -8px; }
+    .floating-card-two { right: -8px; }
+    .section-padding, .contact-section {
+        padding-top: 58px;
+        padding-bottom: 58px;
+    }
+    .section-heading { gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+    .section-title, .contact-title {
+        font-size: clamp(29px, 7.5vw, 42px);
+        line-height: 1.15;
+        letter-spacing: -1px;
+    }
+    .expertise-card, .project-card { padding: 22px; }
+    .tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tech-item {
+        min-width: 0;
+        min-height: 76px;
+        padding: 12px 7px;
+        gap: 7px;
+        font-size: 11px;
+        overflow-wrap: anywhere;
+    }
+    .hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .experience-item { padding-left: 30px; margin-bottom: 40px; }
+    .experience-content h3 { font-size: 20px; }
+    .experience-header { display: block; }
+    .experience-type { display: inline-block; margin-top: 10px; }
+    .certification-card { padding: 17px; gap: 12px; }
+    .contact-box { padding: 23px 17px; border-radius: 10px; }
+    .contact-link { padding: 11px; }
+    .footer-social { margin-top: 18px; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+    .table { font-size: 13px; }
+}
+
+/* Narrow phones */
+@media (max-width: 479.98px) {
+    .container { padding-left: 13px; padding-right: 13px; }
+    .hero-title { font-size: clamp(32px, 10vw, 43px); letter-spacing: -1px; }
+    .availability-badge { font-size: 8px; letter-spacing: 1px; padding: 6px 9px; }
+    .btn-primary-custom, .btn-secondary-custom { padding: 11px 13px; font-size: 11px; }
+    .profile-wrapper { max-width: min(84vw, 285px); }
+    .profile-card { padding: 10px; }
+    .profile-image-container { height: 300px; }
+    .floating-card strong { font-size: 9px; }
+    .floating-card small { font-size: 7px; }
+    .tech-item { flex-direction: column; text-align: center; min-height: 78px; }
+    .contact-title { font-size: 29px; }
+    .olt-search-result { gap: 8px; padding: 10px; }
+}
