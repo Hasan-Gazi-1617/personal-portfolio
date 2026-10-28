@@ -1965,3 +1965,96 @@ border-color:rgba(148,163,184,.16)!important;box-shadow:0 12px 34px rgba(0,0,0,.
 .btn-outline-primary-custom:hover{background:#14B8A6!important;border-color:#14B8A6!important;color:#071512!important}
 .footer-section,footer{background:#09111F!important;border-top-color:rgba(20,184,166,.18)!important}
 ::selection{background:rgba(20,184,166,.30);color:#F8FAFC}
+
+
+/* ===== NAVBAR SPACING / ANTI-CRAMPING ===== */
+@media (min-width: 992px) {
+    .navbar-custom {
+        padding: 12px 0;
+    }
+
+    .navbar-custom .container,
+    .navbar-custom .container-fluid {
+        gap: 16px;
+    }
+
+    .navbar-collapse {
+        column-gap: 16px;
+        row-gap: 12px;
+        align-items: center;
+    }
+
+    .navbar-custom .navbar-nav {
+        align-items: center;
+        gap: 3px;
+    }
+
+    .navbar-custom .navbar-nav .nav-link {
+        padding: 9px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .olt-location-search {
+        flex: 0 1 190px;
+        min-width: 145px;
+        margin-inline: 4px;
+    }
+
+    .connect-btn {
+        white-space: nowrap;
+        margin-left: 4px;
+    }
+
+    .theme-toggle {
+        margin-left: 4px;
+    }
+}
+
+/* At medium desktop widths, let utility controls move to a clean second row
+   instead of squeezing every item together. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .navbar-custom .container,
+    .navbar-custom .container-fluid {
+        flex-wrap: wrap;
+    }
+
+    .navbar-collapse {
+        flex-basis: 100%;
+        justify-content: flex-start;
+        padding-top: 10px;
+    }
+
+    .olt-location-search {
+        flex-basis: 220px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding: 16px 0 8px;
+        row-gap: 12px;
+    }
+
+    .navbar-custom .navbar-nav {
+        gap: 4px;
+    }
+
+    .navbar-custom .navbar-nav .nav-link {
+        padding: 10px 12px;
+    }
+
+    .olt-location-search {
+        width: 100%;
+        max-width: none;
+        margin: 8px 0;
+    }
+
+    .connect-btn {
+        margin-top: 8px;
+    }
+
+    .theme-toggle {
+        margin: 8px 0 0;
+    }
+}
