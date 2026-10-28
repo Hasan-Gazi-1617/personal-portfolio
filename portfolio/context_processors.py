@@ -23,7 +23,7 @@ OLT_LOCATION_MAP = [
         ("Munshipara", 3), ("Kuarpar", 3), ("Lamabazar", 3), ("Shukria Market", 5), ("Puranlane", 5), ("Zindabazar", 5),
     ]),
     ("OLT 14", "C-DATA", [
-        ("Galleria, Raja mansion", 1), ("Millennium, Asia Market, Mitali Mansion", 2),
+        ("Galleria, Raja Mansion", 1), ("Blue Water, Kakoli Shopping Center", 1), ("Kaniz Plaza, West World", 1), ("Millennium, Asia Market, Mitali Mansion", 2),
         ("Noyashorok", 3), ("Taltola", 4), ("Sheikhghat", 5),
         ("Lamabazr, Bhatalia", 6), ("Vhartokhola-Chondipul", 7), ("Kumarpara", 8),
     ]),
