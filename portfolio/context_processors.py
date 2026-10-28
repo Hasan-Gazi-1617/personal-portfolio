@@ -19,8 +19,9 @@ OLT_LOCATION_MAP = [
         ("Muttalib Villa", 1), ("Kazi Elias", 2), ("Kalighat Old", 3), ("Kalighat New", 4),
     ]),
     ("OLT 12", "C-DATA", [
-        ("Housing Estate", 1), ("Pirmoholla", 1), ("Amberkhana", 1), ("Boroikandi", 2), ("Technical Road", 2), ("Lawai", 2), ("Rikabibazar", 3),("Munshipara", 3), ("Kuarpar", 3), ("Lamabazar", 3), ("Shukria Market", 5)
-    ]),M
+        ("Housing Estate", 1), ("Pirmoholla", 1), ("Amberkhana", 1), ("Boroikandi", 2), ("Technical Road", 2), ("Lawai", 2), ("Rikabibazar", 3),
+        ("Munshipara", 3), ("Kuarpar", 3), ("Lamabazar", 3), ("Shukria Market", 5), ("Puranlane", 5), ("Zindabazar", 5),
+    ]),
     ("OLT 14", "C-DATA", [
         ("Galleria, Raja mansion", 1), ("Millennium, Asia Market, Mitali Mansion", 2),
         ("Noyashorok", 3), ("Taltola", 4), ("Sheikhghat", 5),
