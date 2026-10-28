@@ -149,8 +149,7 @@ class FrontendContractTests(TestCase):
         self.assertNotIn("drive.google.com/drive/folders", combined)
 
     @patch.dict(os.environ, {
-        "PRIVATE_NAV_LINKS_JSON": '{"webmail":"https://portal.example.test"}',
-        "OLT_LOCATIONS_JSON": '[{"location":"POP A","olt":"Test OLT","pop":"Core","port":"443","url":"https://olt.example.test"}]',
+        "PRIVATE_NAV_LINKS_JSON": '{"webmail":"https://portal.example.test","olt_menu":[{"label":"OLT Test:10","url":"https://olt.example.test"}]}',
     })
     def test_private_navigation_data_requires_owner_session(self):
         public_html = self.client.get(reverse("home")).content.decode()
