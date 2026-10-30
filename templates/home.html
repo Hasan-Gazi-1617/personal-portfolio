@@ -624,6 +624,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const filters = document.querySelectorAll("[data-project-filter]");
     const cards = document.querySelectorAll("[data-project-card]");
     const count = document.getElementById("projects-visible-count");
+    const track = document.getElementById("featured-projects-track");
+    const scrollButtons = document.querySelectorAll("[data-project-scroll]");
     if (!filters.length || !cards.length) return;
 
     function applyProjectFilter(category) {
@@ -644,6 +646,13 @@ document.addEventListener("DOMContentLoaded", function () {
     filters.forEach(function (button) {
         button.addEventListener("click", function () {
             applyProjectFilter(button.dataset.projectFilter);
+        });
+    });
+    scrollButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            if (!track) return;
+            const direction = button.dataset.projectScroll === "right" ? 1 : -1;
+            track.scrollBy({ left: direction * Math.max(track.clientWidth * 0.82, 280), behavior: "smooth" });
         });
     });
     applyProjectFilter("all");
@@ -1550,7 +1559,15 @@ document.addEventListener("DOMContentLoaded", function () {
             <span class="projects-toolbar-note"><i class="bi bi-grid-3x3-gap"></i> Curated project library</span>
         </div>
 
-        <div class="row g-4 featured-tools-grid">
+        <div class="projects-scroll-guide">
+            <span><i class="bi bi-arrows-angle-expand"></i> Scroll horizontally to explore all projects</span>
+            <div class="projects-scroll-controls">
+                <button type="button" class="projects-scroll-button" data-project-scroll="left" aria-label="Scroll projects left"><i class="bi bi-arrow-left"></i></button>
+                <button type="button" class="projects-scroll-button" data-project-scroll="right" aria-label="Scroll projects right"><i class="bi bi-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div class="row g-4 featured-tools-grid" id="featured-projects-track" tabindex="0" aria-label="Scrollable project cards">
 
             <!-- Featured Project 01: Live Portfolio -->
             <div class="col-lg-4 featured-tool-column" data-project-card data-category="web">
