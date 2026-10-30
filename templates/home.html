@@ -621,41 +621,22 @@ html[data-theme="light"] #live-network-topology {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const filters = document.querySelectorAll("[data-project-filter]");
-    const cards = document.querySelectorAll("[data-project-card]");
-    const count = document.getElementById("projects-visible-count");
-    const track = document.getElementById("featured-projects-track");
-    const scrollButtons = document.querySelectorAll("[data-project-scroll]");
-    if (!filters.length || !cards.length) return;
-
-    function applyProjectFilter(category) {
-        let visible = 0;
-        cards.forEach(function (card) {
-            const show = category === "all" || card.dataset.category === category;
-            card.hidden = !show;
-            if (show) visible += 1;
-        });
-        if (count) count.textContent = String(visible).padStart(2, "0");
-        filters.forEach(function (button) {
-            const active = button.dataset.projectFilter === category;
-            button.classList.toggle("is-active", active);
-            button.setAttribute("aria-pressed", active ? "true" : "false");
-        });
-    }
-
-    filters.forEach(function (button) {
-        button.addEventListener("click", function () {
-            applyProjectFilter(button.dataset.projectFilter);
-        });
-    });
-    scrollButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-            if (!track) return;
-            const direction = button.dataset.projectScroll === "right" ? 1 : -1;
-            track.scrollBy({ left: direction * Math.max(track.clientWidth * 0.82, 280), behavior: "smooth" });
-        });
-    });
-    applyProjectFilter("all");
+ const filters=document.querySelectorAll("[data-project-filter]");
+ const cards=document.querySelectorAll("[data-project-card]");
+ const count=document.getElementById("projects-visible-count");
+ const track=document.getElementById("featured-projects-track");
+ const arrows=document.querySelectorAll("[data-project-scroll]");
+ if(!filters.length||!cards.length)return;
+ function applyProjectFilter(category){
+  let visible=0;
+  cards.forEach(card=>{const show=category==="all"||card.dataset.category===category;card.hidden=!show;if(show)visible++;});
+  if(count)count.textContent=String(visible).padStart(2,"0");
+  filters.forEach(button=>{const active=button.dataset.projectFilter===category;button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",active?"true":"false");});
+  if(track)track.scrollTo({left:0,behavior:"smooth"});
+ }
+ filters.forEach(button=>button.addEventListener("click",()=>applyProjectFilter(button.dataset.projectFilter)));
+ arrows.forEach(button=>button.addEventListener("click",()=>{if(track)track.scrollBy({left:(button.dataset.projectScroll==="right"?1:-1)*270,behavior:"smooth"});}));
+ applyProjectFilter("all");
 });
 </script>
 
@@ -1525,180 +1506,28 @@ document.addEventListener("DOMContentLoaded", function () {
      PROJECTS
 ===================================================== -->
 
-<section id="projects"
-         class="section-padding">
-
-    <div class="container">
-
-
-        <div class="projects-heading">
-            <div class="section-heading">
-                <span class="section-number">05</span>
-                <span class="section-label">SELECTED WORK · PROJECT SHOWCASE</span>
-            </div>
-            <div class="projects-heading-row">
-                <div>
-                    <h2 class="projects-display-title">Ideas built into <span>real-world solutions.</span></h2>
-                    <p class="projects-intro">A growing collection of applications, engineering tools and experiments. Explore the work by category.</p>
-                </div>
-                <div class="projects-count" aria-live="polite">
-                    <strong id="projects-visible-count">06</strong>
-                    <span>PROJECTS<br>SHOWCASED</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="projects-toolbar" aria-label="Filter projects">
-            <div class="projects-filters" role="group" aria-label="Project categories">
-                <button class="project-filter is-active" type="button" data-project-filter="all" aria-pressed="true">All projects</button>
-                <button class="project-filter" type="button" data-project-filter="web" aria-pressed="false">Web applications</button>
-                <button class="project-filter" type="button" data-project-filter="network" aria-pressed="false">Network tools</button>
-                <button class="project-filter" type="button" data-project-filter="interactive" aria-pressed="false">Interactive</button>
-                <button class="project-filter" type="button" data-project-filter="planned" aria-pressed="false">In progress</button>
-            </div>
-            <span class="projects-toolbar-note"><i class="bi bi-grid-3x3-gap"></i> Curated project library</span>
-        </div>
-
-        <div class="projects-scroll-guide">
-            <span><i class="bi bi-arrows-angle-expand"></i> Scroll horizontally to explore all projects</span>
-            <div class="projects-scroll-controls">
-                <button type="button" class="projects-scroll-button" data-project-scroll="left" aria-label="Scroll projects left"><i class="bi bi-arrow-left"></i></button>
-                <button type="button" class="projects-scroll-button" data-project-scroll="right" aria-label="Scroll projects right"><i class="bi bi-arrow-right"></i></button>
-            </div>
-        </div>
-
-        <div class="row g-4 featured-tools-grid" id="featured-projects-track" tabindex="0" aria-label="Scrollable project cards">
-
-            <!-- Featured Project 01: Live Portfolio -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="web">
-                <article class="project-card featured-tool-card portfolio-tool-card">
-                    <div class="project-top">
-                        <span>01 · LIVE SYSTEM</span>
-                        <i class="bi bi-arrow-up-right"></i>
-                    </div>
-                    <div class="project-icon"><i class="bi bi-window-stack"></i></div>
-                    <h3>Django Portfolio System</h3>
-                    <p>Responsive Django portfolio with secure owner access, dual themes and structured professional content.</p>
-                    <div class="project-tags">
-                        <span>Python</span><span>Django</span><span>Bootstrap</span>
-                    </div>
-                    <div class="project-meta">
-                        <span class="project-status">LIVE PORTFOLIO</span>
-                        <a class="project-action" href="#home" aria-label="View the live portfolio">View Portfolio <i class="bi bi-box-arrow-up-right"></i></a>
-                    </div>
-                </article>
-            </div>
-
-            <!-- Featured Project 02: MikroTik Generator -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="network">
-                <a href="{% url 'mikrotik_generator' %}" class="project-card-link" aria-label="Open MikroTik Configuration Generator">
-                    <article class="project-card featured-tool-card mikrotik-tool-card">
-                        <div class="project-top">
-                            <span>02 · AUTOMATION TOOL</span>
-                            <i class="bi bi-arrow-up-right"></i>
-                        </div>
-                        <div class="project-icon"><i class="bi bi-router"></i></div>
-                        <h3>MikroTik Configuration Generator</h3>
-                        <p>Visual RouterOS configuration builder with validation, live script preview and downloadable RSC export.</p>
-                        <div class="project-tags">
-                            <span>RouterOS</span><span>Automation</span><span>GUI</span>
-                        </div>
-                        <div class="project-meta">
-                            <span class="project-status">LIVE TOOL</span>
-                            <span class="project-action">Open Generator <i class="bi bi-arrow-right-circle"></i></span>
-                        </div>
-                    </article>
-                </a>
-            </div>
-
-            <!-- Featured Project 03: Algorithm Visual Studio -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="interactive">
-                <a href="{% url 'algorithm_studio' %}" class="project-card-link" aria-label="Open Algorithm Visual Studio">
-                    <article class="project-card featured-tool-card algorithm-tool-card">
-                        <div class="project-top">
-                            <span>03 · INTERACTIVE TOOL</span>
-                            <i class="bi bi-arrow-up-right"></i>
-                        </div>
-                        <div class="project-icon"><i class="bi bi-code-slash"></i></div>
-                        <h3>Algorithm Visual Studio</h3>
-                        <p>Interactive data structure and algorithm lab with step animation, complexity analysis and multi-language code.</p>
-                        <div class="project-tags">
-                            <span>DSA</span><span>Visualizer</span><span>C++ · Python · Java · Ruby</span>
-                        </div>
-                        <div class="project-meta">
-                            <span class="project-status">LIVE TOOL</span>
-                            <span class="project-action">Open Studio <i class="bi bi-arrow-right-circle"></i></span>
-                        </div>
-                    </article>
-                </a>
-            </div>
-
-            <!-- Featured Project 04: MikroLab Studio -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="planned">
-                <article class="project-card featured-tool-card mikrolab-tool-card">
-                    <div class="project-top">
-                        <span>04 · FUTURE PROJECT</span>
-                        <i class="bi bi-bezier2"></i>
-                    </div>
-                    <div class="project-icon"><i class="bi bi-diagram-3"></i></div>
-                    <h3>MikroLab Studio — Visual RouterOS Network Simulator</h3>
-                    <p>Planned visual lab for building topologies, configuring RouterOS devices and practicing packet flow and MikroTik troubleshooting.</p>
-                    <div class="project-tags">
-                        <span>RouterOS</span><span>Simulator</span><span>Visual Lab</span>
-                    </div>
-                    <div class="project-meta">
-                        <span class="project-status">PLANNED</span>
-                        <span class="project-action project-action-disabled" aria-disabled="true">Coming Soon <i class="bi bi-clock-history"></i></span>
-                    </div>
-                </article>
-            </div>
-
-            <!-- Featured Project 06: Hasoryx Transport Agency -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="web">
-                <a href="https://hasoryx-transport-agency.onrender.com/"
-                   class="project-card-link"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   aria-label="Visit Hasoryx Transport Agency website">
-                    <article class="project-card featured-tool-card">
-                        <div class="project-top">
-                            <span>06 · LIVE WEB APPLICATION</span>
-                            <i class="bi bi-arrow-up-right"></i>
-                        </div>
-                        <div class="project-icon"><i class="bi bi-truck-front"></i></div>
-                        <h3>Hasoryx Transport Agency</h3>
-                        <p>A transport agency web application designed to present transport services, support customer enquiries and provide a professional digital presence.</p>
-                        <div class="project-tags">
-                            <span>Django</span><span>Web Development</span><span>Responsive UI</span>
-                        </div>
-                        <div class="project-meta">
-                            <span class="project-status">LIVE PROJECT</span>
-                            <span class="project-action">Visit Website <i class="bi bi-box-arrow-up-right"></i></span>
-                        </div>
-                    </article>
-                </a>
-            </div>
-
-            <!-- Featured Project 05: Private OLT Monitoring -->
-            <div class="col-lg-4 featured-tool-column" data-project-card data-category="network">
-                <a href="{% url 'olt_monitoring_dashboard' %}" class="text-decoration-none" aria-label="Open private OLT Monitoring Dashboard">
-                    <article class="project-card featured-tool-card">
-                        <div class="project-top"><span>05 · PRIVATE TOOL</span><i class="bi bi-hdd-network"></i></div>
-                        <div class="project-icon"><i class="bi bi-activity"></i></div>
-                        <h3>OLT Monitoring Dashboard</h3>
-                        <p>Private multi-vendor monitoring for Huawei, VSOL, CDATA and other OLTs, with PON/ONU status, recent online/offline events and a Local PC collector integration.</p>
-                        <div class="project-tags"><span>OLT / ONU</span><span>SNMP / SSH-ready</span><span>Django</span></div>
-                        <div class="project-meta"><span class="project-status">PRIVATE · INTEGRATION</span><span class="project-action">Open Dashboard <i class="bi bi-arrow-right-circle"></i></span></div>
-                    </article>
-                </a>
-            </div>
-
-
-        </div>
-
-    </div>
-
-</section>
+<section id="projects" class="section-padding projects-lessons-style">
+<div class="container">
+<div class="projects-heading">
+<div class="section-heading"><span class="section-number">05</span><span class="section-label">SELECTED WORK · PROJECT SHOWCASE</span></div>
+<div class="projects-heading-row"><div><h2 class="projects-display-title">Ideas built into <span>real-world solutions.</span></h2><p class="projects-intro">A growing collection of applications, engineering tools and experiments. Browse projects by category.</p></div><div class="projects-count" aria-live="polite"><strong id="projects-visible-count">06</strong><span>PROJECTS<br>SHOWCASED</span></div></div>
+</div>
+<div class="projects-toolbar" aria-label="Filter projects"><div class="projects-filters" role="group" aria-label="Project categories">
+<button class="project-filter is-active" type="button" data-project-filter="all" aria-pressed="true">All projects</button>
+<button class="project-filter" type="button" data-project-filter="web" aria-pressed="false">Web applications</button>
+<button class="project-filter" type="button" data-project-filter="network" aria-pressed="false">Network tools</button>
+<button class="project-filter" type="button" data-project-filter="interactive" aria-pressed="false">Interactive</button>
+<button class="project-filter" type="button" data-project-filter="planned" aria-pressed="false">In progress</button>
+</div><span class="projects-toolbar-note"><i class="bi bi-grid-3x3-gap"></i> Curated project library</span></div>
+<div class="project-browse-bar"><span class="project-browse-label"><span class="project-browse-dot"></span> BROWSE PROJECTS</span><div class="project-rail-controls"><button type="button" class="project-rail-button" data-project-scroll="left" aria-label="Scroll projects left"><i class="bi bi-arrow-left"></i></button><button type="button" class="project-rail-button" data-project-scroll="right" aria-label="Scroll projects right"><i class="bi bi-arrow-right"></i></button></div></div>
+<div class="project-rail-viewport"><div class="project-resource-rail" id="featured-projects-track" tabindex="0" aria-label="Scrollable project cards">
+<article class="project-resource-card project-blue" data-project-card data-category="web"><div class="project-resource-icon"><i class="bi bi-window-stack"></i></div><span class="project-resource-category">01 · WEB APPLICATION</span><h3>Django Portfolio System</h3><p>Responsive Django portfolio with secure owner access, dual themes and structured professional content.</p><div class="project-resource-tags"><span>Python</span><span>Django</span><span>Bootstrap</span></div><a class="project-resource-link" href="#home"><span>View Portfolio</span><i class="bi bi-arrow-up-right"></i></a></article>
+<article class="project-resource-card project-green" data-project-card data-category="network"><div class="project-resource-icon"><i class="bi bi-router"></i></div><span class="project-resource-category">02 · NETWORK AUTOMATION</span><h3>MikroTik Configuration Generator</h3><p>Visual RouterOS configuration builder with validation, live script preview and downloadable RSC export.</p><div class="project-resource-tags"><span>RouterOS</span><span>Automation</span><span>GUI</span></div><a class="project-resource-link" href="{% url 'mikrotik_generator' %}"><span>Open Generator</span><i class="bi bi-arrow-up-right"></i></a></article>
+<article class="project-resource-card project-purple" data-project-card data-category="interactive"><div class="project-resource-icon"><i class="bi bi-code-slash"></i></div><span class="project-resource-category">03 · INTERACTIVE TOOL</span><h3>Algorithm Visual Studio</h3><p>Interactive data structure and algorithm lab with step animation, complexity analysis and multi-language code.</p><div class="project-resource-tags"><span>DSA</span><span>Visualizer</span><span>C++ · Python</span></div><a class="project-resource-link" href="{% url 'algorithm_studio' %}"><span>Open Studio</span><i class="bi bi-arrow-up-right"></i></a></article>
+<article class="project-resource-card project-orange" data-project-card data-category="planned"><div class="project-resource-icon"><i class="bi bi-diagram-3"></i></div><span class="project-resource-category">04 · IN DEVELOPMENT</span><h3>MikroLab Studio</h3><p>Planned visual lab for building topologies, configuring RouterOS devices and practicing packet flow and troubleshooting.</p><div class="project-resource-tags"><span>RouterOS</span><span>Simulator</span><span>Visual Lab</span></div><span class="project-resource-link project-link-disabled"><span>Coming Soon</span><i class="bi bi-clock-history"></i></span></article>
+<article class="project-resource-card project-cyan" data-project-card data-category="web"><div class="project-resource-icon"><i class="bi bi-truck-front"></i></div><span class="project-resource-category">05 · LIVE WEB APPLICATION</span><h3>Hasoryx Transport Agency</h3><p>A transport agency web application designed to present transport services, support customer enquiries and provide a professional digital presence.</p><div class="project-resource-tags"><span>Django</span><span>Web Development</span><span>Responsive UI</span></div><a class="project-resource-link" href="https://hasoryx-transport-agency.onrender.com/" target="_blank" rel="noopener noreferrer"><span>Visit Website</span><i class="bi bi-arrow-up-right"></i></a></article>
+<article class="project-resource-card project-yellow" data-project-card data-category="network"><div class="project-resource-icon"><i class="bi bi-activity"></i></div><span class="project-resource-category">06 · PRIVATE NETWORK TOOL</span><h3>OLT Monitoring Dashboard</h3><p>Private multi-vendor monitoring for Huawei, VSOL, CDATA and other OLTs, with PON/ONU status and recent online/offline events.</p><div class="project-resource-tags"><span>OLT / ONU</span><span>SNMP / SSH</span><span>Django</span></div><a class="project-resource-link" href="{% url 'olt_monitoring_dashboard' %}"><span>Open Dashboard</span><i class="bi bi-arrow-up-right"></i></a></article>
+</div></div></div></section>
 
 
 
