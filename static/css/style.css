@@ -2611,3 +2611,24 @@ input, select, textarea { min-width: 0; }
 @media(max-width:767.98px){#projects .projects-heading-row{align-items:flex-start}#projects .projects-count{min-width:95px;padding-left:16px}#projects .projects-count strong{font-size:30px}#projects .projects-toolbar{padding:9px}#projects .projects-filters{width:100%}#projects .project-filter{flex:1 1 auto;padding:9px 8px;font-size:9px}#projects .projects-toolbar-note{display:none}#projects .projects-display-title{letter-spacing:-1px}}
 @media(max-width:479.98px){#projects .projects-heading-row{display:block}#projects .projects-count{display:inline-block;margin-top:18px}#projects .project-resource-card{flex-basis:235px!important}}
 @media(prefers-reduced-motion:reduce){#projects .project-resource-rail{scroll-behavior:auto}#projects .project-resource-card{transition:none}}
+
+
+/* PROJECT TECHNOLOGY TAGS: improve readability */
+#projects .project-resource-tags { gap: 7px; margin-top: 2px; margin-bottom: 20px; }
+#projects .project-resource-tags span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 6px 9px;
+    color: #e2e8f0;
+    background: rgba(148,163,184,.11);
+    border: 1px solid rgba(148,163,184,.28);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: .1px;
+}
+@media (max-width: 479.98px) {
+    #projects .project-resource-tags span { font-size: 10px; padding: 6px 8px; }
+}
