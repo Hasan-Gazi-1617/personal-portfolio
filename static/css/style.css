@@ -2470,3 +2470,85 @@ input, select, textarea { min-width: 0; }
     .projects-count { display: inline-flex; margin-top: 18px; }
     .project-filter { font-size: 10px; }
 }
+
+
+/* HORIZONTAL PROJECT SHOWCASE + VISIBLE SCROLL CUE */
+.projects-scroll-guide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: -8px 0 14px;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+.projects-scroll-guide > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+.projects-scroll-guide > span i { color: var(--accent); font-size: 14px; }
+.projects-scroll-controls { display: flex; gap: 8px; }
+.projects-scroll-button {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(20,184,166,.32);
+    border-radius: 9px;
+    background: rgba(20,184,166,.08);
+    color: var(--accent-light);
+    transition: background .2s ease, transform .2s ease;
+}
+.projects-scroll-button:hover {
+    background: rgba(20,184,166,.18);
+    transform: translateY(-2px);
+}
+.featured-tools-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1.5rem !important;
+    margin: 0;
+    padding: 4px 2px 22px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(148,163,184,.16);
+    -webkit-overflow-scrolling: touch;
+}
+.featured-tools-grid::-webkit-scrollbar { height: 9px; }
+.featured-tools-grid::-webkit-scrollbar-track {
+    background: rgba(148,163,184,.13);
+    border-radius: 20px;
+}
+.featured-tools-grid::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border: 2px solid #111c2e;
+    border-radius: 20px;
+}
+.featured-tools-grid > .featured-tool-column {
+    flex: 0 0 calc((100% - 3rem) / 3);
+    width: calc((100% - 3rem) / 3);
+    max-width: none;
+    padding: 0;
+    scroll-snap-align: start;
+}
+.featured-tool-column[hidden] { display: none !important; }
+@media (max-width: 991.98px) {
+    .featured-tools-grid > .featured-tool-column {
+        flex-basis: calc((100% - 1.5rem) / 2);
+        width: calc((100% - 1.5rem) / 2);
+    }
+}
+@media (max-width: 767.98px) {
+    .projects-scroll-guide { font-size: 10px; }
+    .featured-tools-grid > .featured-tool-column {
+        flex-basis: min(84vw, 340px);
+        width: min(84vw, 340px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .featured-tools-grid { scroll-behavior: auto; }
+}
