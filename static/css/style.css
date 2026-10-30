@@ -3093,3 +3093,33 @@ input, select, textarea { min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
     #experience .experience-previous-card { transition: none; }
 }
+
+
+/* EXPERIENCE V2: IMPROVE READABILITY */
+#experience.experience-v2 .experience-eyebrow { font-size: 11px !important; }
+#experience.experience-v2 .experience-v2-heading > p { font-size: 14px !important; line-height: 1.8 !important; }
+#experience.experience-v2 .experience-status { font-size: 10px !important; }
+#experience.experience-v2 .experience-period,
+#experience.experience-v2 .experience-previous-meta { font-size: 11px !important; }
+#experience.experience-v2 .experience-role-row h3 { font-size: clamp(22px, 2.5vw, 28px) !important; }
+#experience.experience-v2 .experience-company { font-size: 14px !important; line-height: 1.6 !important; }
+#experience.experience-v2 .experience-summary { font-size: 14px !important; line-height: 1.85 !important; }
+#experience.experience-v2 .experience-focus > span,
+#experience.experience-v2 .experience-previous-heading > span { font-size: 10px !important; }
+#experience.experience-v2 .experience-focus-grid > div { min-height: 88px; }
+#experience.experience-v2 .experience-focus-grid > div > b { font-size: 10px !important; }
+#experience.experience-v2 .experience-focus-grid strong { font-size: 13px !important; line-height: 1.5 !important; }
+#experience.experience-v2 .experience-focus-grid small { font-size: 12px !important; line-height: 1.7 !important; }
+#experience.experience-v2 .experience-previous-card h3 { font-size: 18px !important; }
+#experience.experience-v2 .experience-previous-card h4 { font-size: 13px !important; line-height: 1.6 !important; }
+#experience.experience-v2 .experience-previous-card li { font-size: 13px !important; line-height: 1.75 !important; }
+#experience.experience-v2 .experience-tags span { font-size: 10px !important; padding: 6px 9px !important; }
+@media (max-width: 600px) {
+  #experience.experience-v2 .experience-v2-heading h2 { font-size: 30px !important; }
+  #experience.experience-v2 .experience-v2-heading > p { font-size: 13px !important; }
+  #experience.experience-v2 .experience-company { font-size: 13px !important; }
+  #experience.experience-v2 .experience-summary { font-size: 13px !important; }
+  #experience.experience-v2 .experience-focus-grid strong { font-size: 13px !important; }
+  #experience.experience-v2 .experience-focus-grid small { font-size: 12px !important; }
+  #experience.experience-v2 .experience-previous-card li { font-size: 13px !important; }
+}
