@@ -13,7 +13,7 @@ DEFAULT_PUBLIC_EMAIL = "mh.jewel.1617@gmail.com"
 # against PRIVATE_NAV_LINKS_JSON so the search opens the existing configured login page.
 OLT_LOCATION_MAP = [
     ("OLT 10", "VSOL", [
-        ("Rikabibazar", 1), ("Kazitula", 2), ("Mirzajangal", 4),
+        ("Rikabibazar", 1), ("Kazitula", 2), ("Mirzajangal", 4),("Kalighat", 8),
     ]),
     ("OLT 11", "VSOL-OLD", [
         ("Muttalib Villa", 1), ("Kazi Elias", 2), ("Kalighat Old", 3), ("Kalighat New", 4),
