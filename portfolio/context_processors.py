@@ -41,7 +41,7 @@ OLT_LOCATION_MAP = [
         ("Mejortila", 1), ("Khadimpara", 2), ("Surmagate, Doloipara", 3),
     ]),
     ("OLT 18", "C-DATA", [
-        ("Akhalia, Surma Abashik", 1), ("Mahmudabad- Chorugaw, Shahebergaw", 2),
+        ("Akhalia, Surma Abashik", 1), ("Mahmudabad-Chorugaw",2),("Shahebergaw", 2),("Kumargaw", 2),
         ("Thanabari", 3), ("Shining City", 3), ("Taker Bari", 3), ("Shiber Bazar", 3), ("Badaghat", 3), ("Haydorpur", 4),("Khaligaw", 4),
         ("N. Khurumkhola", 5), ("Uttorpirpur", 5), ("Pirpur", 6),
         ("Tukerbazar", 7), ("Shahpur", 7), ("Tukergaw", 8), ("Nuagaw", 8),
