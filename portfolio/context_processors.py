@@ -35,7 +35,7 @@ OLT_LOCATION_MAP = [
     ("OLT 16", "C-DATA", [
         ("Modinamarket-Pathantula", 1), ("Bagbari", 2), ("Sagordighirpar", 3),
         ("Kalibari", 4), ("Neharipara", 5), ("Borobari", 6),
-        ("Shamimabad", 7), ("Nobabroad", 8),
+        ("Shamimabad", 7), ("Nobabroad", 8),("Gashitula-Beterbazar", 8),
     ]),
     ("OLT 17", "C-DATA", [
         ("Mejortila", 1), ("Khadimpara", 2), ("Surmagate, Doloipara", 3),
