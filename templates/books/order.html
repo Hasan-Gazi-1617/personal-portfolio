@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Purchase {{ book.title }} | Book Library{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
+{% block content %}<section class="book-shell container"><div class="book-form-card"><span class="book-eyebrow">SECURE ORDER SUBMISSION</span><h1>Buy {{ book.title }}</h1><p>Book price: <strong>৳{{ book.price }}</strong></p><div class="bkash-instructions"><strong>bKash Payment</strong><p>Send ৳{{ book.price }} to <strong>{{ bkash_number|default:"bKash number will be published soon" }}</strong>. Use the correct amount and enter the Transaction ID below.</p></div><form method="post">{% csrf_token %}{{ form.as_p }}<button class="book-btn" type="submit">Submit Payment Details</button></form><p class="book-hint">Your order remains pending until the payment is checked by the administrator.</p></div></section>{% endblock %}
