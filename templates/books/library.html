@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Book Library | Hasan{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
+{% block content %}<section class="book-shell container"><div class="book-hero"><span class="book-eyebrow">READ • LEARN • GROW</span><h1>Book Library</h1><p>Explore the collection, read the first five pages for free, and purchase your digital copy.</p></div><div class="book-grid">{% for book in books %}<article class="book-card">{% if book.cover %}<img src="{{ book.cover.url }}" alt="{{ book.title }} cover">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}<div class="book-card-body">{% if book.category %}<small>{{ book.category.name }}</small>{% endif %}<h2>{{ book.title }}</h2><p>{{ book.author|default:"Independent publication" }}</p><strong>৳{{ book.price }}</strong><a class="book-btn" href="{% url 'books:detail' book.slug %}">View Book</a></div></article>{% empty %}<p>No books have been published yet. Please check back soon.</p>{% endfor %}</div></section>{% endblock %}
