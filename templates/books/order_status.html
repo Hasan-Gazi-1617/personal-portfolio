@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Order Status | Book Library{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
+{% block content %}<section class="book-shell container"><div class="book-form-card"><span class="book-eyebrow">ORDER RECEIPT</span><h1>Payment {{ order.get_status_display }}</h1><p>Order reference: <strong>{{ order.order_code }}</strong></p><p>Book: {{ order.book.title }}</p><p>Amount: ৳{{ order.amount }}</p><p>Transaction ID: {{ order.transaction_id }}</p>{% if order.status == "approved" %}<a class="book-btn" href="{% url 'books:download' order.order_code %}">Download Full Book</a>{% elif order.status == "rejected" %}<p>Your payment could not be verified. Please contact the site administrator.</p>{% else %}<p>Your payment details have been received. Download will be enabled after manual bKash verification.</p>{% endif %}<a class="book-back" href="{% url 'books:library' %}">Return to Library</a></div></section>{% endblock %}
