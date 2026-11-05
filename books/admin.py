@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.conf import settings
+from django.core.mail import send_mail
+from django.urls import reverse
 from .models import Book, BookCategory, BookOrder
 
 
@@ -19,7 +22,19 @@ class BookAdmin(admin.ModelAdmin):
 
 @admin.action(description="Approve selected orders after verifying bKash payment")
 def approve_orders(modeladmin, request, queryset):
-    queryset.filter(status=BookOrder.Status.PENDING).update(status=BookOrder.Status.APPROVED, verified_at=timezone.now())
+    pending = list(queryset.filter(status=BookOrder.Status.PENDING).select_related("book"))
+    for order in pending:
+        order.status = BookOrder.Status.APPROVED
+        order.verified_at = timezone.now()
+        order.save(update_fields=("status", "verified_at"))
+        download_url = f"{settings.BOOKSTORE_SITE_URL}{reverse('books:download', args=[order.order_code])}"
+        send_mail(
+            subject=f"Your book is ready: {order.book.title}",
+            message=f"Hello {order.customer_name},\n\nYour bKash payment has been verified. Download your book here:\n{download_url}\n\nThank you.",
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[order.customer_email],
+            fail_silently=True,
+        )
 
 
 @admin.action(description="Reject selected pending orders")
