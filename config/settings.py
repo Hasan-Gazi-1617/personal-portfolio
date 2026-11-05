@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'portfolio',
+    'books',
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,7 @@ DATABASES = {
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
         conn_health_checks=True,
+        ssl_require=True,
     )
 }
 
@@ -176,6 +178,9 @@ if not DEBUG:
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f'https://{render_hostname}')
+
+BOOKSTORE_BKASH_NUMBER = os.environ.get('BOOKSTORE_BKASH_NUMBER', '')
+BOOKSTORE_SITE_URL = os.environ.get('BOOKSTORE_SITE_URL', 'https://personal-portfolio-069p.onrender.com')
 
 LOGIN_URL = "tki_login"
 LOGIN_REDIRECT_URL = "tki_dashboard"
