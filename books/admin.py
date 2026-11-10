@@ -18,6 +18,18 @@ class BookAdmin(admin.ModelAdmin):
     list_filter = ("is_published", "category")
     search_fields = ("title", "author")
     prepopulated_fields = {"slug": ("title",)}
+    fieldsets = (
+        ("Book information", {
+            "fields": ("title", "slug", "author", "category", "description", "price", "is_published"),
+        }),
+        ("Book files", {
+            "fields": ("cover", "preview_pdf", "full_pdf"),
+            "description": (
+                "Cover and preview can be committed to GitHub static folders using the book slug. "
+                "The full PDF must remain in private persistent storage and must never be placed in a public repository."
+            ),
+        }),
+    )
 
 
 @admin.action(description="Approve selected orders after verifying bKash payment")
