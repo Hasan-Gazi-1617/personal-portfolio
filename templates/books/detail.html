@@ -22,7 +22,7 @@
         <span class="book-payment-mark"><i class="bi bi-phone"></i> bKash</span>
       </div>
       <div class="book-actions book-actions-premium">
-        {% if book.preview_available %}<a class="book-btn" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-book-open"></i> Read 5-page free preview</a>{% endif %}
+        {% if book.preview_available %}<a class="book-btn book-btn-preview" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-book-open"></i> Read 5-page free preview</a>{% else %}<span class="book-btn book-btn-preview book-btn-disabled" aria-disabled="true" title="Upload the preview PDF to GitHub first"><i class="bi bi-file-earmark-pdf"></i> Free preview coming soon</span>{% endif %}
         <a class="book-btn book-btn-outline" href="{% url 'books:order' book.slug %}"><i class="bi bi-bag-check"></i> Get the full book</a>
       </div>
       <div class="book-purchase-note"><strong><i class="bi bi-info-circle"></i> How your purchase works</strong><p>Read the first five pages free. To buy the complete book, pay through bKash and submit your Transaction ID. The payment is checked manually. Once approved, you can read the full PDF in your browser and download it using the PDF viewer.</p></div>

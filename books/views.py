@@ -4,6 +4,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import SuspiciousFileOperation
+from django.contrib.staticfiles import finders
 from django.core.mail import send_mail
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -67,11 +68,13 @@ def preview_pdf(request, slug):
             preview_file = None
 
     if preview_file is None:
-        preview_path = Path(settings.BASE_DIR) / "static" / "books" / "previews" / f"{book.slug}.pdf"
+        preview_path = finders.find(f"books/previews/{book.slug}.pdf")
+        if not preview_path:
+            raise Http404("Preview PDF is unavailable. Upload the first-five-page PDF to static/books/previews using the exact book slug as its filename.")
         try:
-            preview_file = preview_path.open("rb")
+            preview_file = open(preview_path, "rb")
         except OSError:
-            raise Http404("Preview PDF is unavailable. Add it to static/books/previews using the book slug as its filename.")
+            raise Http404("Preview PDF could not be opened.")
 
     return FileResponse(
         preview_file,

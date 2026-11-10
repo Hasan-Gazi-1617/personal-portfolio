@@ -54,6 +54,7 @@
         <h2><a href="{% url 'books:detail' book.slug %}">{{ book.title }}</a></h2>
         <p class="book-card-author">By {{ book.author|default:"Independent publication" }}</p>
         <div class="book-card-bottom"><strong>৳{{ book.price }}</strong><a class="book-card-link" href="{% url 'books:detail' book.slug %}">View book <i class="bi bi-arrow-right"></i></a></div>
+        {% if book.preview_available %}<a class="book-card-preview" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-book-open"></i> Read free preview</a>{% else %}<span class="book-card-preview book-card-preview-disabled"><i class="bi bi-clock"></i> Preview coming soon</span>{% endif %}
       </div>
     </article>
     {% empty %}
