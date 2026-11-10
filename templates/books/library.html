@@ -3,39 +3,65 @@
 {% block title %}Book Library | Hasan{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
 {% block content %}
-<section class="book-shell">
-  <header class="book-hero">
-    <span class="book-eyebrow"><i class="bi bi-book-half"></i> READ · LEARN · GROW</span>
-    <h1>Book Library</h1>
-    <p>A growing collection of practical guides and learning resources. Explore a book, read its opening five pages for free, then purchase the complete digital edition whenever you are ready.</p>
+<section class="book-shell book-library-page">
+  <header class="book-hero book-hero-premium">
+    <div class="book-hero-copy">
+      <span class="book-eyebrow"><i class="bi bi-book-half"></i> THE DIGITAL BOOKSHELF</span>
+      <h1>Knowledge worth <span>keeping.</span></h1>
+      <p>Practical books and technical guides, created to help you learn with clarity. Explore each title, read the first five pages free, and get the complete edition after payment verification.</p>
+      <div class="book-hero-points">
+        <span><i class="bi bi-check-circle-fill"></i> 5-page free preview</span>
+        <span><i class="bi bi-check-circle-fill"></i> bKash payment</span>
+        <span><i class="bi bi-check-circle-fill"></i> Full PDF after approval</span>
+      </div>
+    </div>
+    <div class="book-hero-art" aria-hidden="true">
+      <span class="book-art-orbit book-art-orbit-one"></span>
+      <span class="book-art-orbit book-art-orbit-two"></span>
+      <div class="book-art-book"><i class="bi bi-journal-richtext"></i><span>READ<br>AND<br>GROW</span></div>
+      <span class="book-art-spark book-art-spark-one"><i class="bi bi-stars"></i></span>
+      <span class="book-art-spark book-art-spark-two"><i class="bi bi-bookmark-star"></i></span>
+    </div>
   </header>
-  <div class="book-benefits" aria-label="How the library works">
-    <div class="book-benefit"><i class="bi bi-eye"></i><div><strong>Free preview</strong><small>Read the first five pages</small></div></div>
-    <div class="book-benefit"><i class="bi bi-phone"></i><div><strong>Simple bKash payment</strong><small>No customer account required</small></div></div>
-    <div class="book-benefit"><i class="bi bi-shield-check"></i><div><strong>Verified download</strong><small>Full PDF after payment review</small></div></div>
+
+  <div class="book-benefits book-benefits-premium" aria-label="How the library works">
+    <div class="book-benefit"><span class="book-benefit-icon"><i class="bi bi-eye"></i></span><div><strong>Read before you buy</strong><small>Preview the opening five pages free</small></div></div>
+    <div class="book-benefit"><span class="book-benefit-icon"><i class="bi bi-phone"></i></span><div><strong>Easy bKash checkout</strong><small>No customer account required</small></div></div>
+    <div class="book-benefit"><span class="book-benefit-icon"><i class="bi bi-shield-check"></i></span><div><strong>Verified access</strong><small>Full book after manual approval</small></div></div>
+  </div>
+
+  <div class="book-section-heading">
+    <div><span class="book-section-kicker">EXPLORE THE COLLECTION</span><h2>Bookshelf</h2></div>
+    <span class="book-result-count" id="book-result-count" aria-live="polite">{{ books|length }} title{{ books|length|pluralize }} available</span>
   </div>
   <div class="book-toolbar">
-    <label class="book-search"><i class="bi bi-search"></i><input id="book-search" type="search" placeholder="Search by book title, author or category..." aria-label="Search books"></label>
-    <span class="book-result-count" id="book-result-count" aria-live="polite">{{ books|length }} book{{ books|length|pluralize }} available</span>
+    <label class="book-search"><i class="bi bi-search"></i><input id="book-search" type="search" placeholder="Search title, author or category..." aria-label="Search books"></label>
+    <span class="book-toolbar-note"><i class="bi bi-arrow-down-up"></i> Browse the available titles</span>
   </div>
-  <div class="book-grid" id="book-grid">
+
+  <div class="book-grid book-grid-premium" id="book-grid">
     {% for book in books %}
-    <article class="book-card" data-book-card data-search="{{ book.title|lower }} {{ book.author|lower }} {% if book.category %}{{ book.category.name|lower }}{% endif %}">
-      {% if book.cover_url %}<img src="{{ book.cover_url }}" alt="{{ book.title }} cover" loading="lazy">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}
+    <article class="book-card book-card-premium" data-book-card data-search="{{ book.title|lower }} {{ book.author|lower }} {% if book.category %}{{ book.category.name|lower }}{% endif %}">
+      <a class="book-cover-link" href="{% url 'books:detail' book.slug %}" aria-label="Explore {{ book.title }}">
+        {% if book.cover_url %}<img src="{{ book.cover_url }}" alt="{{ book.title }} cover" loading="lazy">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book-half"></i><span>BOOK COVER</span></div>{% endif %}
+        <span class="book-cover-overlay"><i class="bi bi-arrow-up-right"></i></span>
+      </a>
       <div class="book-card-body">
-        {% if book.category %}<small>{{ book.category.name }}</small>{% else %}<small>Digital publication</small>{% endif %}
-        <h2>{{ book.title }}</h2>
-        <p>{{ book.author|default:"Independent publication" }}</p>
-        <strong>৳{{ book.price }}</strong>
-        <a class="book-btn" href="{% url 'books:detail' book.slug %}">Explore book <i class="bi bi-arrow-up-right"></i></a>
+        <div class="book-card-meta">
+          <small>{% if book.category %}{{ book.category.name }}{% else %}DIGITAL EDITION{% endif %}</small>
+          <span><i class="bi bi-file-earmark-pdf"></i> PDF</span>
+        </div>
+        <h2><a href="{% url 'books:detail' book.slug %}">{{ book.title }}</a></h2>
+        <p class="book-card-author">By {{ book.author|default:"Independent publication" }}</p>
+        <div class="book-card-bottom"><strong>৳{{ book.price }}</strong><a class="book-card-link" href="{% url 'books:detail' book.slug %}">View book <i class="bi bi-arrow-right"></i></a></div>
       </div>
     </article>
     {% empty %}
-    <div class="book-empty" id="book-empty"><i class="bi bi-journal-bookmark"></i><h2>The library is getting ready</h2><p>New digital books will appear here as soon as they are published. Please check back soon.</p></div>
+    <div class="book-empty" id="book-empty"><i class="bi bi-journal-bookmark"></i><h2>Your next read is on its way</h2><p>New books and technical guides will appear here soon. Please check back later.</p></div>
     {% endfor %}
     <div class="book-empty" id="book-no-results" hidden><i class="bi bi-search"></i><h2>No matching books</h2><p>Try another title, author or category.</p></div>
   </div>
-  <footer class="book-page-footer">Every purchase is reviewed manually. Your full digital copy becomes available after the bKash payment is verified.</footer>
+  <footer class="book-page-footer book-page-footer-premium"><i class="bi bi-lock"></i> Every payment is reviewed manually. Your complete PDF becomes available only after bKash verification.</footer>
 </section>
 <script>
 (function(){
@@ -47,7 +73,7 @@
   input.addEventListener('input',function(){
     const q=this.value.trim().toLowerCase();let visible=0;
     cards.forEach(card=>{const match=card.dataset.search.includes(q);card.hidden=!match;if(match)visible++;});
-    if(count)count.textContent=visible+' book'+(visible===1?'':'s')+' found';
+    if(count)count.textContent=visible+' title'+(visible===1?'':'s')+' found';
     if(empty)empty.hidden=visible!==0||cards.length===0;
   });
 })();

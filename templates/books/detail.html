@@ -3,26 +3,35 @@
 {% block title %}{{ book.title }} | Book Library{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
 {% block content %}
-<section class="book-shell">
-  <a class="book-back" href="{% url 'books:library' %}"><i class="bi bi-arrow-left"></i> Back to Library</a>
-  <div class="book-detail">
-    {% if book.cover_url %}<img src="{{ book.cover_url }}" alt="{{ book.title }} cover">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}
-    <div>
-      <span class="book-eyebrow"><i class="bi bi-book-half"></i> DIGITAL BOOK</span>
+<section class="book-shell book-detail-page">
+  <a class="book-back" href="{% url 'books:library' %}"><i class="bi bi-arrow-left"></i> Back to bookshelf</a>
+  <div class="book-detail book-detail-premium">
+    <div class="book-detail-cover-wrap">
+      <span class="book-detail-cover-label"><i class="bi bi-book-half"></i> DIGITAL EDITION</span>
+      {% if book.cover_url %}<img class="book-detail-cover" src="{{ book.cover_url }}" alt="{{ book.title }} cover">{% else %}<div class="book-cover-placeholder book-detail-cover"><i class="bi bi-book-half"></i><span>BOOK COVER</span></div>{% endif %}
+      <div class="book-cover-caption"><i class="bi bi-file-earmark-pdf"></i> PDF BOOK · INSTANT ONLINE ACCESS AFTER APPROVAL</div>
+    </div>
+    <div class="book-detail-content">
+      <span class="book-eyebrow"><i class="bi bi-stars"></i> FEATURED PUBLICATION</span>
       <h1>{{ book.title }}</h1>
-      <p class="book-author">By {{ book.author|default:"Independent publication" }}{% if book.category %} · {{ book.category.name }}{% endif %}</p>
-      {% if book.description %}<p>{{ book.description|linebreaksbr }}</p>{% else %}<p>This digital publication is available to read as a free opening preview or purchase as a complete PDF edition.</p>{% endif %}
-      <div class="book-detail-price">৳{{ book.price }}</div>
-      <div class="book-actions">
-        {% if book.preview_available %}<a class="book-btn" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> Read free preview</a>{% endif %}
-        <a class="book-btn book-btn-outline" href="{% url 'books:order' book.slug %}"><i class="bi bi-bag-check"></i> Buy digital copy</a>
+      <p class="book-author">By {{ book.author|default:"Independent publication" }}{% if book.category %}<span class="book-detail-dot">·</span>{{ book.category.name }}{% endif %}</p>
+      <div class="book-detail-divider"></div>
+      {% if book.description %}<div class="book-description">{{ book.description|linebreaksbr }}</div>{% else %}<p class="book-description">Explore the opening pages for free. Purchase the complete digital edition when you are ready.</p>{% endif %}
+      <div class="book-detail-purchase">
+        <div><span class="book-price-label">COMPLETE DIGITAL EDITION</span><div class="book-detail-price">৳{{ book.price }}</div></div>
+        <span class="book-payment-mark"><i class="bi bi-phone"></i> bKash</span>
       </div>
-      <div class="book-purchase-note"><strong>How it works:</strong> Read the opening five pages at no cost. To purchase, send the listed amount through bKash and submit your Transaction ID. After manual verification, the full PDF download is enabled and a download link is sent to your email.</div>
-      <ul class="book-steps">
-        <li><b>1</b><span>Preview the first five pages before buying.</span></li>
-        <li><b>2</b><span>Complete the bKash payment and submit your details.</span></li>
-        <li><b>3</b><span>Wait for payment verification. Your full download will then be available.</span></li>
-      </ul>
+      <div class="book-actions book-actions-premium">
+        {% if book.preview_available %}<a class="book-btn" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-book-open"></i> Read 5-page free preview</a>{% endif %}
+        <a class="book-btn book-btn-outline" href="{% url 'books:order' book.slug %}"><i class="bi bi-bag-check"></i> Get the full book</a>
+      </div>
+      <div class="book-purchase-note"><strong><i class="bi bi-info-circle"></i> How your purchase works</strong><p>Read the first five pages free. To buy the complete book, pay through bKash and submit your Transaction ID. The payment is checked manually. Once approved, you can read the full PDF in your browser and download it using the PDF viewer.</p></div>
+      <ol class="book-steps book-steps-premium">
+        <li><b>01</b><span><strong>Preview</strong>Read the first five pages before purchasing.</span></li>
+        <li><b>02</b><span><strong>Pay with bKash</strong>Submit your payment Transaction ID.</span></li>
+        <li><b>03</b><span><strong>Read the complete book</strong>Full PDF access opens after payment approval.</span></li>
+      </ol>
+      <div class="book-secure-note"><i class="bi bi-shield-lock"></i> Full book access is protected and enabled only after payment verification.</div>
     </div>
   </div>
 </section>
