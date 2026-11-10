@@ -90,4 +90,4 @@ def download_pdf(request, code):
         full_file = order.book.full_pdf.open("rb")
     except (OSError, ValueError, SuspiciousFileOperation):
         raise Http404("Book file is unavailable on the server. Please contact the administrator.")
-    return FileResponse(full_file, as_attachment=True, filename=f"{order.book.slug}.pdf", content_type="application/pdf")
+    return FileResponse(full_file, as_attachment=False, filename=f"{order.book.slug}.pdf", content_type="application/pdf")
