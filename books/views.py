@@ -1,4 +1,6 @@
 import mimetypes
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import SuspiciousFileOperation
@@ -8,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+
 from .forms import BookOrderForm
 from .models import Book, BookOrder
 
@@ -52,9 +55,29 @@ def order_status(request, code):
 
 def preview_pdf(request, slug):
     book = get_object_or_404(Book, slug=slug, is_published=True)
-    if not book.preview_pdf:
-        raise Http404("Preview is not available.")
-    return FileResponse(book.preview_pdf.open("rb"), content_type="application/pdf", filename=f"{book.slug}-preview.pdf")
+
+    # Prefer the Admin-uploaded file when it is available. Render's local
+    # filesystem is ephemeral, so also support a preview committed to GitHub
+    # at static/books/previews/<book-slug>.pdf.
+    preview_file = None
+    if book.preview_pdf:
+        try:
+            preview_file = book.preview_pdf.open("rb")
+        except (OSError, ValueError, SuspiciousFileOperation):
+            preview_file = None
+
+    if preview_file is None:
+        preview_path = Path(settings.BASE_DIR) / "static" / "books" / "previews" / f"{book.slug}.pdf"
+        try:
+            preview_file = preview_path.open("rb")
+        except OSError:
+            raise Http404("Preview PDF is unavailable. Add it to static/books/previews using the book slug as its filename.")
+
+    return FileResponse(
+        preview_file,
+        content_type="application/pdf",
+        filename=f"{book.slug}-preview.pdf",
+    )
 
 
 def download_pdf(request, code):
@@ -63,4 +86,8 @@ def download_pdf(request, code):
         raise Http404("This download is not available until payment is approved.")
     if not order.book.full_pdf:
         raise Http404("Book file is unavailable.")
-    return FileResponse(order.book.full_pdf.open("rb"), as_attachment=True, filename=f"{order.book.slug}.pdf", content_type="application/pdf")
+    try:
+        full_file = order.book.full_pdf.open("rb")
+    except (OSError, ValueError, SuspiciousFileOperation):
+        raise Http404("Book file is unavailable on the server. Please contact the administrator.")
+    return FileResponse(full_file, as_attachment=True, filename=f"{order.book.slug}.pdf", content_type="application/pdf")
