@@ -15,8 +15,9 @@
     <div class="book-status-list"><span>Payment status</span><strong><span class="book-status-pill">{{ order.get_status_display }}</span></strong></div>
     {% if order.status == "approved" %}
       <p>Your bKash payment has been verified. Your full digital book is ready.</p>
-      <a class="book-btn" href="{% url 'books:download' order.order_code %}"><i class="bi bi-download"></i> Download full book</a>
-      <p class="book-hint">A download link has also been sent to your email address.</p>
+      <a class="book-btn" href="{% url 'books:download' order.order_code %}" target="_blank" rel="noopener"><i class="bi bi-book-half"></i> Read full book</a>
+      <p class="book-hint">The PDF opens in your browser after approval. You can use the PDF viewer controls to download or print it.</p>
+      <p class="book-hint">A secure access link has also been sent to your email address.</p>
     {% elif order.status == "rejected" %}
       <p>The submitted payment could not be verified. Please review your Transaction ID and contact the website administrator before submitting another payment.</p>
     {% else %}
