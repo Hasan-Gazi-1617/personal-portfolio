@@ -545,14 +545,20 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
 <!-- OLT SEARCH READABILITY OVERRIDES -->
 <style>
-    /* Position the brand against the viewport, not the centered content container. */
+    /* Flush the desktop brand logo against the viewport's left edge. */
     @media (min-width: 1200px) {
-        .navbar-custom > .container > .brand-logo {
+        .navbar-custom {
             position: fixed;
-            left: 28px;
-            top: 24px;
+        }
+
+        .navbar-custom > .container > .brand-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
             margin: 0;
-            transform: none;
+            padding-left: 0;
+            transform: translateY(-50%);
+            z-index: 5;
         }
     }
 
