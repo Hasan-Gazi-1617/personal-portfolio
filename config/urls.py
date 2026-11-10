@@ -11,3 +11,5 @@ urlpatterns = [
     path('', include('portfolio.urls')),
 ]
 
+if settings.DEBUG and not all((settings.R2_ACCESS_KEY_ID, settings.R2_SECRET_ACCESS_KEY, settings.R2_BUCKET_NAME, settings.R2_ENDPOINT_URL)):
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
