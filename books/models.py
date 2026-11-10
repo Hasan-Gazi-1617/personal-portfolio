@@ -53,18 +53,22 @@ class Book(models.Model):
 
     @property
     def cover_url(self):
+        # Prefer the repository-managed static cover. Render's local media
+        # filesystem is ephemeral, so an Admin-uploaded cover can become stale
+        # after a deploy or restart.
+        static_dir = Path(settings.BASE_DIR) / "static" / "images" / "books"
+        for extension in ("webp", "jpg", "jpeg", "png"):
+            filename = f"{self.slug}.{extension}"
+            if (static_dir / filename).is_file():
+                return static(f"images/books/{filename}")
+
+        # Fall back to an Admin-uploaded cover only when the file is present.
         if self.cover:
             try:
                 if self.cover.storage.exists(self.cover.name):
                     return self.cover.url
             except (OSError, ValueError):
                 pass
-
-        static_dir = Path(settings.BASE_DIR) / "static" / "images" / "books"
-        for extension in ("webp", "jpg", "jpeg", "png"):
-            filename = f"{self.slug}.{extension}"
-            if (static_dir / filename).is_file():
-                return static(f"images/books/{filename}")
         return ""
 
     @property
