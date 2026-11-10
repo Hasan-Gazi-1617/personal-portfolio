@@ -2,4 +2,34 @@
 {% load static %}
 {% block title %}Purchase {{ book.title }} | Book Library{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
-{% block content %}<section class="book-shell container"><div class="book-form-card"><span class="book-eyebrow">SECURE ORDER SUBMISSION</span><h1>Buy {{ book.title }}</h1><p>Book price: <strong>৳{{ book.price }}</strong></p><div class="bkash-instructions"><strong>bKash Payment</strong><p>Send ৳{{ book.price }} to <strong>{{ bkash_number|default:"bKash number will be published soon" }}</strong>. Use the correct amount and enter the Transaction ID below.</p></div><form method="post">{% csrf_token %}{{ form.as_p }}<button class="book-btn" type="submit">Submit Payment Details</button></form><p class="book-hint">Your order remains pending until the payment is checked by the administrator.</p></div></section>{% endblock %}
+{% block content %}
+<section class="book-shell">
+  <a class="book-back" href="{% url 'books:detail' book.slug %}"><i class="bi bi-arrow-left"></i> Back to book</a>
+  <div class="book-form-card">
+    <span class="book-eyebrow"><i class="bi bi-shield-check"></i> ORDER DETAILS</span>
+    <h1>Get your digital copy</h1>
+    <p><strong>{{ book.title }}</strong>{% if book.author %} by {{ book.author }}{% endif %}</p>
+    <p>Amount to pay: <strong class="book-detail-price">৳{{ book.price }}</strong></p>
+    <div class="bkash-instructions">
+      <strong><i class="bi bi-phone"></i> Pay with bKash</strong>
+      {% if bkash_number %}
+      <p>Send exactly <strong>৳{{ book.price }}</strong> to the bKash number below. Then enter the Transaction ID in the form.</p>
+      <p class="bkash-number"><strong>{{ bkash_number }}</strong></p>
+      {% else %}
+      <p>The bKash payment number is not configured yet. Please do not send payment until the payment number is displayed here.</p>
+      {% endif %}
+    </div>
+    <ol class="book-steps">
+      <li><b>1</b><span>Send the exact book price using bKash.</span></li>
+      <li><b>2</b><span>Enter your name, email, phone number and bKash Transaction ID below.</span></li>
+      <li><b>3</b><span>Keep your order reference. We will verify the payment manually.</span></li>
+    </ol>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="book-btn" type="submit" {% if not bkash_number %}disabled title="Payment number is not configured yet"{% endif %}>Submit order details <i class="bi bi-arrow-right"></i></button>
+    </form>
+    <p class="book-hint">Your order will remain pending until the payment is verified. The full PDF download is enabled only after approval. No customer account is needed.</p>
+  </div>
+</section>
+{% endblock %}
