@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
+from django.contrib.staticfiles import finders
 from django.db import models
 from django.templatetags.static import static
 from django.utils import timezone
@@ -75,8 +76,7 @@ class Book(models.Model):
             except (OSError, ValueError):
                 pass
 
-        preview_path = Path(settings.BASE_DIR) / "static" / "books" / "previews" / f"{self.slug}.pdf"
-        return preview_path.is_file()
+        return bool(finders.find(f"books/previews/{self.slug}.pdf"))
 
 
 class BookOrder(models.Model):
