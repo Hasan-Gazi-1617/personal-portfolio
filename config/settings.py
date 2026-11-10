@@ -143,56 +143,14 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Use Cloudflare R2 for persistent uploads when its credentials are configured.
-# Without R2 settings, local development continues to use FileSystemStorage.
-R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID', '')
-R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY', '')
-R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME', '')
-R2_ENDPOINT_URL = os.environ.get('R2_ENDPOINT_URL', '')
-
-R2_SETTINGS = (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ENDPOINT_URL)
-if any(R2_SETTINGS) and not all(R2_SETTINGS):
-    from django.core.exceptions import ImproperlyConfigured
-    raise ImproperlyConfigured(
-        'Configure all four R2 variables: R2_ACCESS_KEY_ID, '
-        'R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_ENDPOINT_URL.'
-    )
-
-if all(R2_SETTINGS):
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
-    STORAGES = {
-        'default': {
-            'BACKEND': 'storages.backends.s3.S3Storage',
-            'OPTIONS': {
-                'access_key': R2_ACCESS_KEY_ID,
-                'secret_key': R2_SECRET_ACCESS_KEY,
-                'bucket_name': R2_BUCKET_NAME,
-                'endpoint_url': R2_ENDPOINT_URL,
-                'region_name': 'auto',
-                'default_acl': None,
-                'querystring_auth': True,
-                'querystring_expire': 3600,
-                'file_overwrite': False,
-                'signature_version': 's3v4',
-                'addressing_style': 'path',
-            },
-        },
-        'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-        },
-    }
-else:
-    STORAGES = {
-        'default': {
-            'BACKEND': 'django.core.files.storage.FileSystemStorage',
-        },
-        'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-        },
-    }
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
 # Email
