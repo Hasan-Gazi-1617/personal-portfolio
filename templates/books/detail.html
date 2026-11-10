@@ -2,4 +2,28 @@
 {% load static %}
 {% block title %}{{ book.title }} | Book Library{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
-{% block content %}<section class="book-shell container"><a class="book-back" href="{% url 'books:library' %}">← Back to Library</a><div class="book-detail">{% if book.cover %}<img src="{{ book.cover.url }}" alt="{{ book.title }} cover">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}<div><span class="book-eyebrow">DIGITAL BOOK</span><h1>{{ book.title }}</h1><p class="book-author">{{ book.author }}</p><p>{{ book.description|linebreaksbr }}</p><h2>৳{{ book.price }}</h2><div class="book-actions"><a class="book-btn" href="{% url 'books:preview' book.slug %}" target="_blank">Read Free Preview (5 pages)</a><a class="book-btn book-btn-outline" href="{% url 'books:order' book.slug %}">Buy Now</a></div><p class="book-hint">Pay via bKash and submit your Transaction ID. Full download is enabled after manual verification.</p></div></div></section>{% endblock %}
+{% block content %}
+<section class="book-shell">
+  <a class="book-back" href="{% url 'books:library' %}"><i class="bi bi-arrow-left"></i> Back to Library</a>
+  <div class="book-detail">
+    {% if book.cover %}<img src="{{ book.cover.url }}" alt="{{ book.title }} cover">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}
+    <div>
+      <span class="book-eyebrow"><i class="bi bi-book-half"></i> DIGITAL BOOK</span>
+      <h1>{{ book.title }}</h1>
+      <p class="book-author">By {{ book.author|default:"Independent publication" }}{% if book.category %} · {{ book.category.name }}{% endif %}</p>
+      {% if book.description %}<p>{{ book.description|linebreaksbr }}</p>{% else %}<p>This digital publication is available to read as a free opening preview or purchase as a complete PDF edition.</p>{% endif %}
+      <div class="book-detail-price">৳{{ book.price }}</div>
+      <div class="book-actions">
+        {% if book.preview_pdf %}<a class="book-btn" href="{% url 'books:preview' book.slug %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> Read free preview</a>{% endif %}
+        <a class="book-btn book-btn-outline" href="{% url 'books:order' book.slug %}"><i class="bi bi-bag-check"></i> Buy digital copy</a>
+      </div>
+      <div class="book-purchase-note"><strong>How it works:</strong> Read the opening five pages at no cost. To purchase, send the listed amount through bKash and submit your Transaction ID. After manual verification, the full PDF download is enabled and a download link is sent to your email.</div>
+      <ul class="book-steps">
+        <li><b>1</b><span>Preview the first five pages before buying.</span></li>
+        <li><b>2</b><span>Complete the bKash payment and submit your details.</span></li>
+        <li><b>3</b><span>Wait for payment verification. Your full download will then be available.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}
