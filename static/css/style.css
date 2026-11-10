@@ -3206,3 +3206,55 @@ html[data-theme="light"] #projects .project-resource-card:hover {
     border-color: var(--project-color) !important;
     box-shadow: 0 18px 38px rgba(21,128,61,.13) !important;
 }
+
+
+/* =========================================================
+   EXPERIENCE V2: COMPLETE LIGHT THEME
+   Explicitly overrides the dark editorial palette above.
+========================================================= */
+html[data-theme="light"] #experience.experience-v2{
+  background:linear-gradient(145deg,#f1faf4 0%,#e8f5ec 55%,#f7fcf8 100%)!important;
+  color:#173b29!important;
+}
+html[data-theme="light"] #experience.experience-v2 .section-number,
+html[data-theme="light"] #experience.experience-v2 .section-label{color:#168044!important}
+html[data-theme="light"] #experience.experience-v2 .experience-v2-heading h2,
+html[data-theme="light"] #experience.experience-v2 .experience-v2-heading h2 span{color:#123524!important}
+html[data-theme="light"] #experience.experience-v2 .experience-v2-heading>p{color:#496b59!important}
+html[data-theme="light"] #experience.experience-v2 .experience-eyebrow{color:#15803d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-current{
+  background:linear-gradient(130deg,#fff 0%,#f3fbf5 100%)!important;
+  border-color:rgba(21,128,61,.22)!important;
+  box-shadow:0 20px 48px rgba(21,128,61,.09)!important;
+}
+html[data-theme="light"] #experience.experience-v2 .experience-current:after{border-color:rgba(21,128,61,.10);box-shadow:0 0 0 28px rgba(21,128,61,.025),0 0 0 58px rgba(21,128,61,.018)}
+html[data-theme="light"] #experience.experience-v2 .experience-status{color:#15803d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-status i{background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.12)}
+html[data-theme="light"] #experience.experience-v2 .experience-period,
+html[data-theme="light"] #experience.experience-v2 .experience-previous-meta{color:#647b6c!important}
+html[data-theme="light"] #experience.experience-v2 .experience-role-row h3{color:#123524!important}
+html[data-theme="light"] #experience.experience-v2 .experience-company{color:#315844!important}
+html[data-theme="light"] #experience.experience-v2 .experience-company span{color:#15803d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-company-mark{color:#15803d!important;background:#e7f7ed!important;border-color:rgba(21,128,61,.2)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-summary{color:#456653!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus>span,
+html[data-theme="light"] #experience.experience-v2 .experience-previous-heading>span{color:#52715d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus-grid{border-top-color:rgba(21,128,61,.15)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus-grid>div{border-bottom-color:rgba(21,128,61,.12)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus-grid>div>b{color:#15803d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus-grid strong{color:#173b29!important}
+html[data-theme="light"] #experience.experience-v2 .experience-focus-grid small{color:#52715d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-heading i{background:rgba(21,128,61,.18)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card{
+  background:linear-gradient(145deg,#fff,#f5fbf6)!important;
+  border-color:rgba(21,128,61,.17)!important;
+  box-shadow:0 12px 30px rgba(21,128,61,.055)!important;
+}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card:hover{background:#fff!important;border-color:rgba(21,128,61,.38)!important;box-shadow:0 18px 38px rgba(21,128,61,.11)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-meta span:last-child{color:#7a9482!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card h3{color:#123524!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card h4{color:#15803d!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card li{color:#456653!important}
+html[data-theme="light"] #experience.experience-v2 .experience-previous-card li:before{background:#16a34a!important}
+html[data-theme="light"] #experience.experience-v2 .experience-tags{border-top-color:rgba(21,128,61,.14)!important}
+html[data-theme="light"] #experience.experience-v2 .experience-tags span{color:#286143!important;background:#eaf6ee!important;border-color:rgba(21,128,61,.16)!important}
