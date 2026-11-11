@@ -503,7 +503,7 @@ html[data-theme="light"] .footer-section {
 #projects .projects-count span{display:block;margin-top:10px;color:#91a5b9;font-size:9px;font-weight:800;letter-spacing:2px;line-height:1.6}
 #projects .projects-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 25px;padding:12px 14px;border:1px solid rgba(148,163,184,.15);border-radius:15px;background:rgba(14,27,44,.72);box-shadow:0 14px 38px rgba(0,0,0,.12);backdrop-filter:blur(14px)}
 #projects .projects-filters{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
-#projects .project-filter{min-height:38px;padding:9px 14px;border:1px solid transparent;border-radius:999px;background:transparent;color:#a5b5c5;font:700 11px/1.2 inherit;transition:all .2s ease}
+#projects .project-filter{min-height:38px;padding:9px 14px;border:1px solid transparent;border-radius:999px;background:transparent;color:#a5b5c5;font-family:inherit;font-size:11px;font-weight:700;line-height:1.2;transition:all .2s ease}
 #projects .project-filter:hover{color:#f5fffd;border-color:rgba(94,234,212,.25);background:rgba(45,212,191,.06)}
 #projects .project-filter.is-active{color:#062a27;background:linear-gradient(115deg,#99f6e4,#2dd4bf);border-color:#5eead4;box-shadow:0 6px 18px rgba(45,212,191,.16)}
 #projects .projects-toolbar-note{display:inline-flex;align-items:center;gap:8px;padding:0 5px;color:#91a5b9;font-size:10px;font-weight:650}
