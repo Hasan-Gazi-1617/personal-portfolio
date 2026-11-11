@@ -13,12 +13,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from .forms import BookOrderForm
-from .models import Book, BookOrder
+from .models import Book, BookCategory, BookOrder
 
 
 def library(request):
     books = Book.objects.filter(is_published=True).select_related("category")
-    return render(request, "books/library.html", {"books": books})
+    categories = BookCategory.objects.filter(books__is_published=True).distinct().order_by("name")
+    return render(request, "books/library.html", {"books": books, "categories": categories})
 
 
 def book_detail(request, slug):
