@@ -339,3 +339,81 @@ html[data-theme="light"] .book-filter-chip span{color:#fff;background:rgba(0,0,0
  .book-card-premium .book-cover-link img,.book-card-premium .book-cover-placeholder{min-height:0}
 }
 @media(prefers-reduced-motion:reduce){.book-filter-chip,.book-card-premium:before{transition:none}}
+
+
+/* Order details and bKash checkout */
+.book-order-page{padding-top:112px}
+.book-order-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px;align-items:start}
+.book-order-card{max-width:none;margin:0;padding:clamp(22px,3.5vw,38px)}
+.book-order-intro{max-width:680px;color:#9fb0c0;font-size:14px}
+.book-order-summary{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:24px 0;padding:19px 20px;border:1px solid rgba(45,212,191,.2);border-radius:14px;background:rgba(20,184,166,.07)}
+.book-order-summary>div{display:grid;gap:5px;min-width:0}
+.book-order-summary strong{font-size:16px;overflow-wrap:anywhere}
+.book-order-summary small{color:#94a3b8}
+.book-order-label{display:block;color:#7f9aab;font-size:9px;font-weight:850;letter-spacing:1.5px}
+.book-order-total{text-align:right}
+.book-order-total strong{color:#5eead4;font-size:27px;letter-spacing:-.6px}
+.bkash-payment-panel{padding:21px;border:1px solid rgba(220,38,38,.28);border-radius:15px;background:linear-gradient(135deg,rgba(127,29,29,.17),rgba(15,23,42,.42))}
+.bkash-panel-heading{display:flex;align-items:center;gap:12px}
+.bkash-brand-mark{display:grid;place-items:center;flex:0 0 43px;height:43px;border-radius:12px;color:#fff;background:#d92355;font-size:19px}
+.bkash-panel-heading h2{margin:3px 0 0;color:#f8fafc;font-size:20px}
+.bkash-secure-tag{margin-left:auto;color:#fda4af;font-size:10px;font-weight:750;white-space:nowrap}
+.bkash-payment-copy{margin:18px 0 12px;color:#c4d0db;font-size:13px;line-height:1.75}
+.bkash-number-card{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px;border:1px solid rgba(248,113,113,.25);border-radius:11px;background:rgba(2,6,23,.35)}
+.bkash-number-card>div{display:grid;gap:5px}
+.bkash-number{color:#fff;font-size:clamp(23px,4vw,29px);letter-spacing:1px}
+.bkash-number-copyhint{color:#fda4af;font-size:10px;text-align:right}
+.bkash-payment-warning{display:flex;align-items:flex-start;gap:8px;margin:13px 0 0;color:#fda4af;font-size:11px;line-height:1.7}
+.bkash-payment-warning i{margin-top:2px}
+.book-order-steps-heading,.book-order-form-heading{margin:27px 0 10px}
+.book-order-steps-heading h2,.book-order-form-heading h2{margin:5px 0;color:#f1f5f9;font-size:21px}
+.book-order-steps{margin:10px 0 24px}
+.book-order-steps li{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.12)}
+.book-order-steps li span{display:grid;gap:4px}
+.book-order-form{margin-top:12px;padding-top:5px;border-top:1px solid rgba(148,163,184,.14)}
+.book-order-form p{margin:17px 0}
+.book-order-form input{min-height:47px}
+.book-order-submit{width:100%;min-height:51px;margin-top:8px}
+.book-order-footnote{display:flex;align-items:flex-start;gap:8px;margin-bottom:0}
+.book-order-footnote i{margin-top:4px;color:#5eead4}
+.book-order-side{display:grid;gap:14px}
+.book-order-side-card{padding:22px;border:1px solid rgba(45,212,191,.18);border-radius:15px;background:rgba(15,23,42,.62)}
+.book-order-side-card h2{margin:12px 0 17px;color:#f1f5f9;font-size:20px}
+.book-order-side-card ul{display:grid;gap:15px;margin:0;padding:0;list-style:none}
+.book-order-side-card li{display:flex;gap:10px;color:#aebdca;font-size:12px;line-height:1.7}
+.book-order-side-card li i{color:#5eead4;font-size:15px}
+.book-order-side-note{display:flex;gap:11px;padding:16px;border:1px solid rgba(148,163,184,.16);border-radius:13px;color:#aebdca;background:rgba(15,23,42,.35)}
+.book-order-side-note>i{color:#5eead4;font-size:19px}
+.book-order-side-note strong{color:#e5edf4;font-size:12px}
+.book-order-side-note p{margin:5px 0 0;font-size:11px;line-height:1.7}
+html[data-theme="light"] .book-order-intro{color:#52715d}
+html[data-theme="light"] .book-order-summary{background:#f0faf2;border-color:rgba(21,128,61,.18)}
+html[data-theme="light"] .book-order-summary strong{color:#173b29}
+html[data-theme="light"] .book-order-summary small{color:#648072}
+html[data-theme="light"] .book-order-total strong{color:#15803d}
+html[data-theme="light"] .bkash-payment-panel{background:linear-gradient(135deg,#fff5f5,#fff);border-color:rgba(220,38,38,.2)}
+html[data-theme="light"] .bkash-panel-heading h2{color:#7f1d1d}
+html[data-theme="light"] .bkash-payment-copy{color:#713f3f}
+html[data-theme="light"] .bkash-number-card{background:#fff;border-color:rgba(220,38,38,.2)}
+html[data-theme="light"] .bkash-number{color:#991b1b}
+html[data-theme="light"] .bkash-secure-tag,html[data-theme="light"] .bkash-number-copyhint,html[data-theme="light"] .bkash-payment-warning{color:#b4233d}
+html[data-theme="light"] .book-order-steps-heading h2,html[data-theme="light"] .book-order-form-heading h2{color:#173b29}
+html[data-theme="light"] .book-order-form{border-top-color:rgba(21,128,61,.14)}
+html[data-theme="light"] .book-order-side-card{background:linear-gradient(150deg,#fff,#f4fbf5);border-color:rgba(21,128,61,.17)}
+html[data-theme="light"] .book-order-side-card h2{color:#173b29}
+html[data-theme="light"] .book-order-side-card li{color:#456653}
+html[data-theme="light"] .book-order-side-card li i,html[data-theme="light"] .book-order-side-note>i{color:#15803d}
+html[data-theme="light"] .book-order-side-note{background:#f7fcf8;border-color:rgba(21,128,61,.15);color:#456653}
+html[data-theme="light"] .book-order-side-note strong{color:#173b29}
+@media(max-width:850px){.book-order-layout{grid-template-columns:1fr}.book-order-side{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+ .book-order-page{width:calc(100% - 28px);padding-top:94px}
+ .book-order-layout{gap:14px}
+ .book-order-side{grid-template-columns:1fr}
+ .book-order-summary{align-items:flex-start;flex-direction:column}
+ .book-order-total{text-align:left}
+ .bkash-panel-heading{flex-wrap:wrap}
+ .bkash-secure-tag{width:100%;margin-left:55px}
+ .bkash-number-card{align-items:flex-start;flex-direction:column}
+ .bkash-number-copyhint{text-align:left}
+}

@@ -193,7 +193,7 @@ CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f'https://{render_hostname}')
 
-BOOKSTORE_BKASH_NUMBER = os.environ.get('BOOKSTORE_BKASH_NUMBER', '')
+BOOKSTORE_BKASH_NUMBER = '01751231617'
 BOOKSTORE_SITE_URL = os.environ.get('BOOKSTORE_SITE_URL', 'https://personal-portfolio-069p.onrender.com')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', os.environ.get('EMAIL_HOST_USER', '') or 'noreply@example.com')
 
