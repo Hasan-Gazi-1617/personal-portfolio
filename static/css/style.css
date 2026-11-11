@@ -1944,23 +1944,16 @@ html,body{background:var(--bg-primary)!important;color:var(--text-primary)!impor
 .brand-logo span,.section-number{color:#14B8A6!important}
 
 /* Correct 01-07 alternating color layers */
-#about,#technology,#projects,#lessons{background:#0F172A!important}
+#about,#technology,#projects{background:#0F172A!important}
 #expertise,#experience,#certifications,.certifications-section,.certification-section{background:#111C2E!important}
 
-/* 07 has inline CSS, so force the correct layer */
-#lessons.lessons-scroll-section{background:#0F172A!important}
-#lessons.lessons-scroll-section::before{background:rgba(20,184,166,.055)!important}
-#lessons .lessons-main-title{color:#F8FAFC!important}
-#lessons .lessons-main-title span,#lessons .lessons-resource-count strong{color:#14B8A6!important}
-#lessons .lessons-main-description,#lessons .lessons-resource-count span{color:#94A3B8!important}
+/* 07 has inline CSS{background:#0F172A!important}
 
-.expertise-card,.tech-card,.timeline-content,.project-card,.certification-card,
-#lessons .lesson-resource-card{background:rgba(22,34,53,.88)!important;
+.expertise-card,.tech-card,.timeline-content,.project-card,.certification-card{background:rgba(22,34,53,.88)!important;
 border-color:rgba(148,163,184,.16)!important;box-shadow:0 12px 34px rgba(0,0,0,.12)}
-.expertise-card:hover,.tech-card:hover,.project-card:hover,.certification-card:hover,
-#lessons .lesson-resource-card:hover{border-color:rgba(20,184,166,.45)!important}
+.expertise-card:hover,.tech-card:hover,.project-card:hover,.certification-card:hover{border-color:rgba(20,184,166,.45)!important}
 .expertise-icon,.cert-icon{color:#14B8A6!important;background:rgba(20,184,166,.10)!important}
-.certification-card span,#lessons .lesson-resource-btn,#lessons .lesson-resource-arrow{color:#14B8A6!important}
+.certification-card span{color:#14B8A6!important}
 .btn-outline-primary-custom{border-color:rgba(20,184,166,.48)!important;color:#2DD4BF!important}
 .btn-outline-primary-custom:hover{background:#14B8A6!important;border-color:#14B8A6!important;color:#071512!important}
 .footer-section,footer{background:#09111F!important;border-top-color:rgba(20,184,166,.18)!important}
@@ -2095,7 +2088,7 @@ input, select, textarea { min-width: 0; }
 
 /* Flexible repeated cards/grids */
 .expertise-grid, .projects-grid, .project-grid, .certifications-grid,
-.skills-grid, .services-grid, .lesson-resources-grid {
+.skills-grid, .services-grid{
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
 .tech-grid {
