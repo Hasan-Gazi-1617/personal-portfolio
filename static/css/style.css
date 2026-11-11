@@ -1947,7 +1947,7 @@ html,body{background:var(--bg-primary)!important;color:var(--text-primary)!impor
 #about,#technology,#projects{background:#0F172A!important}
 #expertise,#experience,#certifications,.certifications-section,.certification-section{background:#111C2E!important}
 
-/* 07 has inline CSS{background:#0F172A!important}
+
 
 .expertise-card,.tech-card,.timeline-content,.project-card,.certification-card{background:rgba(22,34,53,.88)!important;
 border-color:rgba(148,163,184,.16)!important;box-shadow:0 12px 34px rgba(0,0,0,.12)}
