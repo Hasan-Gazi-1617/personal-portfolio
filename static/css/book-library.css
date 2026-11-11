@@ -300,3 +300,42 @@ html[data-theme="light"] .book-purchase-note{background:#f0faf2;border-color:rgb
 .book-card-preview{font-size:11px;padding:9px 6px}
 }
 @media(max-width:380px){.book-grid-premium{grid-template-columns:1fr}.book-card-premium .book-cover-link img,.book-card-premium .book-cover-placeholder{height:290px}}
+
+
+/* Premium collection controls and refined book cards */
+.book-toolbar-premium{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 15px}
+.book-toolbar-premium .book-search{flex:1 1 420px}
+.book-sort-wrap{display:flex;align-items:center;gap:10px;color:#8fa2b6;font-size:11px;font-weight:750;white-space:nowrap}
+.book-sort-wrap select{min-width:158px;min-height:46px;padding:0 36px 0 14px;border:1px solid rgba(148,163,184,.22);border-radius:12px;color:#e5edf4;background:#111f31;font-family:inherit;font-size:12px;font-weight:600;outline:none}
+.book-sort-wrap select:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.12)}
+.book-category-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 24px;padding:0 0 17px;border-bottom:1px solid rgba(148,163,184,.12)}
+.book-filter-chip{display:inline-flex;align-items:center;gap:8px;min-height:35px;padding:7px 13px;border:1px solid rgba(148,163,184,.18);border-radius:30px;color:#aebdca;background:rgba(15,23,42,.48);font-size:11px;font-weight:750;cursor:pointer;transition:all .2s ease}
+.book-filter-chip:hover{border-color:rgba(45,212,191,.4);color:#d9fffa}
+.book-filter-chip.is-active{border-color:rgba(45,212,191,.55);color:#062b2a;background:linear-gradient(110deg,#5eead4,#2dd4bf);box-shadow:0 5px 18px rgba(45,212,191,.15)}
+.book-filter-chip span{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:20px;color:#d7fffa;background:rgba(5,45,47,.22);font-size:9px}
+.book-card-premium{position:relative;isolation:isolate}
+.book-card-premium:before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(145deg,rgba(94,234,212,.08),transparent 42%);opacity:0;transition:opacity .25s ease}
+.book-card-premium:hover:before{opacity:1}
+.book-card-premium .book-cover-link{aspect-ratio:4/5}
+.book-card-premium .book-cover-link img,.book-card-premium .book-cover-placeholder{height:100%;min-height:250px}
+.book-card-premium .book-card-body{gap:11px}
+.book-card-premium .book-card-bottom strong{letter-spacing:-.5px}
+.book-card-preview{letter-spacing:.1px}
+.book-card-preview:hover{box-shadow:0 8px 20px rgba(13,148,136,.18)}
+html[data-theme="light"] .book-sort-wrap{color:#648072}
+html[data-theme="light"] .book-sort-wrap select{color:#173b29;background:#fff;border-color:rgba(21,128,61,.2)}
+html[data-theme="light"] .book-category-filters{border-bottom-color:rgba(21,128,61,.13)}
+html[data-theme="light"] .book-filter-chip{color:#52715d;background:#fff;border-color:rgba(21,128,61,.18)}
+html[data-theme="light"] .book-filter-chip:hover{color:#166534;border-color:rgba(21,128,61,.4)}
+html[data-theme="light"] .book-filter-chip.is-active{color:#fff;background:linear-gradient(110deg,#16a34a,#15803d);border-color:#15803d;box-shadow:0 5px 18px rgba(21,128,61,.14)}
+html[data-theme="light"] .book-filter-chip span{color:#fff;background:rgba(0,0,0,.12)}
+@media(max-width:700px){
+ .book-toolbar-premium{align-items:stretch;flex-direction:column}
+ .book-toolbar-premium .book-search{width:100%;flex-basis:auto}
+ .book-sort-wrap{justify-content:space-between}
+ .book-sort-wrap select{flex:1;max-width:220px}
+ .book-category-filters{flex-wrap:nowrap;overflow-x:auto;padding:0 0 13px;scrollbar-width:thin}
+ .book-filter-chip{flex:0 0 auto}
+ .book-card-premium .book-cover-link img,.book-card-premium .book-cover-placeholder{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){.book-filter-chip,.book-card-premium:before{transition:none}}
