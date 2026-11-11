@@ -306,7 +306,7 @@ html[data-theme="light"] .book-purchase-note{background:#f0faf2;border-color:rgb
 .book-toolbar-premium{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 15px}
 .book-toolbar-premium .book-search{flex:1 1 420px}
 .book-sort-wrap{display:flex;align-items:center;gap:10px;color:#8fa2b6;font-size:11px;font-weight:750;white-space:nowrap}
-.book-sort-wrap select{min-width:158px;min-height:46px;padding:0 36px 0 14px;border:1px solid rgba(148,163,184,.22);border-radius:12px;color:#e5edf4;background:#111f31;font:600 12px inherit;outline:none}
+.book-sort-wrap select{min-width:158px;min-height:46px;padding:0 36px 0 14px;border:1px solid rgba(148,163,184,.22);border-radius:12px;color:#e5edf4;background:#111f31;font-family:inherit;font-size:12px;font-weight:600;outline:none}
 .book-sort-wrap select:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.12)}
 .book-category-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 24px;padding:0 0 17px;border-bottom:1px solid rgba(148,163,184,.12)}
 .book-filter-chip{display:inline-flex;align-items:center;gap:8px;min-height:35px;padding:7px 13px;border:1px solid rgba(148,163,184,.18);border-radius:30px;color:#aebdca;background:rgba(15,23,42,.48);font-size:11px;font-weight:750;cursor:pointer;transition:all .2s ease}
