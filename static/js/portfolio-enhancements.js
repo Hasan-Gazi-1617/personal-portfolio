@@ -162,7 +162,6 @@ ready(function(){
       {label:'Explore Technology',detail:'Tools and proficiency levels',icon:'bi-cpu',url:'#technology'},
       {label:'Open Experience',detail:'Career timeline',icon:'bi-briefcase',url:'#experience'},
       {label:'View Projects',detail:'Featured technical work',icon:'bi-grid',url:'#projects'},
-      {label:'Browse Lessons',detail:'Technical learning resources',icon:'bi-journal-code',url:'#lessons'},
       {label:'Contact Hasan',detail:'Email, LinkedIn and GitHub',icon:'bi-envelope',url:'#contact'},
       {label:'Download CV',detail:'PDF résumé',icon:'bi-download',url:cvLink?cvLink.href:'',download:true}
     ];
