@@ -34,14 +34,23 @@
     <div><span class="book-section-kicker">EXPLORE THE COLLECTION</span><h2>Bookshelf</h2></div>
     <span class="book-result-count" id="book-result-count" aria-live="polite">{{ books|length }} title{{ books|length|pluralize }} available</span>
   </div>
-  <div class="book-toolbar">
+  <div class="book-toolbar book-toolbar-premium">
     <label class="book-search"><i class="bi bi-search"></i><input id="book-search" type="search" placeholder="Search title, author or category..." aria-label="Search books"></label>
-    <span class="book-toolbar-note"><i class="bi bi-arrow-down-up"></i> Browse the available titles</span>
+    <label class="book-sort-wrap"><span>Sort by</span><select id="book-sort" aria-label="Sort books"><option value="featured">Featured</option><option value="title-asc">Title: A to Z</option><option value="price-asc">Price: Low to high</option><option value="price-desc">Price: High to low</option></select></label>
   </div>
+  <nav class="book-category-filters" aria-label="Filter books by category">
+    <button class="book-filter-chip is-active" type="button" data-category-filter="all" aria-pressed="true">All books <span>{{ books|length }}</span></button>
+    {% for category in categories %}
+    <button class="book-filter-chip" type="button" data-category-filter="{{ category.slug }}" aria-pressed="false">{{ category.name }}</button>
+    {% endfor %}
+    {% if books and not categories %}
+    <button class="book-filter-chip" type="button" data-category-filter="uncategorized" aria-pressed="false">General</button>
+    {% endif %}
+  </nav>
 
   <div class="book-grid book-grid-premium" id="book-grid">
     {% for book in books %}
-    <article class="book-card book-card-premium" data-book-card data-search="{{ book.title|lower }} {{ book.author|lower }} {% if book.category %}{{ book.category.name|lower }}{% endif %}">
+    <article class="book-card book-card-premium" data-book-card data-category="{{ book.category.slug|default:'uncategorized' }}" data-title="{{ book.title|lower }}" data-price="{{ book.price }}" data-search="{{ book.title|lower }} {{ book.author|lower }} {% if book.category %}{{ book.category.name|lower }}{% endif %}">
       <a class="book-cover-link" href="{% url 'books:detail' book.slug %}" aria-label="Explore {{ book.title }}">
         {% if book.cover_url %}<img src="{{ book.cover_url }}" alt="{{ book.title }} cover" loading="lazy">{% else %}<div class="book-cover-placeholder"><i class="bi bi-book-half"></i><span>BOOK COVER</span></div>{% endif %}
         <span class="book-cover-overlay"><i class="bi bi-arrow-up-right"></i></span>
@@ -67,16 +76,47 @@
 <script>
 (function(){
   const input=document.getElementById('book-search');
+  const sort=document.getElementById('book-sort');
+  const grid=document.getElementById('book-grid');
   const cards=[...document.querySelectorAll('[data-book-card]')];
+  const chips=[...document.querySelectorAll('[data-category-filter]')];
   const count=document.getElementById('book-result-count');
   const empty=document.getElementById('book-no-results');
-  if(!input)return;
-  input.addEventListener('input',function(){
-    const q=this.value.trim().toLowerCase();let visible=0;
-    cards.forEach(card=>{const match=card.dataset.search.includes(q);card.hidden=!match;if(match)visible++;});
-    if(count)count.textContent=visible+' title'+(visible===1?'':'s')+' found';
+  if(!grid)return;
+  let activeCategory='all';
+  cards.forEach((card,index)=>{card.dataset.originalIndex=index;});
+  function update(){
+    const query=(input?.value||'').trim().toLowerCase();
+    let visible=0;
+    cards.forEach(card=>{
+      const matchesText=(card.dataset.search||'').includes(query);
+      const matchesCategory=activeCategory==='all'||card.dataset.category===activeCategory;
+      card.hidden=!(matchesText&&matchesCategory);
+      if(!card.hidden)visible++;
+    });
+    const mode=sort?.value||'featured';
+    const ordered=[...cards].sort((a,b)=>{
+      if(mode==='title-asc')return a.dataset.title.localeCompare(b.dataset.title);
+      if(mode==='price-asc')return Number(a.dataset.price)-Number(b.dataset.price);
+      if(mode==='price-desc')return Number(b.dataset.price)-Number(a.dataset.price);
+      return Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex);
+    });
+    ordered.forEach(card=>grid.insertBefore(card,empty||null));
+    if(count)count.textContent=visible+' title'+(visible===1?'':'s')+' available';
     if(empty)empty.hidden=visible!==0||cards.length===0;
-  });
+  }
+  input?.addEventListener('input',update);
+  sort?.addEventListener('change',update);
+  chips.forEach(chip=>chip.addEventListener('click',()=>{
+    activeCategory=chip.dataset.categoryFilter||'all';
+    chips.forEach(item=>{
+      const active=item===chip;
+      item.classList.toggle('is-active',active);
+      item.setAttribute('aria-pressed',String(active));
+    });
+    update();
+  }));
+  update();
 })();
 </script>
 {% endblock %}
