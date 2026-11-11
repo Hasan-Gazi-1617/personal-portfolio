@@ -43,8 +43,8 @@
     {% for category in categories %}
     <button class="book-filter-chip" type="button" data-category-filter="{{ category.slug }}" aria-pressed="false">{{ category.name }}</button>
     {% endfor %}
-    {% if books and not categories %}
-    <button class="book-filter-chip" type="button" data-category-filter="uncategorized" aria-pressed="false">General</button>
+    {% if uncategorized_count %}
+    <button class="book-filter-chip" type="button" data-category-filter="uncategorized" aria-pressed="false">General <span>{{ uncategorized_count }}</span></button>
     {% endif %}
   </nav>
 
