@@ -1,35 +1,89 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Purchase {{ book.title }} | Book Library{% endblock %}
+{% block title %}Order Details | {{ book.title }}{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book-library.css' %}">{% endblock %}
 {% block content %}
-<section class="book-shell">
+<section class="book-shell book-order-page">
   <a class="book-back" href="{% url 'books:detail' book.slug %}"><i class="bi bi-arrow-left"></i> Back to book</a>
-  <div class="book-form-card">
-    <span class="book-eyebrow"><i class="bi bi-shield-check"></i> ORDER DETAILS</span>
-    <h1>Get your digital copy</h1>
-    <p><strong>{{ book.title }}</strong>{% if book.author %} by {{ book.author }}{% endif %}</p>
-    <p>Amount to pay: <strong class="book-detail-price">৳{{ book.price }}</strong></p>
-    <div class="bkash-instructions">
-      <strong><i class="bi bi-phone"></i> Pay with bKash</strong>
-      {% if bkash_number %}
-      <p>Send exactly <strong>৳{{ book.price }}</strong> to the bKash number below. Then enter the Transaction ID in the form.</p>
-      <p class="bkash-number"><strong>{{ bkash_number }}</strong></p>
-      {% else %}
-      <p>The bKash payment number is not configured yet. Please do not send payment until the payment number is displayed here.</p>
-      {% endif %}
-    </div>
-    <ol class="book-steps">
-      <li><b>1</b><span>Send the exact book price using bKash.</span></li>
-      <li><b>2</b><span>Enter your name, email, phone number and bKash Transaction ID below.</span></li>
-      <li><b>3</b><span>Keep your order reference. We will verify the payment manually.</span></li>
-    </ol>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button class="book-btn" type="submit" {% if not bkash_number %}disabled title="Payment number is not configured yet"{% endif %}>Submit order details <i class="bi bi-arrow-right"></i></button>
-    </form>
-    <p class="book-hint">Your order will remain pending until the payment is verified. The full PDF download is enabled only after approval. No customer account is needed.</p>
+
+  <div class="book-order-layout">
+    <main class="book-form-card book-order-card">
+      <span class="book-eyebrow"><i class="bi bi-receipt"></i> ORDER DETAILS</span>
+      <h1>Complete your order</h1>
+      <p class="book-order-intro">Review your book and payment amount, send the payment through bKash, then submit the transaction details for verification.</p>
+
+      <section class="book-order-summary" aria-label="Order summary">
+        <div>
+          <span class="book-order-label">BOOK</span>
+          <strong>{{ book.title }}</strong>
+          {% if book.author %}<small>by {{ book.author }}</small>{% endif %}
+        </div>
+        <div class="book-order-total">
+          <span class="book-order-label">TOTAL TO PAY</span>
+          <strong>৳{{ book.price }}</strong>
+        </div>
+      </section>
+
+      <section class="bkash-payment-panel" aria-label="bKash payment instructions">
+        <div class="bkash-panel-heading">
+          <span class="bkash-brand-mark"><i class="bi bi-phone-fill"></i></span>
+          <div>
+            <span class="book-order-label">PAYMENT METHOD</span>
+            <h2>bKash Send Money</h2>
+          </div>
+          <span class="bkash-secure-tag"><i class="bi bi-shield-check"></i> Manual verification</span>
+        </div>
+
+        <p class="bkash-payment-copy">Send the exact amount shown above using <strong>Send Money</strong> to this bKash number.</p>
+        <div class="bkash-number-card">
+          <div>
+            <span class="book-order-label">SEND MONEY TO</span>
+            <strong class="bkash-number">01751231617</strong>
+          </div>
+          <span class="bkash-number-copyhint"><i class="bi bi-check2-circle"></i> Verify the number before sending</span>
+        </div>
+        <p class="bkash-payment-warning"><i class="bi bi-info-circle"></i> Use <strong>Send Money</strong>, not Cash Out. Never share your bKash PIN or OTP.</p>
+      </section>
+
+      <div class="book-order-steps-heading">
+        <span class="book-order-label">HOW TO COMPLETE PAYMENT</span>
+        <h2>Follow these 3 steps</h2>
+      </div>
+      <ol class="book-steps book-steps-premium book-order-steps">
+        <li><b>01</b><span><strong>Send the payment</strong>Open bKash and send ৳{{ book.price }} to <strong>01751231617</strong> using Send Money.</span></li>
+        <li><b>02</b><span><strong>Save the Transaction ID</strong>After payment, copy the bKash Transaction ID (TrxID) from the confirmation message.</span></li>
+        <li><b>03</b><span><strong>Submit your order details</strong>Fill in your contact information and the exact TrxID below. We will verify it manually.</span></li>
+      </ol>
+
+      <div class="book-order-form-heading">
+        <span class="book-order-label">CUSTOMER & PAYMENT DETAILS</span>
+        <h2>Submit order details</h2>
+      </div>
+      <form method="post" class="book-order-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="book-btn book-order-submit" type="submit">
+          Submit for verification <i class="bi bi-arrow-right"></i>
+        </button>
+      </form>
+      <p class="book-hint book-order-footnote"><i class="bi bi-lock"></i> Your order stays pending until the bKash payment is verified. The full PDF becomes available only after approval.</p>
+    </main>
+
+    <aside class="book-order-side">
+      <div class="book-order-side-card">
+        <span class="book-eyebrow"><i class="bi bi-shield-check"></i> SECURE CHECKOUT</span>
+        <h2>What happens next?</h2>
+        <ul>
+          <li><i class="bi bi-check-circle"></i><span>Your order is recorded after you submit the form.</span></li>
+          <li><i class="bi bi-clock-history"></i><span>Payment is checked manually by the administrator.</span></li>
+          <li><i class="bi bi-file-earmark-pdf"></i><span>After approval, your full book access is enabled.</span></li>
+        </ul>
+      </div>
+      <div class="book-order-side-note">
+        <i class="bi bi-headset"></i>
+        <div><strong>Keep your Transaction ID</strong><p>Save your order reference and TrxID until your payment has been approved.</p></div>
+      </div>
+    </aside>
   </div>
 </section>
 {% endblock %}
