@@ -65,7 +65,7 @@ html[data-theme="light"] section [class*="topology-background"] { opacity: .12; 
 
 /* Home page component sizing */
 #home .container, #about .container, #expertise .container, #technology .container,
-#experience .container, #projects .container, #lessons .container, #contact .container { position: relative; z-index: 2; }
+#experience .container, #projects .container, #contact .container { position: relative; z-index: 2; }
 #home .hero-title { font-size: clamp(2.65rem, 5.5vw, 5.2rem); text-wrap: balance; }
 #home .hero-buttons { display: flex; flex-wrap: wrap; gap: .75rem; }
 #home .profile-wrapper { width: min(100%, 390px); margin-inline: auto; }
@@ -83,8 +83,6 @@ html[data-theme="light"] section [class*="topology-background"] { opacity: .12; 
 #projects .featured-tool-card .project-visual { height: clamp(58px, 7vw, 86px); }
 #projects .project-action { min-height: 40px; }
 
-#lessons .lessons-resource-rail { max-width: 100%; scroll-snap-type: x mandatory; overscroll-behavior-inline: contain; }
-#lessons .lesson-resource-card { scroll-snap-align: start; }
 #contact .contact-box { width: min(100%, var(--layout-max)); margin-inline: auto; }
 
 /* Shared tablet breakpoint: 1024/768 layouts converge here. */
@@ -134,9 +132,7 @@ html[data-theme="light"] section [class*="topology-background"] { opacity: .12; 
   #experience .experience-content { padding: 1.1rem; border-radius: .9rem; }
   #experience .experience-title { font-size: clamp(1.3rem, 6.5vw, 1.75rem); }
   #experience .experience-toggle { width: 100%; min-height: 44px; justify-content: center; }
-  #lessons .lessons-main-title { font-size: clamp(2rem, 10vw, 3.1rem); }
-  #lessons .lesson-resource-card { flex: 0 0 min(84vw, 320px); min-width: 0; }
-  #contact .contact-box { padding: 1.6rem 1rem; border-radius: 1rem; }
+#contact .contact-box { padding: 1.6rem 1rem; border-radius: 1rem; }
   #contact .contact-title { font-size: clamp(2rem, 9vw, 2.7rem); }
   #contact .contact-form-row { grid-template-columns: 1fr; }
 
