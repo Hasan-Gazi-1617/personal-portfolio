@@ -713,6 +713,15 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                     </a>
                 </li>
 
+                {% if not request.session.owner_access %}
+                <!-- ADMIN VIEW -->
+                <li class="nav-item">
+                    <a class="nav-link admin-view-link" href="{% url 'owner_login' %}">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Admin View</span>
+                    </a>
+                </li>
+                {% endif %}
 
                 {% if request.session.owner_access %}
                 <!-- ================= MANOR-IT ================= -->
