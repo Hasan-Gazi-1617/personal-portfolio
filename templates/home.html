@@ -630,7 +630,6 @@ document.addEventListener("DOMContentLoaded", function () {
   filters.forEach(button=>{const active=button.dataset.projectFilter===category;button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",active?"true":"false");});
  }
  filters.forEach(button=>button.addEventListener("click",()=>applyProjectFilter(button.dataset.projectFilter)));
- arrows.forEach(button=>button.addEventListener("click",()=>{if(track)track.scrollBy({left:(button.dataset.projectScroll==="right"?1:-1)*270,behavior:"smooth"});}));
  applyProjectFilter("all");
 });
 </script>
