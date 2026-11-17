@@ -3127,3 +3127,39 @@ html[data-theme="light"] #projects .project-cyan .project-resource-link:hover {
   background: #15803d !important;
   border-color: #15803d !important;
 }
+
+
+/* Light theme: normalize accent typography across every project card.
+   Earlier rules only covered .project-cyan, while the visible cards use
+   project-blue, project-green, project-purple, project-orange and others. */
+html[data-theme="light"] #projects .project-resource-card .project-resource-icon,
+html[data-theme="light"] #projects .project-resource-card .project-resource-category,
+html[data-theme="light"] #projects .project-resource-card .project-resource-link,
+html[data-theme="light"] #projects .project-resource-card .project-resource-link i {
+  color: #15803d !important;
+}
+
+html[data-theme="light"] #projects .project-resource-card .project-resource-icon {
+  background: #e8f6ec !important;
+  border-color: rgba(21, 128, 61, .28) !important;
+  box-shadow: 0 10px 28px rgba(21, 128, 61, .08) !important;
+}
+
+html[data-theme="light"] #projects .project-resource-card .project-resource-category {
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] #projects .project-resource-card .project-resource-link {
+  border-color: rgba(21, 128, 61, .32) !important;
+  background: rgba(21, 128, 61, .055) !important;
+}
+
+html[data-theme="light"] #projects .project-resource-card .project-resource-link:hover {
+  color: #ffffff !important;
+  background: #15803d !important;
+  border-color: #15803d !important;
+}
+
+html[data-theme="light"] #projects .project-resource-card .project-resource-link:hover i {
+  color: #ffffff !important;
+}
