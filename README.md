@@ -1,57 +1,175 @@
-# Personal Portfolio + TKI Operations
+# Hasan | Personal Portfolio
 
-A Django-based personal portfolio and TKI operations tracker.
+A Django-powered personal portfolio showcasing my work across **Network Engineering, ISP Infrastructure, NOC Operations, and Software Development**.
 
-## Stack
+<p align="left">
+  <a href="https://personal-portfolio-069p.onrender.com/"><strong>Visit Live Portfolio</strong></a>
+  ·
+  <a href="https://github.com/Hasan-Gazi-1617">GitHub Profile</a>
+</p>
 
-- Python / Django
-- SQLite by default (no PostgreSQL required)
-- Gunicorn for the web process
-- WhiteNoise for static assets
-- OpenPyXL for Excel exports
+---
 
-## Run locally
+## About
+
+This project is my personal portfolio and a practical Django application. It brings together my professional profile, technical experience, selected projects, interactive tools, and a book library.
+
+My work focuses on network operations and infrastructure, ISP/NOC troubleshooting, MikroTik technologies, and building useful web applications with Python and Django.
+
+## Features
+
+- **Personal portfolio:** professional introduction, experience, skills, projects, and contact information.
+- **Responsive interface:** layouts designed for desktop and mobile screens.
+- **Light and dark themes:** user-selectable display themes.
+- **Project showcase:** dedicated entries for selected technical projects.
+- **MikroTik Configuration Generator:** an interactive tool for building and previewing RouterOS configuration scripts.
+- **Algorithm Visual Studio:** an interactive environment for exploring data structures and algorithms.
+- **Book Library:** book details, preview pages, order submission, payment review, and controlled PDF delivery.
+- **Private owner tools:** protected operational pages and OLT-related monitoring/ingestion endpoints.
+- **TKI operations area:** ticket tracking, updates, reporting, and Excel export for authorized users.
+
+> Some operational tools are access-controlled and are not intended for public use. Access depends on server-side configuration and authorization.
+
+## Selected Projects
+
+| Project | Description |
+|---|---|
+| Django Portfolio System | This portfolio website, built with Django. |
+| MikroTik Configuration Generator | RouterOS configuration builder with validation and script preview. |
+| Algorithm Visual Studio | Interactive data-structure and algorithm visualizer. |
+
+## Technology Stack
+
+- **Backend:** Python, Django
+- **Frontend:** HTML, CSS, JavaScript, Bootstrap 5
+- **Database:** SQLite by default; PostgreSQL can be configured through `DATABASE_URL`
+- **Static files:** WhiteNoise
+- **Application server:** Gunicorn
+- **Other libraries:** Pillow, OpenPyXL, dj-database-url
+- **Hosting configuration:** Render Blueprint (`render.yaml`)
+
+## Run Locally
+
+### 1. Clone the repository
 
 ```bash
-python -m venv .venv
-# Linux/macOS
-source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+git clone https://github.com/Hasan-Gazi-1617/personal-portfolio.git
+cd personal-portfolio
+```
 
+### 2. Create and activate a virtual environment
+
+**Linux / macOS**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows PowerShell**
+
+```powershell
+py -m venv .venv
+.venv\\Scripts\\Activate.ps1
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+For local development, Django can run with its local development defaults. For a production-like setup, configure a secure `SECRET_KEY` and the appropriate environment variables in your shell or local `.env` workflow.
+
+Common settings:
+
+| Variable | Purpose |
+|---|---|
+| `SECRET_KEY` | Django secret key. Keep it private. |
+| `DEBUG` | Enable or disable Django debug mode. Use `False` in production. |
+| `DATABASE_URL` | Optional database connection URL. If omitted, SQLite is used. |
+| `OWNER_ACCESS_KEY` | Secret used for protected owner access. |
+| `OLT_INGEST_TOKEN` | Separate secret for the trusted OLT data collector. |
+| `EMAIL_HOST`, `EMAIL_PORT` | SMTP server settings, if email delivery is configured. |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | SMTP credentials. Keep them private. |
+| `EMAIL_USE_TLS` | Whether SMTP TLS is enabled. |
+
+Never commit real credentials, API keys, tokens, or production environment files to Git.
+
+### 5. Apply migrations and start the server
+
+```bash
 python manage.py migrate
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000/.
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
 
-## Render deployment
+## Deployment on Render
 
-This repository includes `render.yaml` and `build.sh` for Render Blueprint deployment. The build runs dependency installation, static collection, and database migrations. Retired legacy seed tickets are not automatically recreated.
+The repository includes:
 
-Set/check these environment variables in Render Dashboard:
+- `render.yaml` for the Render web service configuration.
+- `build.sh` to install dependencies, collect static files, and apply database migrations.
+- Gunicorn as the production application server.
+- WhiteNoise for serving collected static assets.
 
-- `SECRET_KEY`: generated by Render from `render.yaml`
-- `DEBUG`: `False`
-- `OWNER_ACCESS_KEY`: set a long, unique secret in the Render Environment settings; do not commit it to Git or share it in chat
-- `OLT_INGEST_TOKEN`: set a separate long random secret in Render Environment settings before connecting the Local PC collector; use the same secret only on the trusted collector PC
+To deploy, connect the repository to Render and use the included Blueprint configuration. Set the required secret environment variables in the Render Dashboard. Do not put secrets in `render.yaml` or commit them to the repository.
 
-No PostgreSQL service is configured. Django uses `db.sqlite3` unless `DATABASE_URL` is explicitly provided.
+**Database note:** SQLite is the default when `DATABASE_URL` is not set. A SQLite database stored on an ephemeral filesystem can be lost when a service is replaced or redeployed. Before relying on production records, configure and verify persistent storage or use a suitable managed database.
 
-## Important SQLite hosting note
+## Project Structure
 
-SQLite is a file, not a managed database service. On Render, a Free web service does not provide durable application-file storage by default. If this service has no persistent disk mounted, a restart/redeploy or instance replacement can cause TKI records to disappear. Deleting records monthly does **not** prevent data loss before month-end.
+```text
+personal-portfolio/
+├── books/          # Book Library application
+├── config/         # Django project settings and URL configuration
+├── portfolio/      # Portfolio pages, tools, and operational features
+├── static/          # CSS, JavaScript, images, and other static assets
+├── templates/       # Shared and page templates
+├── tools/           # Project utility scripts
+├── build.sh         # Render build script
+├── manage.py        # Django management entry point
+├── render.yaml      # Render deployment configuration
+└── requirements.txt # Python dependencies
+```
 
-Because the project is intentionally staying on SQLite, verify the Render service's storage configuration before relying on it for live operational records. Persistent disks may require a paid service plan. Do not assume the data is durable unless a persistent disk is actually attached and the SQLite file is stored on its mount path.
+## Useful Commands
 
-## TKI data safety
+```bash
+# Run Django system checks
+python manage.py check
 
-Legacy seed-ticket auto-import has been retired so deleted records do not return on fresh deployments. Use the private solved-TKI TSV import workflow for current records. Deployments should never silently recreate the old seed register.
+# Create database migrations after model changes
+python manage.py makemigrations
 
-## Suggested pre-live checks
+# Apply migrations
+python manage.py migrate
 
-1. Confirm the latest Render deploy succeeded.
-2. Sign in to the TKI area and verify access controls.
-3. Create a test ticket, edit its status/remarks/dependency, then redeploy and confirm the edits remain.
-4. Test SLA behavior, reports, Excel export, and the monthly/date-range delete flow.
-5. Confirm how the SQLite file is persisted before entering important production data.
+# Collect static assets
+python manage.py collectstatic --no-input
+
+# Run tests
+python manage.py test
+```
+
+## Security & Data Notes
+
+- Keep `SECRET_KEY`, owner access keys, OLT tokens, SMTP credentials, and database credentials private.
+- Use separate, strong secrets for separate integrations.
+- Do not expose private operational dashboards or customer information.
+- Review database persistence and backup arrangements before storing important production data.
+- Keep `DEBUG=False` in production.
+
+## Contact
+
+- **Portfolio:** [personal-portfolio-069p.onrender.com](https://personal-portfolio-069p.onrender.com/)
+- **GitHub:** [Hasan-Gazi-1617](https://github.com/Hasan-Gazi-1617)
+
+---
+
+<p align="center">
+  Built with Python & Django.
+</p>
