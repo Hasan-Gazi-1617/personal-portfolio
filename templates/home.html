@@ -419,33 +419,24 @@ html[data-theme="light"] #live-network-topology {
 
 
                 <div class="hero-intro">
-
-                    HELLO, I'M HASAN
-
+                    <span class="hero-typing-target"
+                          data-typing-text="HELLO, I'M HASAN"
+                          aria-label="HELLO, I'M HASAN"></span>
                 </div>
 
-
                 <h1 class="hero-title">
-
-                    NOC Engineer
-
-                    <br>
-
-                    <span>
-                        Focused on Network Reliability.
-                    </span>
-
+                    <span class="hero-role hero-typing-target"
+                          data-typing-text="NOC Engineer"
+                          aria-label="NOC Engineer"></span>
+                    <span class="hero-tagline hero-typing-target"
+                          data-typing-text="Focused on Network Reliability."
+                          aria-label="Focused on Network Reliability."></span>
                 </h1>
 
-
                 <p class="hero-description">
-
-                    I work with network operations,
-                    infrastructure monitoring,
-                    troubleshooting and technical
-                    support to maintain stable and
-                    reliable network services.
-
+                    <span class="hero-typing-target"
+                          data-typing-text="I work with network operations, infrastructure monitoring, troubleshooting and technical support to maintain stable and reliable network services."
+                          aria-label="I work with network operations, infrastructure monitoring, troubleshooting and technical support to maintain stable and reliable network services."></span>
                 </p>
 
 
@@ -1507,6 +1498,75 @@ html[data-theme="light"] .principle-index{color:#15803d}
 </section>
 
 
+
+
+<style>
+    .hero-role,
+    .hero-tagline {
+        display: block;
+    }
+
+    .hero-typing-target.is-typing::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 0.9em;
+        margin-left: 4px;
+        vertical-align: -0.08em;
+        background: currentColor;
+        animation: heroTypingCursor 0.8s steps(1, end) infinite;
+    }
+
+    @keyframes heroTypingCursor {
+        50% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-typing-target.is-typing::after {
+            animation: none;
+        }
+    }
+</style>
+
+<script>
+(function () {
+    const targets = Array.from(document.querySelectorAll("#home .hero-typing-target"));
+    if (!targets.length) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reducedMotion) {
+        targets.forEach((element) => {
+            element.textContent = element.dataset.typingText || "";
+        });
+        return;
+    }
+
+    const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+    async function typeHeroText() {
+        for (const element of targets) {
+            const text = element.dataset.typingText || "";
+            element.textContent = "";
+            element.classList.add("is-typing");
+
+            for (let index = 0; index < text.length; index++) {
+                element.textContent += text.charAt(index);
+                await wait(index === 0 ? 75 : 32);
+            }
+
+            element.classList.remove("is-typing");
+            await wait(260);
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", typeHeroText, { once: true });
+    } else {
+        typeHeroText();
+    }
+})();
+</script>
 
 <script src="{% static 'js/network-topology.js' %}"></script>
 
