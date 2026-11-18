@@ -1587,6 +1587,15 @@ html[data-theme="light"] .principle-index{color:#15803d}
     line-height: 1.4 !important;
     font-weight: 700 !important;
 }
+
+/* Keep the top availability badge in view while the hero text types in. */
+@media (min-width: 992px) {
+    #home > .container > .row.min-vh-100 > .col-lg-7 {
+        align-self: flex-start !important;
+        padding-top: clamp(32px, 6vh, 64px);
+    }
+}
+
 </style>
 
 {% endblock %}
