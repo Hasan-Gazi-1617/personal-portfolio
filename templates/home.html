@@ -1501,9 +1501,19 @@ html[data-theme="light"] .principle-index{color:#15803d}
 
 
 <style>
-    .hero-role,
+    .hero-role {
+        display: block;
+        font-size: clamp(2.8rem, 6vw, 5.2rem);
+        line-height: 1.05;
+        font-weight: 800;
+    }
+
     .hero-tagline {
         display: block;
+        margin-top: 10px;
+        font-size: clamp(1rem, 2vw, 1.35rem);
+        line-height: 1.45;
+        font-weight: 700;
     }
 
     .hero-typing-target.is-typing::after {
