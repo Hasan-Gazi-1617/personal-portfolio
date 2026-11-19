@@ -1596,7 +1596,9 @@ html[data-theme="light"] .principle-index{color:#15803d}
 @media (min-width: 992px) {
     #home > .container > .row.min-vh-100 > .col-lg-7 {
         align-self: flex-start !important;
-        padding-top: clamp(32px, 6vh, 64px);
+        /* The fixed navbar overlaps the hero's top edge. Keep the availability
+           badge fully below it without changing heading sizes. */
+        padding-top: clamp(96px, 12vh, 120px);
     }
 }
 
