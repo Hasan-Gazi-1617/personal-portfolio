@@ -222,6 +222,12 @@ class WebsiteAnalyzerPage(QWidget):
             detail = "Your request reached an HTTP service, but the service returned a server error. This is not evidence of ISP blocking."
             color = "#d97706"
             local_state = f"HTTP {code}"
+        elif code is not None:
+            verdict = "REACHABLE (HTTP ERROR)"
+            title = f"Website responded with HTTP {code}"
+            detail = "The website endpoint returned an HTTP response, so the network path reached an HTTP service. This response alone does not mean the ISP blocked it."
+            color = "#16a34a"
+            local_state = f"HTTP {code}"
         elif tcp443 == "OPEN":
             verdict = "INCONCLUSIVE"
             title = "Connection reached the remote TCP port, but website access failed"
