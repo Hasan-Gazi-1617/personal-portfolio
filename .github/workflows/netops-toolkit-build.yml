@@ -96,6 +96,7 @@ jobs:
           Categories=Network;Utility;
           Terminal=false
           StartupNotify=true
+          StartupWMClass=NetOpsToolkit
           EOF
 
           curl --fail --location --retry 3 \
