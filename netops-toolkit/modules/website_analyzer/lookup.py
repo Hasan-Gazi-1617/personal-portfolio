@@ -452,7 +452,21 @@ def _tcp_port_checks(host, ports=(80, 443, 8080, 8443), timeout=3):
 def analyze_website_dashboard(target, port=443, probe_count=20):
     """Return the existing evidence report plus structured dashboard diagnostics."""
     host = _normalise_target(target)
-    report = analyze_website(host, port, probe_count)
+    try:
+        report = analyze_website(host, port, probe_count)
+    except RuntimeError as exc:
+        # Preserve a useful diagnosis when the local resolver cannot resolve
+        # the domain instead of aborting the whole dashboard.
+        if "DNS resolution failed" not in str(exc) and "DNS returned no" not in str(exc):
+            raise
+        report = (
+            "=" * 68 + "\\n"
+            "NETOPS TOOLKIT | WEBSITE NETWORK BLOCK CHECK\\n"
+            "=" * 68 + "\\n"
+            f"Website: {host}\\n"
+            f"LOCAL DNS ERROR: {exc}\\n"
+            + "\\n".join(_compare_public_dns(host, []))
+        )
     try:
         addresses = _resolve_addresses(host)
     except Exception:
