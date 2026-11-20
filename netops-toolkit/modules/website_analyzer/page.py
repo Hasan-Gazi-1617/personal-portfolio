@@ -49,9 +49,11 @@ class WebsiteAnalyzerPage(QWidget):
         self.run_button = QPushButton("Check Website")
         self.run_button.setMinimumHeight(44)
         search.addWidget(self.run_button)
-        self.export_button = QPushButton("Export")
+        self.export_button = QPushButton("Export Report")
         self.export_button.setEnabled(False)
         search.addWidget(self.export_button)
+        self.clear_button = QPushButton("Clear All")
+        search.addWidget(self.clear_button)
         root.addLayout(search)
 
         self.status = QLabel("Enter a website and click Check Website.")
@@ -127,6 +129,29 @@ class WebsiteAnalyzerPage(QWidget):
         self.run_button.clicked.connect(self.run_analysis)
         self.target.returnPressed.connect(self.run_analysis)
         self.export_button.clicked.connect(self.export_report)
+        self.clear_button.clicked.connect(self.clear_all)
+
+    def clear_all(self):
+        if self.worker and self.worker.isRunning():
+            return
+        self.target.clear()
+        self.probe_count.setValue(12)
+        self.last_result = None
+        self.diagnosis = None
+        self.verdict_badge.setText("NOT TESTED")
+        self.verdict_badge.setStyleSheet(
+            "font-weight:700;padding:6px 12px;border-radius:8px;background:#64748b;color:white"
+        )
+        self.verdict_title.setText("Is this website blocked on my network?")
+        self.verdict_detail.setText("Enter a website and run the check to see whether it opens on your network.")
+        self.status.setText("Enter a website and click Check Website.")
+        for value in self.summary_values.values():
+            value.setText("Not tested")
+        self.path_view.clear()
+        self.location_view.clear()
+        self.details.clear()
+        self.trace_table.setRowCount(0)
+        self.export_button.setEnabled(False)
 
     def _table(self, headers):
         table = QTableWidget(0, len(headers))
@@ -282,7 +307,15 @@ class WebsiteAnalyzerPage(QWidget):
         self.last_result = data
         diagnosis = self._diagnose(data)
         self.diagnosis = diagnosis
-        self.verdict_badge.setText(diagnosis["verdict"])
+        friendly_verdicts = {
+            "NOT BLOCKED": "WEBSITE WORKING",
+            "POLICY RESPONSE": "ACCESS DENIED BY SERVER",
+            "SERVER ERROR": "WEBSITE SERVER ERROR",
+            "POSSIBLE NETWORK BLOCK": "POSSIBLE NETWORK BLOCK",
+            "WEBSITE NOT OPENING": "WEBSITE NOT OPENING",
+            "REACHABLE (HTTP ERROR)": "WEBSITE REACHED",
+        }
+        self.verdict_badge.setText(friendly_verdicts.get(diagnosis["verdict"], diagnosis["verdict"]))
         self.verdict_badge.setStyleSheet(
             f"font-weight:700;padding:6px 12px;border-radius:8px;background:{diagnosis['color']};color:white"
         )
