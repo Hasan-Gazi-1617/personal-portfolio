@@ -12,7 +12,7 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 
 ## Website Block Checker: how to read the result
 
-- The main result is one of: NOT BLOCKED, POLICY RESPONSE, SERVER ERROR, POSSIBLE LOCAL PATH ISSUE, DNS FAILURE or INCONCLUSIVE. A successful HTTP response (including a redirect) means the website responded from this network. HTTP 403/451 means a server or intermediary refused the request, not necessarily the ISP.
+- The main result is one of: NOT BLOCKED, POLICY RESPONSE, SERVER ERROR, POSSIBLE NETWORK BLOCK, WEBSITE NOT OPENING (DNS problem) or WEBSITE NOT OPENING / POSSIBLE NETWORK BLOCK. A successful HTTP response (including a redirect) means the website responded from this network. HTTP 403/451 means a server or intermediary refused the request, not necessarily the ISP.
 - The page is organized into Simple Diagnosis, Where is the problem?, Network Path and Technical Details. Export saves the verdict and supporting evidence.
 - Route Trace runs from the computer using the installed system utility (`traceroute` or `tracepath` on Linux/macOS, `tracert` on Windows). On Ubuntu/Debian, install it with `sudo apt install traceroute`. A hop that does not answer may be filtering ICMP/UDP probes or rate-limiting; it does not prove that traffic is blocked at that hop.
 - TCP port tests report OPEN, CLOSED, FILTERED/TIMEOUT or UNREACHABLE. A timeout is ambiguous and must be compared with a second network and repeated tests.
