@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         if with_count:
             count=QSpinBox(); count.setRange(1,20); count.setValue(4); row.addWidget(QLabel("Count")); row.addWidget(count)
         button=QPushButton(button_text); row.addWidget(button)
-        clear_button=QPushButton("Clear"); clear_button.setObjectName("clearButton"); row.addWidget(clear_button)
+        clear_button=QPushButton("Clear All"); clear_button.setObjectName("clearButton"); clear_button.setToolTip("Clear the input and all displayed results"); row.addWidget(clear_button)
         layout.addLayout(row)
         output=QTextEdit(); output.setReadOnly(True); output.setPlaceholderText("Results will appear here..."); layout.addWidget(output,1)
         def clear():
