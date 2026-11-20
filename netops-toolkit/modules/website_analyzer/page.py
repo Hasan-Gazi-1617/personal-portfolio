@@ -81,6 +81,11 @@ class WebsiteAnalyzerPage(QWidget):
         self.probe_table = self._table(["Country", "City", "Probe ASN", "Probe IP", "Result", "HTTP"])
         self.trace_view = QTextBrowser()
         self.trace_view.setOpenExternalLinks(True)
+        self.trace_table = self._table(["Hop", "Router / Response", "Observation"])
+        trace_tab = QWidget()
+        trace_layout = QVBoxLayout(trace_tab)
+        trace_layout.addWidget(self.trace_table, 2)
+        trace_layout.addWidget(self.trace_view, 1)
         self.evidence = QTextBrowser()
         self.evidence.setOpenExternalLinks(True)
 
@@ -88,7 +93,7 @@ class WebsiteAnalyzerPage(QWidget):
         self.tabs.addTab(self.dns_table, "DNS & IP")
         self.tabs.addTab(self.probe_table, "Global Reachability")
         self.tabs.addTab(self.tcp_table, "TCP Diagnostics")
-        self.tabs.addTab(self.trace_view, "Route Trace")
+        self.tabs.addTab(trace_tab, "Route Trace")
         self.tabs.addTab(self.evidence, "Full Evidence")
 
         self.run_button.clicked.connect(self.run_analysis)
@@ -180,6 +185,27 @@ class WebsiteAnalyzerPage(QWidget):
             "A * or timeout means that hop did not reply to the probe. It does not automatically mean traffic is blocked; "
             "routers often suppress traceroute responses.</p>"
         )
+        hop_rows = []
+        last_responding = None
+        for hop_line in trace.get("hops", []):
+            match = re.match(r"^\\s*(\\d+)\\s+(.*)$", hop_line)
+            if not match:
+                continue
+            hop_number, detail = match.groups()
+            silent = "*" in detail or "timed out" in detail.lower() or "timeout" in detail.lower()
+            observation = "No reply from this hop" if silent else "Response received"
+            hop_rows.append((hop_number, detail, observation))
+            if not silent:
+                last_responding = (hop_number, detail)
+        self._fill(self.trace_table, hop_rows)
+        if last_responding:
+            trace_html += (
+                f"<p><b>Last responding hop observed:</b> {html.escape(last_responding[0])} "
+                f"({html.escape(last_responding[1])})</p>"
+                "<p>This is the last hop that replied, not proof that the next hop is blocking traffic.</p>"
+            )
+        else:
+            trace_html += "<p><b>No responding hop could be identified.</b> Check traceroute permissions, utility availability and network policy.</p>"
         self.trace_view.setHtml(trace_html)
         self.overview.setHtml(self._overview_html(data, report, reachable, failed, assessment))
         evidence_text = report + "\n\n[LOCAL TCP PORT DIAGNOSTICS]\n"
