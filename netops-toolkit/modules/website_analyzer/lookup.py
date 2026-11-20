@@ -460,12 +460,12 @@ def analyze_website_dashboard(target, port=443, probe_count=20):
         if "DNS resolution failed" not in str(exc) and "DNS returned no" not in str(exc):
             raise
         report = (
-            "=" * 68 + "\\n"
-            "NETOPS TOOLKIT | WEBSITE NETWORK BLOCK CHECK\\n"
-            "=" * 68 + "\\n"
-            f"Website: {host}\\n"
-            f"LOCAL DNS ERROR: {exc}\\n"
-            + "\\n".join(_compare_public_dns(host, []))
+            "=" * 68 + "\n"
+            "NETOPS TOOLKIT | WEBSITE NETWORK BLOCK CHECK\n"
+            "=" * 68 + "\n"
+            f"Website: {host}\n"
+            f"LOCAL DNS ERROR: {exc}\n"
+            + "\n".join(_compare_public_dns(host, []))
         )
     try:
         addresses = _resolve_addresses(host)
