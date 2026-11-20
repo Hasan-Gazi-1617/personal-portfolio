@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   build:
+    name: Build on ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
@@ -48,48 +49,73 @@ jobs:
         shell: pwsh
         run: Copy-Item dist/NetOpsToolkit.exe NetOpsToolkit-Windows.exe
 
-      - name: Build Linux binary
+      - name: Build Linux AppImage
         if: runner.os == 'Linux'
+        shell: bash
         run: |
           pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes:ui/themes" netops-toolkit/app.py
+
           mkdir -p AppDir/usr/bin
           cp dist/NetOpsToolkit AppDir/usr/bin/NetOpsToolkit
+          chmod +x AppDir/usr/bin/NetOpsToolkit
+
           cat > AppDir/AppRun <<'EOF'
           #!/bin/sh
           HERE="$(dirname "$(readlink -f "$0")")"
           exec "$HERE/usr/bin/NetOpsToolkit" "$@"
           EOF
           chmod +x AppDir/AppRun
+
           cat > AppDir/netops-toolkit.desktop <<'EOF'
           [Desktop Entry]
           Type=Application
           Name=NetOps Toolkit
           Exec=NetOpsToolkit
-          Icon=netops-toolkit
           Categories=Network;Utility;
           Terminal=false
           EOF
-          cp netops-toolkit-preview.svg AppDir/netops-toolkit.svg 2>/dev/null || cp static/img/netops-toolkit-preview.svg AppDir/netops-toolkit.svg
-          curl -L "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -o appimagetool
-          chmod +x appimagetool
-          ARCH=x86_64 ./appimagetool AppDir NetOpsToolkit-Linux.AppImage
 
-      - name: Build macOS application
+          cp static/img/netops-toolkit-preview.svg AppDir/netops-toolkit.svg
+
+          curl --fail --location --retry 3 \
+            "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            --output appimagetool
+          chmod +x appimagetool
+
+          # Extract-and-run avoids requiring FUSE on the GitHub Actions runner.
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool AppDir NetOpsToolkit-Linux.AppImage
+          chmod +x NetOpsToolkit-Linux.AppImage
+
+      - name: Build macOS DMG
         if: runner.os == 'macOS'
         run: |
           pyinstaller --noconfirm --clean --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes:ui/themes" netops-toolkit/app.py
           hdiutil create -volname "NetOps Toolkit" -srcfolder dist/NetOpsToolkit.app -ov -format UDZO NetOpsToolkit-macOS.dmg
 
-      - name: Upload build artifact
+      - name: Upload platform installer
         uses: actions/upload-artifact@v4
         with:
           name: NetOpsToolkit-${{ matrix.platform }}
           path: NetOpsToolkit-${{ matrix.platform }}.*
+          if-no-files-found: error
+          retention-days: 30
 
-      - name: Publish release asset
-        if: startsWith(github.ref, 'refs/tags/netops-v')
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/netops-v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all platform installers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: NetOpsToolkit-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish all installers together
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: NetOps Toolkit ${{ github.ref_name }}
-          files: NetOpsToolkit-${{ matrix.platform }}.*
+          files: release-assets/*
