@@ -178,7 +178,8 @@ class WebsiteAnalyzerPage(QWidget):
 
         trace = data.get("trace", {})
         trace_html = (
-            f"<h2>Route trace to {html.escape(data.get('host',''))}</h2>"
+            f"<h2>Route trace to {html.escape(data.get('trace_target', data.get('host', '')))}</h2>"
+            f"<p><b>Website:</b> {html.escape(data.get('host', ''))} | <b>Target IP:</b> {html.escape(data.get('trace_target', 'Unknown'))}</p>"
             f"<p><b>Utility:</b> {html.escape(trace.get('command','Unavailable'))}</p>"
             f"<p>{html.escape(trace.get('output','No trace data'))}</p>"
             "<hr><p><b>How to read:</b> Each numbered hop is a router along the path. "
