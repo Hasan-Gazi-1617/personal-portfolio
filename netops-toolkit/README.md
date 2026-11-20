@@ -5,12 +5,16 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 ## Features
 
 - **Network Analyzer:** Wireshark-inspired live packet capture, interface selection, BPF capture filters, protocol/IP/port display filters, decoded packet details and PCAP export.
-- **Website IP & Block Detection:** Enter only a domain or URL. Discovers local IPv4/IPv6 answers, compares them with Google and Cloudflare DNS-over-HTTPS, looks up RDAP allocation and BGP prefixes/ASN, tests local HTTP/HTTPS, inspects TLS, and checks independent global HTTP probes. Adds automatic ASN-correlated anomaly detection, HTTP 403/451 policy interpretation, plain-language root-cause guidance, and NOC verification steps. Results distinguish observed facts from possible causes.
+- **Website IP & Block Intelligence Dashboard:** A visual multi-tab GUI instead of a wall of text. Includes overview/status cards, local DNS/IP discovery, Google and Cloudflare DNS comparison, RDAP allocation, BGP prefix/ASN evidence, local HTTP/HTTPS and TLS checks, TCP port diagnostics (80/443/8080/8443), global country/city probe results, and local traceroute/tracepath output. Includes a full evidence tab and TXT export. Blocking verdicts are evidence-based: confirmed, probable or inconclusive; probe timeouts and silent traceroute hops are never automatically labelled as ISP blocks.
 - **Ping Test:** User-configurable request count (1-1000), automatic/IPv4/IPv6 mode and raw platform ping output.
 - **IP Calculator:** IPv4 and IPv6 subnet calculation, prefix slider, subnet splitting, address ranges, masks and copy actions.
 - Dark and light themes. Every diagnostic module includes a **Clear All** action.
 
-## Website analysis: important interpretation
+## Website analysis: dashboard and important interpretation
+
+- The Website page now presents Overview, DNS & IP, Global Reachability, TCP Diagnostics, Route Trace and Full Evidence tabs. Export Report saves the textual evidence plus local TCP and route-trace results.
+- Route Trace runs from the computer using the installed system utility (`traceroute` or `tracepath` on Linux/macOS, `tracert` on Windows). On Ubuntu/Debian, install it with `sudo apt install traceroute`. A hop that does not answer may be filtering ICMP/UDP probes or rate-limiting; it does not prove that traffic is blocked at that hop.
+- TCP port tests report OPEN, CLOSED, FILTERED/TIMEOUT or UNREACHABLE. A timeout is ambiguous and must be compared with a second network and repeated tests.
 
 - The Website IP & Block Detection page needs only a domain such as `example.com` or a URL such as `https://example.com`; port and probe count are internal defaults.
 - DNS answers can vary by resolver, region, CDN, time and client network. The IP list is the answer visible from the computer running NetOps Toolkit.
