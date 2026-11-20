@@ -61,7 +61,15 @@ jobs:
           mkdir -p netops-toolkit/assets
           rsvg-convert -w 256 -h 256 netops-toolkit/assets/netops-toolkit.svg > netops-toolkit/assets/netops-toolkit.png
 
+          python -m compileall -q netops-toolkit
           pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit \
+            --paths netops-toolkit \
+            --hidden-import ui.main_window \
+            --hidden-import core.network_info \
+            --hidden-import core.worker \
+            --hidden-import modules.diagnostics.ping \
+            --hidden-import modules.dns_tools.lookup \
+            --hidden-import modules.ip_calculator.page \
             --add-data "netops-toolkit/ui/themes:ui/themes" \
             --add-data "netops-toolkit/assets/netops-toolkit.png:assets" \
             netops-toolkit/app.py
