@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         pages = [
             ("Dashboard", self.dashboard),
             ("Network Analyzer", NetworkAnalyzerPage),
-            ("Website IP & Block Detection", WebsiteAnalyzerPage),
+            ("Website Network Block Checker", WebsiteAnalyzerPage),
             ("Ping Test", self.ping_page),
             ("IP Calculator", IPCalculatorPage),
         ]
