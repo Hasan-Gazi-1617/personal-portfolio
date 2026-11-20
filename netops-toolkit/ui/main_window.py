@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
     def website_page(self):
         return self.tool_page(
             "Website IP & Block Detection",
-            "Resolve website IPs, inspect RDAP allocation ranges and ASN data, then compare HTTP reachability from independent global probe nodes.",
+            "Enter a domain to compare local/public DNS, inspect IP allocation and ASN routes, test HTTP/HTTPS and TLS, and receive a plain-language blocking assessment with likely causes and NOC verification steps.",
             "example.com or https://example.com",
             analyze_website,
             "Analyze Website",
