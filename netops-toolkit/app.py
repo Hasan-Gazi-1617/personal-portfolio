@@ -20,5 +20,7 @@ if __name__ == "__main__":
     if icon_path.exists():
         app.setWindowIcon(QIcon(str(icon_path)))
     window = MainWindow()
+    if icon_path.exists():
+        window.setWindowIcon(QIcon(str(icon_path)))
     window.show()
     sys.exit(app.exec())
