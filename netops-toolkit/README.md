@@ -22,7 +22,8 @@ For normal use, download the ready-to-run application. You do not need to instal
 | Operating system | Download |
 |---|---|
 | Windows 10/11, 64-bit | [NetOpsToolkit-Windows.exe](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Windows.exe) |
-| Linux, 64-bit | [NetOpsToolkit-Linux.AppImage](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Linux.AppImage) |
+| Ubuntu / Debian, 64-bit | [NetOpsToolkit-Linux.deb](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Linux.deb) | Recommended; installs app, icon and menu launcher automatically |
+| Other compatible Linux distributions | [NetOpsToolkit-Linux.AppImage](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Linux.AppImage) | Portable; optional manual icon and menu setup |
 
 If an asset is not listed in the release, that build has not been published yet. Do not use an old download link as proof that a newer build is ready.
 
@@ -38,33 +39,101 @@ This packaged executable is intended to run without a separate Python installati
 
 ## 3. Install and run on Linux
 
-1. Download `NetOpsToolkit-Linux.AppImage` from the release page.
-2. Open **Terminal**.
-3. Go to the Downloads directory:
+### Option A: Ubuntu / Debian using the DEB package (recommended)
+
+The DEB package installs NetOps Toolkit, its custom icon and an Applications Menu launcher automatically. No manual icon setup is required.
+
+1. Download [NetOpsToolkit-Linux.deb](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Linux.deb).
+2. Open **Files → Downloads**.
+3. Double-click `NetOpsToolkit-Linux.deb`.
+4. Open it with App Center / Software Install and click **Install**.
+5. Open **Show Apps**, search for **NetOps Toolkit**, and click its icon.
+
+Or install it from Terminal:
 
 ```bash
 cd ~/Downloads
+sudo apt install ./NetOpsToolkit-Linux.deb
 ```
 
-4. Make the AppImage executable:
+To uninstall:
 
 ```bash
+sudo apt remove netops-toolkit
+```
+
+### Option B: AppImage (portable, with manual icon setup)
+
+AppImage is portable. It can run directly, but it does not automatically create an Applications Menu entry on every Linux desktop.
+
+**1. Download and make it executable**
+
+Download [NetOpsToolkit-Linux.AppImage](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest/download/NetOpsToolkit-Linux.AppImage), then open Terminal:
+
+```bash
+cd ~/Downloads
 chmod +x NetOpsToolkit-Linux.AppImage
 ```
 
-5. Run the application:
+**2. Run the application**
 
 ```bash
 ./NetOpsToolkit-Linux.AppImage
 ```
 
-You can also use the file manager: right-click the AppImage, open **Properties → Permissions**, enable **Allow executing file as a program**, then double-click it. The exact option name depends on your desktop environment.
+Alternatively, in Files, right-click the AppImage, open **Properties → Permissions**, enable **Allow executing file as a program**, then double-click it.
+
+**3. Extract and install the custom icon**
+
+The icon is bundled inside the AppImage. Extract its contents:
+
+```bash
+cd ~/Downloads
+./NetOpsToolkit-Linux.AppImage --appimage-extract
+```
+
+Create the icon folder and copy the bundled icon:
+
+```bash
+mkdir -p ~/.local/share/icons/hicolor/256x256/apps
+cp squashfs-root/netops-toolkit.png ~/.local/share/icons/hicolor/256x256/apps/netops-toolkit.png
+mkdir -p ~/.local/share/applications
+```
+
+**4. Create an Applications Menu launcher**
+
+This creates a launcher that points to the AppImage in your Downloads folder:
+
+```bash
+APPIMAGE="$HOME/Downloads/NetOpsToolkit-Linux.AppImage"
+DESKTOP_FILE="$HOME/.local/share/applications/netops-toolkit.desktop"
+
+printf '[Desktop Entry]\nType=Application\nName=NetOps Toolkit\nComment=Network Operations Toolkit\nExec="%s"\nIcon=netops-toolkit\nCategories=Network;Utility;\nTerminal=false\nStartupNotify=true\n' "$APPIMAGE" > "$DESKTOP_FILE"
+
+chmod +x "$DESKTOP_FILE"
+```
+
+If you move the AppImage, update the `APPIMAGE=` path and run the launcher creation command again.
+
+**5. Launch from the desktop menu**
+
+Open **Show Apps**, search for **NetOps Toolkit**, and click its icon. If the launcher or icon does not appear immediately, log out and back in.
+
+You can remove the temporary extracted files after copying the icon:
+
+```bash
+rm -rf ~/Downloads/squashfs-root
+```
+
+**Which Linux file should you choose?** On Ubuntu or Debian, use the DEB package for the easiest installation and automatic menu icon. Use AppImage if you prefer a portable file or use another compatible Linux distribution.
 
 ### Linux troubleshooting
 
-- **Permission denied:** Run `chmod +x NetOpsToolkit-Linux.AppImage` again from the directory containing the file.
-- **FUSE / AppImage error:** Your distribution may need its supported FUSE compatibility package. Install the package recommended for your Linux distribution and version, then retry.
-- **File not found:** Check the downloaded filename with `ls -l ~/Downloads` and make sure the terminal is in the correct folder.
+- **Permission denied:** run `chmod +x NetOpsToolkit-Linux.AppImage` from Downloads.
+- **AppImage FUSE error:** install the FUSE compatibility package supported by your Linux distribution.
+- **AppImage icon missing:** repeat the icon extraction and copy commands above.
+- **DEB launcher not visible:** log out and back in, then search for **NetOps Toolkit** again.
+- **File not found:** check the filename with `ls -l ~/Downloads`.
 
 ## 4. Run from source code (developers)
 
