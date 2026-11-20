@@ -177,13 +177,13 @@ class WebsiteAnalyzerPage(QWidget):
     def _probe_rows(self, report):
         rows = []
         pattern = re.compile(
-            r"^\\s{2}(.+?)\\s*/\\s*(.+?)\\s*\\|\\s*(.+?)\\s*\\|\\s*(\\S+)\\s*\\|\\s*(HTTP RESPONSE|UNREACHABLE|PENDING)\\s*\\|\\s*(.*)$"
+            r"^\s{2}(.+?)\s*/\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(\S+)\s*\|\s*(HTTP RESPONSE|UNREACHABLE|PENDING)\s*\|\s*(.*)$"
         )
         for line in report.splitlines():
             match = pattern.match(line)
             if match:
                 country, city, asn, ip, status, detail = match.groups()
-                code = re.search(r"HTTP (\\d{3})", detail)
+                code = re.search(r"HTTP (\d{3})", detail)
                 rows.append({
                     "country": country, "city": city, "asn": asn, "ip": ip,
                     "status": status, "detail": detail,
@@ -195,9 +195,9 @@ class WebsiteAnalyzerPage(QWidget):
         report = data.get("report", "")
         tcp = {int(row["port"]): row for row in data.get("tcp", [])}
         probes = self._probe_rows(report)
-        https = re.search(r"HTTPS:\\s*HTTP\\s+(\\d{3})", report, re.I)
-        https_failed = re.search(r"HTTPS:\\s*Connection failed", report, re.I)
-        http = re.search(r"HTTP:\\s*HTTP\\s+(\\d{3})", report, re.I)
+        https = re.search(r"HTTPS:\s*HTTP\s+(\d{3})", report, re.I)
+        https_failed = re.search(r"HTTPS:\s*Connection failed", report, re.I)
+        http = re.search(r"HTTP:\s*HTTP\s+(\d{3})", report, re.I)
         dns_ok = bool(data.get("addresses"))
         tcp443 = tcp.get(443, {}).get("status", "NOT TESTED")
         code = int(https.group(1)) if https else (int(http.group(1)) if http else None)
