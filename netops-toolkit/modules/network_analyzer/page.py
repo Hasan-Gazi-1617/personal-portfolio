@@ -124,7 +124,7 @@ class NetworkAnalyzerPage(QWidget):
 
         filter_row = QHBoxLayout()
         self.search = QLineEdit(); self.search.setPlaceholderText("Filter displayed packets by IP, port or text")
-        self.protocol_filter = QComboBox(); self.protocol_filter.addItems(["All protocols","TCP","UDP","ICMP","ICMPv6","DNS","ARP","DATA","OTHER"])
+        self.protocol_filter = QComboBox(); self.protocol_filter.addItems(["All protocols","TCP","UDP","HTTP","HTTPS","ICMP","ICMPv6","DNS","ARP","DATA","OTHER"])
         self.status = QLabel("Ready"); self.status.setObjectName("muted")
         filter_row.addWidget(self.search, 2); filter_row.addWidget(self.protocol_filter); filter_row.addWidget(self.status)
         root.addLayout(filter_row)
@@ -209,3 +209,4 @@ class NetworkAnalyzerPage(QWidget):
         self.protocol_filter.setCurrentIndex(0)
         self.status.setText("Ready")
         self.export_btn.setEnabled(False)
+\n    def closeEvent(self, event):\n        self.capture.stop()\n        super().closeEvent(event)\n
