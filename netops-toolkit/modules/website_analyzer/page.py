@@ -228,44 +228,44 @@ class WebsiteAnalyzerPage(QWidget):
             detail = "The website endpoint returned an HTTP response, so the network path reached an HTTP service. This response alone does not mean the ISP blocked it."
             color = "#16a34a"
             local_state = f"HTTP {code}"
-        elif tcp443 == "OPEN":
-            verdict = "INCONCLUSIVE"
-            title = "Connection reached the remote TCP port, but website access failed"
-            detail = "TCP 443 is open, but HTTPS/HTTP did not complete. This may be a TLS, server, CDN or application issue. ISP blocking is not confirmed."
+        elif not dns_ok:
+            verdict = "WEBSITE NOT OPENING"
+            title = "Website name could not be found on this network"
+            detail = "Your device could not resolve this website. This may be a DNS outage or DNS filtering. The tool cannot yet confirm that your ISP blocked it."
             color = "#d97706"
-            local_state = "TCP open; HTTPS failed"
+            local_state = "DNS lookup failed"
+        elif tcp443 == "OPEN":
+            verdict = "WEBSITE NOT OPENING"
+            title = "Website is not opening, but the connection reaches its port"
+            detail = "Your network can reach TCP port 443, but the HTTPS request did not finish. This points to a TLS, CDN, server or application problem. ISP blocking is not confirmed."
+            color = "#d97706"
+            local_state = "Port open; HTTPS failed"
         elif tcp443 in ("FILTERED / TIMEOUT", "UNREACHABLE"):
             if successful_global >= 2:
-                verdict = "POSSIBLE LOCAL PATH ISSUE"
-                title = "Website works from other probes, but not from this network"
-                detail = "This is a possible local network, ISP path or filtering issue. More checks from a second ISP and ISP-side logs are needed to confirm the blocking point."
+                verdict = "POSSIBLE NETWORK BLOCK"
+                title = "Website fails here but works from other locations"
+                detail = "This is a possible local-network or ISP-path block. It could also be a routing problem. Compare with a second ISP and check ISP filtering logs before confirming."
                 color = "#d97706"
             else:
-                verdict = "INCONCLUSIVE"
-                title = "Website connection could not be established"
-                detail = "A timeout or unreachable result can be caused by filtering, routing, server outage or probe limitations. Blocking is not confirmed."
+                verdict = "WEBSITE NOT OPENING"
+                title = "Website could not be reached from this network"
+                detail = "The connection failed. A block, routing issue, remote outage or firewall can cause this. Current evidence does not identify which one."
                 color = "#d97706"
             local_state = tcp443
-        elif not dns_ok:
-            verdict = "DNS FAILURE"
-            title = "This network could not resolve the website"
-            detail = "DNS resolution failed. It may be a local DNS problem or filtering, but compare with independent DNS before calling it a block."
-            color = "#d97706"
-            local_state = "DNS failed"
         else:
-            verdict = "INCONCLUSIVE"
-            title = "Not enough evidence to decide"
-            detail = "The available tests do not prove whether the website is blocked on this network."
+            verdict = "WEBSITE NOT OPENING"
+            title = "Website could not be opened from this network"
+            detail = "The website did not return a usable response. The exact cause needs further comparison tests."
             color = "#d97706"
-            local_state = "Needs review"
+            local_state = "Connection needs checking"
 
         location = "Not confirmed"
         location_reason = "The current tests cannot identify a specific router or ISP device as the blocking point."
-        if verdict == "POSSIBLE LOCAL PATH ISSUE":
-            location_reason = "The failure appears somewhere between this device and the destination. The exact point (router, ISP, upstream or destination) is not confirmed."
+        if verdict == "POSSIBLE NETWORK BLOCK":
+            location_reason = "The website works from other probe locations but not from this network. The exact point (device, router, ISP, upstream or destination) is not confirmed."
         elif verdict == "POLICY RESPONSE":
             location_reason = "The HTTP refusal came from the website, CDN, WAF or an intermediary. The responding component's identity is not established."
-        elif verdict == "DNS FAILURE":
+        elif not dns_ok:
             location_reason = "The failure is at the name-resolution stage. Check the configured DNS server and compare public resolver answers."
 
         return {
@@ -321,10 +321,10 @@ class WebsiteAnalyzerPage(QWidget):
         host = html.escape(data.get("host", ""))
         steps = [
             ("1. Your device", "Test started from this computer", "ok"),
-            ("2. DNS lookup", "Website name resolved" if d["dns_ok"] else "Could not resolve website name", "ok" if d["dns_ok"] else "bad"),
+            ("2. DNS lookup", "Website name found" if d["dns_ok"] else "Website name not found", "ok" if d["dns_ok"] else "bad"),
             ("3. TCP connection", f"Port 443: {d['tcp443']}", "ok" if d["tcp443"] == "OPEN" else "warn"),
-            ("4. HTTPS request", d["https_state"], "ok" if d["https_state"].startswith("HTTP 2") or d["https_state"].startswith("HTTP 3") else "warn"),
-            ("5. Destination response", d["title"], "ok" if d["verdict"] == "NOT BLOCKED" else "warn"),
+            ("4. HTTPS request", d["https_state"], "ok" if d["https_state"].startswith("HTTP ") else "warn"),
+            ("5. Website response", d["title"], "ok" if d["verdict"] in ("NOT BLOCKED", "REACHABLE (HTTP ERROR)") else "warn"),
         ]
         colors = {"ok": "#16a34a", "warn": "#d97706", "bad": "#dc2626"}
         flow = "".join(
@@ -335,20 +335,20 @@ class WebsiteAnalyzerPage(QWidget):
         return (
             f"<h2>{host}</h2><p><b>Simple result:</b> {html.escape(d['verdict'])}</p>"
             f"{flow}<h3>What should I understand?</h3><p>{html.escape(d['detail'])}</p>"
-            "<p><b>Important:</b> This result describes access from this computer and its current network. "
-            "A definitive ISP block requires repeatable comparison tests or ISP-side filtering evidence.</p>"
+            "<p><b>Remember:</b> A failed connection does not automatically mean your ISP blocked the site. "
+            "The exact blocking point is shown only when evidence supports it.</p>"
         )
 
     def _location_html(self, d):
         return (
-            f"<h2>Possible blocking location</h2><h3>{html.escape(d['location'])}</h3>"
+            f"<h2>Where could the problem be?</h2><h3>{html.escape(d['location'])}</h3>"
             f"<p>{html.escape(d['location_reason'])}</p>"
-            "<h3>Network segments to investigate</h3><ol>"
-            "<li><b>Your device:</b> local firewall, proxy, VPN or security software.</li>"
-            "<li><b>Local router:</b> DNS settings, firewall rules, parental controls or access policies.</li>"
-            "<li><b>ISP network:</b> DNS filtering, ACL, firewall, routing or policy logs.</li>"
-            "<li><b>Upstream network:</b> transit routing or peering issue.</li>"
-            "<li><b>Website / CDN:</b> server outage, WAF, geo-policy or TLS configuration.</li>"
+            "<h3>Check these points in order</h3><ol>"
+            "<li><b>Your device:</b> VPN, proxy, firewall or security software.</li>"
+            "<li><b>Your router:</b> DNS, firewall or access-control rules.</li>"
+            "<li><b>Your ISP:</b> DNS filtering, firewall, routing or policy rules.</li>"
+            "<li><b>Upstream provider:</b> routing or peering path.</li>"
+            "<li><b>Website server / CDN:</b> outage, security policy or TLS problem.</li>"
             "</ol><p><b>Current finding:</b> the tests do not identify a specific device as the blocker. "
             "Do not treat a silent traceroute hop as a confirmed block point.</p>"
         )
