@@ -5,18 +5,19 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 ## Features
 
 - **Network Analyzer:** Wireshark-inspired live packet capture, interface selection, BPF capture filters, protocol/IP/port display filters, decoded packet details and PCAP export.
-- **Website IP & Block Intelligence Dashboard:** A visual multi-tab GUI instead of a wall of text. Includes overview/status cards, local DNS/IP discovery, Google and Cloudflare DNS comparison, RDAP allocation, BGP prefix/ASN evidence, local HTTP/HTTPS and TLS checks, TCP port diagnostics (80/443/8080/8443), global country/city probe results, and local traceroute/tracepath output. Includes a full evidence tab and TXT export. Blocking verdicts are evidence-based: confirmed, probable or inconclusive; probe timeouts and silent traceroute hops are never automatically labelled as ISP blocks.
+- **Website Network Block Checker:** Starts with one clear question: is the website reachable from this computer's current network? Shows a simple final verdict, DNS/TCP/HTTPS status cards, a step-by-step connection path, a possible fault-domain explanation, route trace and technical evidence. Global probes are supporting comparison only. Timeouts, HTTP policy responses and silent traceroute hops are not automatically labelled as ISP blocks.
 - **Ping Test:** User-configurable request count (1-1000), automatic/IPv4/IPv6 mode and raw platform ping output.
 - **IP Calculator:** IPv4 and IPv6 subnet calculation, prefix slider, subnet splitting, address ranges, masks and copy actions.
 - Dark and light themes. Every diagnostic module includes a **Clear All** action.
 
-## Website analysis: dashboard and important interpretation
+## Website Block Checker: how to read the result
 
-- The Website page now presents Overview, DNS & IP, Global Reachability, TCP Diagnostics, Route Trace and Full Evidence tabs. Export Report saves the textual evidence plus local TCP and route-trace results.
+- The main result is one of: NOT BLOCKED, POLICY RESPONSE, SERVER ERROR, POSSIBLE LOCAL PATH ISSUE, DNS FAILURE or INCONCLUSIVE. A successful HTTP response (including a redirect) means the website responded from this network. HTTP 403/451 means a server or intermediary refused the request, not necessarily the ISP.
+- The page is organized into Simple Diagnosis, Where is the problem?, Network Path and Technical Details. Export saves the verdict and supporting evidence.
 - Route Trace runs from the computer using the installed system utility (`traceroute` or `tracepath` on Linux/macOS, `tracert` on Windows). On Ubuntu/Debian, install it with `sudo apt install traceroute`. A hop that does not answer may be filtering ICMP/UDP probes or rate-limiting; it does not prove that traffic is blocked at that hop.
 - TCP port tests report OPEN, CLOSED, FILTERED/TIMEOUT or UNREACHABLE. A timeout is ambiguous and must be compared with a second network and repeated tests.
 
-- The Website IP & Block Detection page needs only a domain such as `example.com` or a URL such as `https://example.com`; port and probe count are internal defaults.
+- Enter a domain such as `example.com` or a URL such as `https://example.com`. The tool tests access from the computer running NetOps Toolkit. Global probes are separate third-party checks and do not directly test the user's ISP.
 - DNS answers can vary by resolver, region, CDN, time and client network. The IP list is the answer visible from the computer running NetOps Toolkit.
 - RDAP allocation ranges describe registry allocation. BGP prefixes describe routed announcements. They are different and neither one proves that an IP range is blocked.
 - Global reachability checks use third-party probe nodes. The app displays the country/city/ASN returned by the provider; it cannot test every ISP or every network in a country.
