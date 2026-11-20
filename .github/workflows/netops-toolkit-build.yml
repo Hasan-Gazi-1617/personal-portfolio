@@ -131,10 +131,11 @@ jobs:
           EOF
           cat > "$PKG/DEBIAN/control" <<'EOF'
           Package: netops-toolkit
-          Version: 0.1.1
+          Version: 0.2.0
           Section: net
           Priority: optional
           Architecture: amd64
+          Depends: libpcap0.8
           Maintainer: NetOps Toolkit
           Description: Cross-platform network operations toolkit
            Desktop application for network diagnostics and IP calculations.
@@ -171,6 +172,6 @@ jobs:
       - name: Publish all installers together
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'netops-v0.1.0' }}
-          name: NetOps Toolkit ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.1.0' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'netops-v0.2.0' }}
+          name: NetOps Toolkit ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.2.0' }}
           files: release-assets/*
