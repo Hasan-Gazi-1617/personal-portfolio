@@ -51,15 +51,26 @@ class MainWindow(QMainWindow):
         entry=QLineEdit(); entry.setPlaceholderText(placeholder); row.addWidget(entry,1); count=None
         if with_count:
             count=QSpinBox(); count.setRange(1,20); count.setValue(4); row.addWidget(QLabel("Count")); row.addWidget(count)
-        button=QPushButton(button_text); row.addWidget(button); layout.addLayout(row)
+        button=QPushButton(button_text); row.addWidget(button)
+        clear_button=QPushButton("Clear"); clear_button.setObjectName("clearButton"); row.addWidget(clear_button)
+        layout.addLayout(row)
         output=QTextEdit(); output.setReadOnly(True); output.setPlaceholderText("Results will appear here..."); layout.addWidget(output,1)
+        def clear():
+            if self.worker and self.worker.isRunning(): return
+            entry.clear()
+            output.clear()
+            if count: count.setValue(4)
+        clear_button.clicked.connect(clear)
         def run():
             if self.worker and self.worker.isRunning(): return
-            button.setEnabled(False); output.setPlainText("Working...")
+            button.setEnabled(False); clear_button.setEnabled(False); output.setPlainText("Working...")
             args=(entry.text(),count.value()) if count else (entry.text(),)
             self.worker=Worker(function,*args); self.worker.done.connect(output.setPlainText)
             self.worker.failed.connect(lambda error:output.setPlainText("Error: "+error))
-            self.worker.finished.connect(lambda:button.setEnabled(True)); self.worker.start()
+            def finish():
+                button.setEnabled(True)
+                clear_button.setEnabled(True)
+            self.worker.finished.connect(finish); self.worker.start()
         button.clicked.connect(run); return widget
     def ping_page(self): return self.tool_page("Ping Test","Check reachability, response time and packet loss.","1.1.1.1 or example.com",ping,"Run Ping",True)
     def dns_page(self): return self.tool_page("DNS Lookup","Resolve IPv4 and IPv6 DNS records.","example.com",lookup,"Lookup")
