@@ -458,9 +458,11 @@ def analyze_website_dashboard(target, port=443, probe_count=20):
     except Exception:
         addresses = []
     tcp = _tcp_port_checks(host)
-    trace = _trace_route(host)
+    trace_target = addresses[0] if addresses else host
+    trace = _trace_route(trace_target)
     return {
         "host": host,
+        "trace_target": trace_target,
         "report": report,
         "addresses": addresses,
         "tcp": tcp,
