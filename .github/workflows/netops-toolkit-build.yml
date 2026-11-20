@@ -1,0 +1,37 @@
+name: Build NetOps Toolkit releases
+on:
+  workflow_dispatch:
+  push:
+    tags: ["netops-v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pyinstaller
+      - run: pip install -r netops-toolkit/requirements.txt
+      - run: pyinstaller --noconfirm --windowed --name NetOpsToolkit netops-toolkit/app.py
+      - if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist/NetOpsToolkit -DestinationPath NetOpsToolkit-windows.zip
+        shell: pwsh
+      - if: runner.os != 'Windows'
+        run: cd dist && zip -qr ../NetOpsToolkit-${{ matrix.platform }}.zip NetOpsToolkit
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: netops-v0.1.0
+          name: NetOps Toolkit v0.1.0
+          files: NetOpsToolkit-${{ matrix.platform }}.zip
