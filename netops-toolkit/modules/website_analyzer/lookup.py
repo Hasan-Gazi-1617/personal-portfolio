@@ -67,6 +67,20 @@ def analyze_website(target, port=443, probe_count=8):
             lines.append(f"  Network name: {rdap.get('name') or 'Not published'}")
             lines.append(f"  Country: {rdap.get('country') or 'Not published'}")
             lines.append(f"  Handle: {rdap.get('handle') or 'Not published'}")
+            try:
+                bgp = _get_json("https://api.bgpview.io/ip/" + quote(address), timeout=10).get("data", {})
+                prefixes = bgp.get("prefixes", [])
+                if prefixes:
+                    prefix = prefixes[0]
+                    asn = prefix.get("asn", {})
+                    lines.append(f"  BGP route prefix: {prefix.get('prefix', 'Not published')}")
+                    lines.append(f"  Origin ASN: AS{asn.get('asn', 'Unknown')}")
+                    lines.append(f"  ASN name: {asn.get('name') or 'Not published'}")
+                    lines.append(f"  ASN country: {asn.get('country_code') or 'Not published'}")
+                else:
+                    lines.append("  BGP route / ASN: No route data returned")
+            except Exception as bgp_error:
+                lines.append(f"  BGP route / ASN lookup unavailable: {bgp_error}")
             for entity in rdap.get("entities", []):
                 for item in entity.get("vcardArray", [None, []])[1]:
                     if item and item[0] == "fn":
