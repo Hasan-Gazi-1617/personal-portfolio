@@ -5,7 +5,7 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 ## Features
 
 - **Network Analyzer:** Wireshark-inspired live packet capture, interface selection, BPF capture filters, protocol/IP/port display filters, decoded packet details and PCAP export.
-- **Website IP & Block Detection:** Enter only a website domain or URL. The tool automatically discovers IPv4/IPv6 addresses, looks up RDAP allocation ranges and CIDR summaries, retrieves BGP-announced prefixes and ASN/organization/country data where available, checks local HTTP/HTTPS reachability, inspects the TLS certificate, and compares HTTP reachability from independent global probe nodes. Probe country, city, IP and ASN are shown when supplied by the probe provider.
+- **Website IP & Block Detection:** Enter only a domain or URL. Discovers local IPv4/IPv6 answers, compares them with Google and Cloudflare DNS-over-HTTPS, looks up RDAP allocation and BGP prefixes/ASN, tests local HTTP/HTTPS, inspects TLS, and checks independent global HTTP probes. Adds automatic ASN-correlated anomaly detection, HTTP 403/451 policy interpretation, plain-language root-cause guidance, and NOC verification steps. Results distinguish observed facts from possible causes.
 - **Ping Test:** User-configurable request count (1-1000), automatic/IPv4/IPv6 mode and raw platform ping output.
 - **IP Calculator:** IPv4 and IPv6 subnet calculation, prefix slider, subnet splitting, address ranges, masks and copy actions.
 - Dark and light themes. Every diagnostic module includes a **Clear All** action.
@@ -16,7 +16,7 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 - DNS answers can vary by resolver, region, CDN, time and client network. The IP list is the answer visible from the computer running NetOps Toolkit.
 - RDAP allocation ranges describe registry allocation. BGP prefixes describe routed announcements. They are different and neither one proves that an IP range is blocked.
 - Global reachability checks use third-party probe nodes. The app displays the country/city/ASN returned by the provider; it cannot test every ISP or every network in a country.
-- A failed probe is **not proof of ISP blocking**. DNS, routing, firewall, TLS, server policy, geo restrictions and probe-node availability can all affect results. Repeated failures from probes sharing an ASN while other networks succeed are an anomaly to investigate, not a definitive block verdict.
+- A failed probe is **not proof of ISP blocking**. DNS, routing, firewall, TLS, server policy, geo restrictions and probe-node availability can all affect results. The report compares local DNS with Google and Cloudflare DNS-over-HTTPS, groups failed probes by their reported ASN, highlights HTTP 403/451 policy responses, and explains likely fault domains. ASN correlation is only an anomaly to investigate, not a definitive block verdict. Public DNS differences can also be caused by CDN geography, caching or resolver policy.
 - HTTP 403/451 responses are policy/authentication responses from the server or an intermediary. They do not independently identify which ISP, if any, applied a block.
 - External RDAP, BGP and probe services must be reachable from the computer for their respective sections to return data.
 
