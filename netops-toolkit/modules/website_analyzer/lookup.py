@@ -190,6 +190,35 @@ def _global_reachability(host, probe_count=20):
     return response.get("permanent_link"), rows
 
 
+def _compare_public_dns(host, local_addresses):
+    """Compare local DNS with Google and Cloudflare DNS-over-HTTPS answers."""
+    rows = []
+    public_answers = set()
+    for record_type in ("A", "AAAA"):
+        endpoints = {
+            "Google": "https://dns.google/resolve?name=" + quote(host) + "&type=" + record_type,
+            "Cloudflare": "https://cloudflare-dns.com/dns-query?name=" + quote(host) + "&type=" + record_type,
+        }
+        for provider, url in endpoints.items():
+            try:
+                data = _get_json(url, timeout=8)
+                values = sorted({item.get("data", "").strip().rstrip(".") for item in data.get("Answer", []) if item.get("data")})
+                public_answers.update(values)
+                rows.append("  " + record_type + " / " + provider + ": " + (", ".join(values) if values else "No answer"))
+            except Exception as exc:
+                rows.append("  " + record_type + " / " + provider + ": Lookup unavailable (" + str(exc) + ")")
+    local_set = set(local_addresses)
+    if public_answers and not local_set:
+        finding = "LOCAL DNS returned no address, while a public resolver returned records. Local resolver failure or DNS filtering is possible."
+    elif public_answers and local_set != public_answers:
+        finding = "Local and public DNS answers differ. CDN geography, cache, resolver policy or DNS filtering may explain the difference."
+    elif public_answers:
+        finding = "Local and public DNS have overlapping results; no obvious DNS discrepancy was detected."
+    else:
+        finding = "Public DNS comparison unavailable; no DNS filtering conclusion can be made."
+    rows.append("  DNS interpretation: " + finding)
+    return rows
+
 def analyze_website(target, port=443, probe_count=20):
     """Run all website checks from a single domain/URL input."""
     host = _normalise_target(target)
@@ -239,6 +268,9 @@ def analyze_website(target, port=443, probe_count=20):
         for error in info["errors"]:
             lines.append(f"    Lookup note: {error}")
     lines.append("\n  Unique BGP prefixes: " + (", ".join(sorted(all_prefixes)) if all_prefixes else "Not available"))
+
+    lines.extend(["", "[3] DNS CROSS-CHECK (LOCAL VS PUBLIC RESOLVERS)"])
+    lines.extend(_compare_public_dns(host, addresses))
 
     lines.extend(["", "[3] LOCAL HTTP / HTTPS REACHABILITY"])
     for result in _local_web_test(host, port):
