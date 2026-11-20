@@ -35,7 +35,7 @@ def _cidr_ranges(start, end):
         return []
 
 
-def analyze_website(target, port=443, probe_count=8):
+def analyze_website(target, port=443, probe_count=20):
     host = _normalise_target(target)
     try:
         records = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
