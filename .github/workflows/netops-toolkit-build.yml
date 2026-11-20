@@ -46,6 +46,12 @@ jobs:
       - name: Install application dependencies
         run: python -m pip install -r netops-toolkit/requirements.txt
 
+      - name: Generate Windows and macOS app icon
+        if: runner.os != 'Linux'
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -c "from PySide6.QtGui import QImage,QPainter; from PySide6.QtSvg import QSvgRenderer; r=QSvgRenderer('netops-toolkit/assets/netops-toolkit.svg'); assert r.isValid(), 'Invalid SVG icon'; i=QImage(256,256,QImage.Format.Format_ARGB32); i.fill(0); p=QPainter(i); r.render(p); p.end(); assert i.save('netops-toolkit/assets/netops-toolkit.png'), 'Could not save PNG icon'"
+
       - name: Build Windows EXE
         if: runner.os == 'Windows'
         run: pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit --paths netops-toolkit --hidden-import ui.main_window --hidden-import core.network_info --hidden-import core.worker --hidden-import modules.diagnostics.ping --hidden-import modules.ip_calculator.page --hidden-import modules.network_analyzer.page --hidden-import modules.website_analyzer.lookup --collect-all scapy --add-data "netops-toolkit/ui/themes;ui/themes" --add-data "netops-toolkit/assets/netops-toolkit.png;assets" netops-toolkit/app.py
