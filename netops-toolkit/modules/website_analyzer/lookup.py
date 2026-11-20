@@ -16,8 +16,8 @@ from urllib.error import HTTPError, URLError
 USER_AGENT = "NetOpsToolkit/1.1"
 
 
-def _get_json(url, timeout=12):
-    request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
+def _get_json(url, timeout=12, accept="application/json"):
+    request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": accept})
     with urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8", errors="replace"))
 
@@ -201,7 +201,7 @@ def _compare_public_dns(host, local_addresses):
         }
         for provider, url in endpoints.items():
             try:
-                data = _get_json(url, timeout=8)
+                data = _get_json(url, timeout=8, accept="application/dns-json" if provider == "Cloudflare" else "application/json")
                 values = sorted({item.get("data", "").strip().rstrip(".") for item in data.get("Answer", []) if item.get("data")})
                 public_answers.update(values)
                 rows.append("  " + record_type + " / " + provider + ": " + (", ".join(values) if values else "No answer"))
