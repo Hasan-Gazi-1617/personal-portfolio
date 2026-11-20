@@ -6,7 +6,7 @@ Cross-platform network diagnostics desktop application built with Python and PyS
 - Dashboard: host, OS, local IP and network interfaces
 - Ping diagnostics
 - DNS A/AAAA lookup
-- IPv4/IPv6 CIDR calculator
+- Redesigned dual-stack IP Calculator with separate IPv4 and IPv6 tabs\n- Live prefix slider, quick examples, subnet splitting, address ranges, masks and copy actions
 - Dark and light themes
 
 ## Run
