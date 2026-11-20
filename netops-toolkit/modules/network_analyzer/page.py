@@ -66,18 +66,19 @@ def describe_packet(packet):
         src, dst = packet[IPv6].src, packet[IPv6].dst
     elif Ether in packet:
         src, dst = packet[Ether].src, packet[Ether].dst
-    if TCP in packet:
-        protocol, sport, dport = "TCP", str(packet[TCP].sport), str(packet[TCP].dport)
-    elif UDP in packet:
-        protocol, sport, dport = "UDP", str(packet[UDP].sport), str(packet[UDP].dport)
+    if packet.haslayer("DNS") or (TCP in packet and packet[TCP].dport == 53) or (UDP in packet and (packet[UDP].sport == 53 or packet[UDP].dport == 53)):
+        protocol = "DNS"
+    elif packet.haslayer("ARP"):
+        protocol = "ARP"
     elif ICMP in packet:
         protocol = "ICMP"
     elif packet.haslayer("ICMPv6"):
         protocol = "ICMPv6"
-    elif packet.haslayer("DNS"):
-        protocol = "DNS"
-    elif packet.haslayer("ARP"):
-        protocol = "ARP"
+    elif TCP in packet:
+        sport, dport = str(packet[TCP].sport), str(packet[TCP].dport)
+        protocol = "HTTPS" if 443 in (packet[TCP].sport, packet[TCP].dport) else "HTTP" if 80 in (packet[TCP].sport, packet[TCP].dport) else "TCP"
+    elif UDP in packet:
+        protocol, sport, dport = "UDP", str(packet[UDP].sport), str(packet[UDP].dport)
     elif packet.haslayer("Raw"):
         protocol = "DATA"
     return {
