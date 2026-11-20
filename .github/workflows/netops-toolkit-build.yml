@@ -51,15 +51,25 @@ jobs:
         shell: pwsh
         run: Copy-Item dist/NetOpsToolkit.exe NetOpsToolkit-Windows.exe
 
-      - name: Build Linux AppImage
+      - name: Build Linux AppImage and Debian installer
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes:ui/themes" netops-toolkit/app.py
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          mkdir -p netops-toolkit/assets
+          rsvg-convert -w 256 -h 256 netops-toolkit/assets/netops-toolkit.svg > netops-toolkit/assets/netops-toolkit.png
 
-          mkdir -p AppDir/usr/bin
-          cp dist/NetOpsToolkit AppDir/usr/bin/NetOpsToolkit
-          chmod +x AppDir/usr/bin/NetOpsToolkit
+          pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit \
+            --add-data "netops-toolkit/ui/themes:ui/themes" \
+            --add-data "netops-toolkit/assets/netops-toolkit.png:assets" \
+            netops-toolkit/app.py
+
+          mkdir -p AppDir/usr/bin AppDir/usr/share/icons/hicolor/256x256/apps
+          install -m 755 dist/NetOpsToolkit AppDir/usr/bin/NetOpsToolkit
+          install -m 644 netops-toolkit/assets/netops-toolkit.png AppDir/netops-toolkit.png
+          install -m 644 netops-toolkit/assets/netops-toolkit.png AppDir/usr/share/icons/hicolor/256x256/apps/netops-toolkit.png
 
           cat > AppDir/AppRun <<'EOF'
           #!/bin/sh
@@ -72,24 +82,52 @@ jobs:
           [Desktop Entry]
           Type=Application
           Name=NetOps Toolkit
+          Comment=Network Operations Toolkit
           Exec=NetOpsToolkit
-          Categories=Utility;
           Icon=netops-toolkit
+          Categories=Network;Utility;
           Terminal=false
+          StartupNotify=true
           EOF
-
-          sudo apt-get update
-          sudo apt-get install -y librsvg2-bin
-          rsvg-convert -w 256 -h 256 static/img/netops-toolkit-preview.svg > AppDir/netops-toolkit.png
 
           curl --fail --location --retry 3 \
             "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
             --output appimagetool
           chmod +x appimagetool
-
-          # Extract-and-run avoids requiring FUSE on the GitHub Actions runner.
           APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool AppDir NetOpsToolkit-Linux.AppImage
           chmod +x NetOpsToolkit-Linux.AppImage
+
+          # Build a real Debian installer that registers the app in the desktop menu.
+          PKG="netops-deb"
+          mkdir -p "$PKG/DEBIAN" "$PKG/opt/netops-toolkit" \
+            "$PKG/usr/share/applications" \
+            "$PKG/usr/share/icons/hicolor/256x256/apps"
+          install -m 755 dist/NetOpsToolkit "$PKG/opt/netops-toolkit/NetOpsToolkit"
+          install -m 644 netops-toolkit/assets/netops-toolkit.png \
+            "$PKG/usr/share/icons/hicolor/256x256/apps/netops-toolkit.png"
+          cat > "$PKG/usr/share/applications/netops-toolkit.desktop" <<'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=NetOps Toolkit
+          Comment=Network Operations Toolkit
+          Exec=/opt/netops-toolkit/NetOpsToolkit
+          Icon=netops-toolkit
+          Terminal=false
+          Categories=Network;Utility;
+          StartupNotify=true
+          EOF
+          cat > "$PKG/DEBIAN/control" <<'EOF'
+          Package: netops-toolkit
+          Version: 0.1.1
+          Section: net
+          Priority: optional
+          Architecture: amd64
+          Maintainer: NetOps Toolkit
+          Description: Cross-platform network operations toolkit
+           Desktop application for network diagnostics and IP calculations.
+          EOF
+          dpkg-deb --build --root-owner-group "$PKG" NetOpsToolkit-Linux.deb
 
       - name: Build macOS DMG
         if: runner.os == 'macOS'
