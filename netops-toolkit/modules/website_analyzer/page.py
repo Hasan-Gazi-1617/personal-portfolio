@@ -1,4 +1,4 @@
-"""Visual Website IP, reachability and blocking diagnostics dashboard."""
+"""Simple, evidence-led Website Block Checker dashboard."""
 import html
 import ipaddress
 import re
@@ -18,15 +18,18 @@ class WebsiteAnalyzerPage(QWidget):
         super().__init__()
         self.worker = None
         self.last_result = None
+        self.diagnosis = None
+
         root = QVBoxLayout(self)
         root.setContentsMargins(4, 4, 4, 4)
-        root.setSpacing(12)
+        root.setSpacing(10)
 
-        title = QLabel("Website IP & Block Intelligence")
+        title = QLabel("Website Network Block Checker")
         title.setObjectName("title")
         root.addWidget(title)
         subtitle = QLabel(
-            "Trace reachability from this network, inspect global probes, identify network-path anomalies and review evidence."
+            "Main question: Can this website be opened from your current network? "
+            "If not, identify the type of failure and show the network path."
         )
         subtitle.setObjectName("muted")
         subtitle.setWordWrap(True)
@@ -34,67 +37,92 @@ class WebsiteAnalyzerPage(QWidget):
 
         search = QHBoxLayout()
         self.target = QLineEdit()
-        self.target.setPlaceholderText("Enter domain or URL, e.g. example.com")
-        self.target.setMinimumHeight(42)
+        self.target.setPlaceholderText("Enter website, e.g. example.com")
+        self.target.setMinimumHeight(44)
         search.addWidget(self.target, 1)
-        search.addWidget(QLabel("Global probes"))
+        search.addWidget(QLabel("Global checks"))
         self.probe_count = QSpinBox()
         self.probe_count.setRange(4, 20)
-        self.probe_count.setValue(20)
-        self.probe_count.setMinimumHeight(42)
+        self.probe_count.setValue(12)
+        self.probe_count.setMinimumHeight(44)
         search.addWidget(self.probe_count)
-        self.run_button = QPushButton("Run Full Analysis")
-        self.run_button.setMinimumHeight(42)
+        self.run_button = QPushButton("Check Website")
+        self.run_button.setMinimumHeight(44)
         search.addWidget(self.run_button)
-        self.export_button = QPushButton("Export Report")
+        self.export_button = QPushButton("Export")
         self.export_button.setEnabled(False)
         search.addWidget(self.export_button)
         root.addLayout(search)
 
-        self.status = QLabel("Enter a website and run the analysis.")
+        self.status = QLabel("Enter a website and click Check Website.")
         self.status.setObjectName("muted")
         root.addWidget(self.status)
 
-        self.cards_grid = QGridLayout()
-        self.cards_grid.setSpacing(10)
-        self.cards = {}
-        for i, key in enumerate(("Assessment", "Local access", "Resolved IPs", "Global probes")):
+        verdict_card = QFrame()
+        verdict_card.setObjectName("panel")
+        verdict_layout = QVBoxLayout(verdict_card)
+        verdict_layout.setContentsMargins(18, 16, 18, 16)
+        verdict_header = QHBoxLayout()
+        verdict_header.addWidget(QLabel("FINAL RESULT FOR YOUR NETWORK"))
+        verdict_header.addStretch()
+        self.verdict_badge = QLabel("NOT TESTED")
+        self.verdict_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.verdict_badge.setStyleSheet(
+            "font-weight:700;padding:6px 12px;border-radius:8px;background:#64748b;color:white"
+        )
+        verdict_header.addWidget(self.verdict_badge)
+        verdict_layout.addLayout(verdict_header)
+        self.verdict_title = QLabel("Is this website blocked on my network?")
+        self.verdict_title.setStyleSheet("font-size:23px;font-weight:800")
+        self.verdict_title.setWordWrap(True)
+        verdict_layout.addWidget(self.verdict_title)
+        self.verdict_detail = QLabel(
+            "Run a check to get a clear answer. The tool will not label a timeout as a confirmed block."
+        )
+        self.verdict_detail.setWordWrap(True)
+        self.verdict_detail.setObjectName("muted")
+        verdict_layout.addWidget(self.verdict_detail)
+        root.addWidget(verdict_card)
+
+        self.summary_grid = QGridLayout()
+        self.summary_grid.setSpacing(8)
+        self.summary_values = {}
+        for i, key in enumerate(("DNS", "TCP 443", "HTTPS / TLS", "Global checks")):
             card = QFrame()
             card.setObjectName("panel")
-            box = QVBoxLayout(card)
+            layout = QVBoxLayout(card)
             label = QLabel(key)
             label.setObjectName("muted")
-            value = QLabel("—")
-            value.setStyleSheet("font-size:20px;font-weight:700")
+            value = QLabel("Not tested")
+            value.setStyleSheet("font-size:16px;font-weight:700")
             value.setWordWrap(True)
-            box.addWidget(label)
-            box.addWidget(value)
-            self.cards[key] = value
-            self.cards_grid.addWidget(card, 0, i)
-        root.addLayout(self.cards_grid)
+            layout.addWidget(label)
+            layout.addWidget(value)
+            self.summary_values[key] = value
+            self.summary_grid.addWidget(card, 0, i)
+        root.addLayout(self.summary_grid)
 
         self.tabs = QTabWidget()
         root.addWidget(self.tabs, 1)
-        self.overview = QTextBrowser()
-        self.dns_table = self._table(["IP address", "IP version", "Scope"])
-        self.tcp_table = self._table(["TCP port", "Result", "Latency", "Details"])
-        self.probe_table = self._table(["Country", "City", "Probe ASN", "Probe IP", "Result", "HTTP"])
-        self.trace_view = QTextBrowser()
-        self.trace_view.setOpenExternalLinks(True)
-        self.trace_table = self._table(["Hop", "Router / Response", "Observation"])
+
+        self.path_view = QTextBrowser()
+        self.path_view.setOpenExternalLinks(True)
+        self.location_view = QTextBrowser()
+        self.location_view.setOpenExternalLinks(True)
+        self.details = QTextBrowser()
+        self.details.setOpenExternalLinks(True)
+        self.trace_table = self._table(["Hop", "Router / IP", "What it means"])
         trace_tab = QWidget()
         trace_layout = QVBoxLayout(trace_tab)
-        trace_layout.addWidget(self.trace_table, 2)
-        trace_layout.addWidget(self.trace_view, 1)
-        self.evidence = QTextBrowser()
-        self.evidence.setOpenExternalLinks(True)
+        trace_layout.addWidget(QLabel(
+            "A silent hop means no traceroute reply. It is not proof that the router blocks the website."
+        ))
+        trace_layout.addWidget(self.trace_table, 1)
 
-        self.tabs.addTab(self.overview, "Overview")
-        self.tabs.addTab(self.dns_table, "DNS & IP")
-        self.tabs.addTab(self.probe_table, "Global Reachability")
-        self.tabs.addTab(self.tcp_table, "TCP Diagnostics")
-        self.tabs.addTab(trace_tab, "Route Trace")
-        self.tabs.addTab(self.evidence, "Full Evidence")
+        self.tabs.addTab(self.path_view, "Simple Diagnosis")
+        self.tabs.addTab(self.location_view, "Where is the problem?")
+        self.tabs.addTab(trace_tab, "Network Path")
+        self.tabs.addTab(self.details, "Technical Details")
 
         self.run_button.clicked.connect(self.run_analysis)
         self.target.returnPressed.connect(self.run_analysis)
@@ -113,23 +141,23 @@ class WebsiteAnalyzerPage(QWidget):
 
     def _fill(self, table, rows):
         table.setRowCount(len(rows))
-        for r, values in enumerate(rows):
-            for c, value in enumerate(values):
+        for row_index, values in enumerate(rows):
+            for column, value in enumerate(values):
                 item = QTableWidgetItem(str(value))
                 item.setToolTip(str(value))
-                table.setItem(r, c, item)
+                table.setItem(row_index, column, item)
 
     def run_analysis(self):
         if self.worker and self.worker.isRunning():
             return
         target = self.target.text().strip()
         if not target:
-            self.status.setText("Enter a website domain first.")
+            self.status.setText("Please enter a website first.")
             return
         self.run_button.setEnabled(False)
         self.export_button.setEnabled(False)
-        self.run_button.setText("Analyzing…")
-        self.status.setText("Running DNS, RDAP/BGP, HTTP/TLS, TCP, route trace and global probes. This may take a little while.")
+        self.run_button.setText("Checking…")
+        self.status.setText("Checking your DNS, website connection, HTTPS and network path…")
         self.worker = Worker(analyze_website_dashboard, target, 443, self.probe_count.value())
         self.worker.done.connect(self.show_result)
         self.worker.failed.connect(self.show_error)
@@ -138,144 +166,220 @@ class WebsiteAnalyzerPage(QWidget):
 
     def finish(self):
         self.run_button.setEnabled(True)
-        self.run_button.setText("Run Full Analysis")
+        self.run_button.setText("Check Website")
 
     def show_error(self, error):
-        self.status.setText("Analysis failed: " + str(error))
+        self.verdict_badge.setText("CHECK FAILED")
+        self.verdict_title.setText("Could not complete the website check")
+        self.verdict_detail.setText(str(error))
+        self.status.setText("Check failed. Verify the domain and your Internet connection.")
 
-    def show_result(self, data):
-        self.last_result = data
-        report = data.get("report", "")
-        probes = self._parse_probes(report)
-        reachable = sum(1 for p in probes if p[4] == "HTTP RESPONSE")
-        failed = sum(1 for p in probes if p[4] == "UNREACHABLE")
-        pending = len(probes) - reachable - failed
-        local_ok = bool(re.search(r"HTTPS: HTTP (?!4\d\d|5\d\d)\d{3}", report))
-        assessment = "INCONCLUSIVE"
-        if "HTTP POLICY RESPONSE" in report:
-            assessment = "POLICY RESPONSE"
-        elif failed and reachable:
-            assessment = "MIXED RESULTS"
-        elif reachable and not failed:
-            assessment = "NO BLOCK SIGNAL"
-        self.cards["Assessment"].setText(assessment)
-        self.cards["Local access"].setText("HTTPS reachable" if local_ok else "Check required")
-        self.cards["Resolved IPs"].setText(str(len(data.get("addresses", []))))
-        self.cards["Global probes"].setText(f"{reachable} OK / {failed} failed / {pending} pending")
-        self.status.setText(f"Analysis complete for {data.get('host')} • {data.get('analysis_time')}")
-
-        ip_rows = []
-        for address in data.get("addresses", []):
-            version = "IPv6" if ":" in address else "IPv4"
-            scope = "Global" if ipaddress.ip_address(address).is_global else "Private / reserved"
-            ip_rows.append((address, version, scope))
-        self._fill(self.dns_table, ip_rows)
-        self._fill(self.probe_table, probes)
-        tcp_rows = []
-        for item in data.get("tcp", []):
-            tcp_rows.append((item["port"], item["status"], (str(item["latency_ms"]) + " ms") if item["latency_ms"] is not None else "—", item["detail"]))
-        self._fill(self.tcp_table, tcp_rows)
-
-        trace = data.get("trace", {})
-        trace_html = (
-            f"<h2>Route trace to {html.escape(data.get('trace_target', data.get('host', '')))}</h2>"
-            f"<p><b>Website:</b> {html.escape(data.get('host', ''))} | <b>Target IP:</b> {html.escape(data.get('trace_target', 'Unknown'))}</p>"
-            f"<p><b>Utility:</b> {html.escape(trace.get('command','Unavailable'))}</p>"
-            f"<p>{html.escape(trace.get('output','No trace data'))}</p>"
-            "<hr><p><b>How to read:</b> Each numbered hop is a router along the path. "
-            "A * or timeout means that hop did not reply to the probe. It does not automatically mean traffic is blocked; "
-            "routers often suppress traceroute responses.</p>"
-        )
-        hop_rows = []
-        last_responding = None
-        for hop_line in trace.get("hops", []):
-            parts = hop_line.strip().split(maxsplit=1)
-            if len(parts) < 2 or not parts[0].isdigit():
-                continue
-            hop_number, detail = parts
-            silent = "*" in detail or "timed out" in detail.lower() or "timeout" in detail.lower()
-            observation = "No reply from this hop" if silent else "Response received"
-            hop_rows.append((hop_number, detail, observation))
-            if not silent:
-                last_responding = (hop_number, detail)
-        self._fill(self.trace_table, hop_rows)
-        if last_responding:
-            trace_html += (
-                f"<p><b>Last responding hop observed:</b> {html.escape(last_responding[0])} "
-                f"({html.escape(last_responding[1])})</p>"
-                "<p>This is the last hop that replied, not proof that the next hop is blocking traffic.</p>"
-            )
-        else:
-            trace_html += "<p><b>No responding hop could be identified.</b> Check traceroute permissions, utility availability and network policy.</p>"
-        self.trace_view.setHtml(trace_html)
-        self.overview.setHtml(self._overview_html(data, report, reachable, failed, assessment))
-        evidence_text = report + "\n\n[LOCAL TCP PORT DIAGNOSTICS]\n"
-        for item in data.get("tcp", []):
-            evidence_text += (
-                f"Port {item['port']}: {item['status']} | "
-                f"Latency: {item['latency_ms']} ms | {item['detail']}\n"
-            )
-        evidence_text += "\n[LOCAL ROUTE TRACE]\n"
-        evidence_text += trace.get("output", "Route trace unavailable")
-        self.evidence.setPlainText(evidence_text)
-        self.export_button.setEnabled(True)
-
-    def _parse_probes(self, report):
+    def _probe_rows(self, report):
         rows = []
         pattern = re.compile(
-            r"^\s{2}(.+?)\s*/\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(\S+)\s*\|\s*(HTTP RESPONSE|UNREACHABLE|PENDING)\s*\|\s*(.*)$"
+            r"^\\s{2}(.+?)\\s*/\\s*(.+?)\\s*\\|\\s*(.+?)\\s*\\|\\s*(\\S+)\\s*\\|\\s*(HTTP RESPONSE|UNREACHABLE|PENDING)\\s*\\|\\s*(.*)$"
         )
         for line in report.splitlines():
             match = pattern.match(line)
             if match:
                 country, city, asn, ip, status, detail = match.groups()
-                code = re.search(r"HTTP (\d{3})", detail)
-                rows.append((country, city, asn, ip, status, code.group(1) if code else detail))
+                code = re.search(r"HTTP (\\d{3})", detail)
+                rows.append({
+                    "country": country, "city": city, "asn": asn, "ip": ip,
+                    "status": status, "detail": detail,
+                    "code": int(code.group(1)) if code else None,
+                })
         return rows
 
-    def _overview_html(self, data, report, reachable, failed, assessment):
+    def _diagnose(self, data):
+        report = data.get("report", "")
+        tcp = {int(row["port"]): row for row in data.get("tcp", [])}
+        probes = self._probe_rows(report)
+        https = re.search(r"HTTPS:\\s*HTTP\\s+(\\d{3})", report, re.I)
+        https_failed = re.search(r"HTTPS:\\s*Connection failed", report, re.I)
+        http = re.search(r"HTTP:\\s*HTTP\\s+(\\d{3})", report, re.I)
+        dns_ok = bool(data.get("addresses"))
+        tcp443 = tcp.get(443, {}).get("status", "NOT TESTED")
+        code = int(https.group(1)) if https else (int(http.group(1)) if http else None)
+        successful_global = sum(1 for p in probes if p["status"] == "HTTP RESPONSE" and p["code"] not in (401, 403, 451))
+        global_policy = sum(1 for p in probes if p["code"] in (401, 403, 451))
+
+        if code is not None and 200 <= code < 400:
+            verdict = "NOT BLOCKED"
+            title = "Website is reachable from your network"
+            detail = f"Your network received HTTP {code}. A successful HTTP response or redirect means the website endpoint responded."
+            color = "#16a34a"
+            local_state = f"HTTP {code}"
+        elif code in (401, 403, 451):
+            verdict = "POLICY RESPONSE"
+            title = f"Website responded with HTTP {code}"
+            detail = "A server, CDN, WAF or intermediary refused this request. This does not prove your ISP is the blocker."
+            color = "#d97706"
+            local_state = f"HTTP {code}"
+        elif code is not None and code >= 500:
+            verdict = "SERVER ERROR"
+            title = f"Website responded with HTTP {code}"
+            detail = "Your request reached an HTTP service, but the service returned a server error. This is not evidence of ISP blocking."
+            color = "#d97706"
+            local_state = f"HTTP {code}"
+        elif tcp443 == "OPEN":
+            verdict = "INCONCLUSIVE"
+            title = "Connection reached the remote TCP port, but website access failed"
+            detail = "TCP 443 is open, but HTTPS/HTTP did not complete. This may be a TLS, server, CDN or application issue. ISP blocking is not confirmed."
+            color = "#d97706"
+            local_state = "TCP open; HTTPS failed"
+        elif tcp443 in ("FILTERED / TIMEOUT", "UNREACHABLE"):
+            if successful_global >= 2:
+                verdict = "POSSIBLE LOCAL PATH ISSUE"
+                title = "Website works from other probes, but not from this network"
+                detail = "This is a possible local network, ISP path or filtering issue. More checks from a second ISP and ISP-side logs are needed to confirm the blocking point."
+                color = "#d97706"
+            else:
+                verdict = "INCONCLUSIVE"
+                title = "Website connection could not be established"
+                detail = "A timeout or unreachable result can be caused by filtering, routing, server outage or probe limitations. Blocking is not confirmed."
+                color = "#d97706"
+            local_state = tcp443
+        elif not dns_ok:
+            verdict = "DNS FAILURE"
+            title = "This network could not resolve the website"
+            detail = "DNS resolution failed. It may be a local DNS problem or filtering, but compare with independent DNS before calling it a block."
+            color = "#d97706"
+            local_state = "DNS failed"
+        else:
+            verdict = "INCONCLUSIVE"
+            title = "Not enough evidence to decide"
+            detail = "The available tests do not prove whether the website is blocked on this network."
+            color = "#d97706"
+            local_state = "Needs review"
+
+        location = "Not confirmed"
+        location_reason = "The current tests cannot identify a specific router or ISP device as the blocking point."
+        if verdict == "POSSIBLE LOCAL PATH ISSUE":
+            location_reason = "The failure appears somewhere between this device and the destination. The exact point (router, ISP, upstream or destination) is not confirmed."
+        elif verdict == "POLICY RESPONSE":
+            location_reason = "The HTTP refusal came from the website, CDN, WAF or an intermediary. The responding component's identity is not established."
+        elif verdict == "DNS FAILURE":
+            location_reason = "The failure is at the name-resolution stage. Check the configured DNS server and compare public resolver answers."
+
+        return {
+            "verdict": verdict, "title": title, "detail": detail, "color": color,
+            "local_state": local_state, "dns_ok": dns_ok, "tcp443": tcp443,
+            "https_state": f"HTTP {code}" if code is not None else ("Handshake / request failed" if https_failed else "No HTTP response"),
+            "global_ok": successful_global, "global_policy": global_policy,
+            "global_failed": sum(1 for p in probes if p["status"] == "UNREACHABLE"),
+            "location": location, "location_reason": location_reason,
+            "probes": probes,
+        }
+
+    def show_result(self, data):
+        self.last_result = data
+        diagnosis = self._diagnose(data)
+        self.diagnosis = diagnosis
+        self.verdict_badge.setText(diagnosis["verdict"])
+        self.verdict_badge.setStyleSheet(
+            f"font-weight:700;padding:6px 12px;border-radius:8px;background:{diagnosis['color']};color:white"
+        )
+        self.verdict_title.setText(diagnosis["title"])
+        self.verdict_detail.setText(diagnosis["detail"])
+        self.summary_values["DNS"].setText("Resolved" if diagnosis["dns_ok"] else "Failed")
+        self.summary_values["TCP 443"].setText(diagnosis["tcp443"])
+        self.summary_values["HTTPS / TLS"].setText(diagnosis["https_state"])
+        self.summary_values["Global checks"].setText(
+            f"{diagnosis['global_ok']} responded / {diagnosis['global_failed']} failed"
+        )
+        self.status.setText(f"Completed: {data.get('host')}  •  {data.get('analysis_time')}")
+
+        dns_rows = [
+            ("DNS", "PASS" if diagnosis["dns_ok"] else "FAIL", "Website name resolved to IP addresses"),
+            ("TCP port 443", diagnosis["tcp443"], "Connection test from this computer"),
+            ("HTTPS / TLS", diagnosis["https_state"], "Secure website request result"),
+            ("Global probes", f"{diagnosis['global_ok']} responded", "Third-party locations only; not a substitute for testing your ISP"),
+        ]
+        self.path_view.setHtml(self._simple_html(data, diagnosis, dns_rows))
+        self.location_view.setHtml(self._location_html(diagnosis))
+        trace = data.get("trace", {})
+        hop_rows = []
+        for line in trace.get("hops", []):
+            parts = line.strip().split(maxsplit=1)
+            if len(parts) < 2 or not parts[0].isdigit():
+                continue
+            hop, address = parts
+            silent = "*" in address or "timed out" in address.lower() or "timeout" in address.lower()
+            hop_rows.append((hop, address, "No reply; not proof of blocking" if silent else "Router replied to traceroute"))
+        self._fill(self.trace_table, hop_rows)
+        self.details.setPlainText(self._technical_report(data, diagnosis))
+        self.export_button.setEnabled(True)
+
+    def _simple_html(self, data, d, rows):
         host = html.escape(data.get("host", ""))
-        color = "#16a34a" if assessment == "NO BLOCK SIGNAL" else "#d97706"
-        excerpt = []
-        for line in report.splitlines():
-            if any(key in line for key in ("DNS interpretation:", "MIXED GLOBAL RESULT:", "POSSIBLE NETWORK-PATH", "GLOBAL CONNECTIVITY FAILURE", "HTTP POLICY RESPONSE:", "Assessment:")):
-                excerpt.append(html.escape(line.strip()))
-        items = "".join(f"<li>{line}</li>" for line in excerpt) or "<li>Review the evidence tabs for detailed findings.</li>"
-        return f"""
-        <h2>{host}</h2>
-        <h3 style="color:{color}">{html.escape(assessment)}</h3>
-        <p><b>Local network:</b> {'HTTPS connection succeeded.' if 'HTTPS: HTTP 200' in report or 'HTTPS: HTTP 301' in report else 'Local HTTPS needs review.'}</p>
-        <p><b>Global probes:</b> {reachable} HTTP responses, {failed} unreachable.</p>
-        <h3>What this means</h3>
-        <p>The website is tested from your current computer and from third-party probe locations. A failed remote probe identifies a reachability problem at that probe, not necessarily an ISP block.</p>
-        <h3>Key findings</h3><ul>{items}</ul>
-        <h3>Where might the failure occur?</h3>
-        <ol>
-          <li><b>DNS:</b> name-to-IP resolution may be blocked or altered.</li>
-          <li><b>Network path:</b> route trace may show where replies stop, but silent hops are not proof of a drop.</li>
-          <li><b>TCP port:</b> a timeout or reset may indicate filtering, routing trouble or an unavailable service.</li>
-          <li><b>TLS / HTTP:</b> certificate errors or HTTP 403/451 responses can point to TLS or website/CDN policy.</li>
-        </ol>
-        <p><b>Important:</b> Exact ISP blocking can only be confirmed with repeatable tests from that ISP or filtering evidence from its network.</p>
-        """
+        steps = [
+            ("1. Your device", "Test started from this computer", "ok"),
+            ("2. DNS lookup", "Website name resolved" if d["dns_ok"] else "Could not resolve website name", "ok" if d["dns_ok"] else "bad"),
+            ("3. TCP connection", f"Port 443: {d['tcp443']}", "ok" if d["tcp443"] == "OPEN" else "warn"),
+            ("4. HTTPS request", d["https_state"], "ok" if d["https_state"].startswith("HTTP 2") or d["https_state"].startswith("HTTP 3") else "warn"),
+            ("5. Destination response", d["title"], "ok" if d["verdict"] == "NOT BLOCKED" else "warn"),
+        ]
+        colors = {"ok": "#16a34a", "warn": "#d97706", "bad": "#dc2626"}
+        flow = "".join(
+            f"<div style='padding:10px;margin:7px 0;border-left:5px solid {colors[state]};background:rgba(127,127,127,.08);border-radius:5px'>"
+            f"<b>{label}</b><br>{html.escape(value)}</div>"
+            for label, value, state in steps
+        )
+        return (
+            f"<h2>{host}</h2><p><b>Simple result:</b> {html.escape(d['verdict'])}</p>"
+            f"{flow}<h3>What should I understand?</h3><p>{html.escape(d['detail'])}</p>"
+            "<p><b>Important:</b> This result describes access from this computer and its current network. "
+            "A definitive ISP block requires repeatable comparison tests or ISP-side filtering evidence.</p>"
+        )
+
+    def _location_html(self, d):
+        return (
+            f"<h2>Possible blocking location</h2><h3>{html.escape(d['location'])}</h3>"
+            f"<p>{html.escape(d['location_reason'])}</p>"
+            "<h3>Network segments to investigate</h3><ol>"
+            "<li><b>Your device:</b> local firewall, proxy, VPN or security software.</li>"
+            "<li><b>Local router:</b> DNS settings, firewall rules, parental controls or access policies.</li>"
+            "<li><b>ISP network:</b> DNS filtering, ACL, firewall, routing or policy logs.</li>"
+            "<li><b>Upstream network:</b> transit routing or peering issue.</li>"
+            "<li><b>Website / CDN:</b> server outage, WAF, geo-policy or TLS configuration.</li>"
+            "</ol><p><b>Current finding:</b> the tests do not identify a specific device as the blocker. "
+            "Do not treat a silent traceroute hop as a confirmed block point.</p>"
+        )
+
+    def _technical_report(self, data, d):
+        lines = [
+            "WEBSITE NETWORK BLOCK CHECK",
+            f"Website: {data.get('host')}",
+            f"Final verdict: {d['verdict']}",
+            f"Explanation: {d['detail']}",
+            f"Blocking location: {d['location']}",
+            f"Location note: {d['location_reason']}",
+            "",
+            "LOCAL TCP TESTS",
+        ]
+        for item in data.get("tcp", []):
+            lines.append(
+                f"Port {item['port']}: {item['status']} | "
+                f"Latency: {item['latency_ms']} ms | {item['detail']}"
+            )
+        lines.extend(["", "FULL ORIGINAL DIAGNOSTIC REPORT", data.get("report", "")])
+        lines.extend(["", "LOCAL ROUTE TRACE", data.get("trace", {}).get("output", "Unavailable")])
+        return "\n".join(lines)
 
     def export_report(self):
         if not self.last_result:
             return
+        host = self.last_result.get("host", "website")
         path, _ = QFileDialog.getSaveFileName(
-            self, "Export website diagnostic report",
-            f"{self.last_result.get('host','website')}-netops-report.txt",
-            "Text report (*.txt)"
+            self, "Export website check",
+            f"{host}-block-check.txt", "Text report (*.txt)"
         )
         if path:
             try:
+                self.details.toPlainText()
                 with open(path, "w", encoding="utf-8") as handle:
-                    handle.write(self.last_result.get("report", ""))
-                    handle.write("\n\n[LOCAL TCP DIAGNOSTICS]\n")
-                    for item in self.last_result.get("tcp", []):
-                        handle.write(str(item) + "\n")
-                    handle.write("\n[ROUTE TRACE]\n")
-                    handle.write(self.last_result.get("trace", {}).get("output", "Unavailable"))
-                QMessageBox.information(self, "Export complete", "Report saved successfully.")
+                    handle.write(self._technical_report(self.last_result, self.diagnosis))
+                QMessageBox.information(self, "Export complete", "Website check report saved.")
             except OSError as exc:
                 QMessageBox.critical(self, "Export failed", str(exc))
