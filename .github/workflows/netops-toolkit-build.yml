@@ -50,7 +50,8 @@ jobs:
         if: runner.os != 'Linux'
         env:
           QT_QPA_PLATFORM: offscreen
-        run: python -c "from PySide6.QtGui import QImage,QPainter; from PySide6.QtSvg import QSvgRenderer; r=QSvgRenderer('netops-toolkit/assets/netops-toolkit.svg'); assert r.isValid(), 'Invalid SVG icon'; i=QImage(256,256,QImage.Format.Format_ARGB32); i.fill(0); p=QPainter(i); r.render(p); p.end(); assert i.save('netops-toolkit/assets/netops-toolkit.png'), 'Could not save PNG icon'"
+        run: |
+          python -c "from PySide6.QtGui import QGuiApplication,QImage,QPainter; from PySide6.QtSvg import QSvgRenderer; app=QGuiApplication([]); r=QSvgRenderer('netops-toolkit/assets/netops-toolkit.svg'); assert r.isValid(), 'Invalid SVG icon'; i=QImage(256,256,QImage.Format.Format_ARGB32); i.fill(0); p=QPainter(i); r.render(p); p.end(); assert i.save('netops-toolkit/assets/netops-toolkit.png'), 'Could not save PNG icon'; print('PNG icon generated successfully')"
 
       - name: Build Windows EXE
         if: runner.os == 'Windows'
