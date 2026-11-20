@@ -32,8 +32,10 @@ jobs:
       - if: runner.os == 'Windows'
         run: Compress-Archive -Path dist/NetOpsToolkit -DestinationPath NetOpsToolkit-windows.zip
         shell: pwsh
-      - if: runner.os != 'Windows'
-        run: cd dist && zip -qr ../NetOpsToolkit-${{ matrix.platform }}.zip NetOpsToolkit
+      - if: runner.os == 'Linux'
+        run: cd dist && zip -qr ../NetOpsToolkit-linux.zip NetOpsToolkit
+      - if: runner.os == 'macOS'
+        run: cd dist && zip -qr ../NetOpsToolkit-macos.zip NetOpsToolkit.app
       - uses: actions/upload-artifact@v4
         with:
           name: NetOpsToolkit-${{ matrix.platform }}
