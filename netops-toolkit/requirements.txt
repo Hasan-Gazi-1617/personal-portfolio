@@ -1,0 +1,1 @@
+PySide6>=6.8,<7\npsutil>=6.0,<8\ndnspython>=2.6,<3\n
