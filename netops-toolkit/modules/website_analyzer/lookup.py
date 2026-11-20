@@ -117,10 +117,15 @@ def analyze_website(target, port=443, probe_count=20):
                 detail = "Probe did not return a result in time"
             elif isinstance(data, list) and data and isinstance(data[0], list):
                 first = data[0]
-                ok = bool(first and first[0] == 1)
-                status = "REACHABLE" if ok else "UNREACHABLE"; reachable += int(ok); failed += int(not ok)
-                code = first[3] if len(first) > 3 else "?"
-                detail = f"HTTP {code}: {first[2] if len(first) > 2 else 'No response'}"
+                code = first[3] if len(first) > 3 else None
+                http_response = str(code).isdigit() and 100 <= int(code) <= 599
+                if http_response:
+                    status = "HTTP POLICY RESPONSE" if int(code) in (401, 403, 451) else "REACHABLE"
+                    reachable += 1
+                else:
+                    status = "UNREACHABLE"
+                    failed += 1
+                detail = f"HTTP {code or 'no status'}: {first[2] if len(first) > 2 else 'No response'}"
             else:
                 status = "UNREACHABLE"; failed += 1
                 detail = str(data)
