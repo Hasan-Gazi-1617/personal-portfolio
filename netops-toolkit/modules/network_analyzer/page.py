@@ -66,8 +66,12 @@ def describe_packet(packet):
         src, dst = packet[IPv6].src, packet[IPv6].dst
     elif Ether in packet:
         src, dst = packet[Ether].src, packet[Ether].dst
-    if packet.haslayer("DNS") or (TCP in packet and packet[TCP].dport == 53) or (UDP in packet and (packet[UDP].sport == 53 or packet[UDP].dport == 53)):
+    if packet.haslayer("DNS") or (TCP in packet and (packet[TCP].sport == 53 or packet[TCP].dport == 53)) or (UDP in packet and (packet[UDP].sport == 53 or packet[UDP].dport == 53)):
         protocol = "DNS"
+        if TCP in packet:
+            sport, dport = str(packet[TCP].sport), str(packet[TCP].dport)
+        elif UDP in packet:
+            sport, dport = str(packet[UDP].sport), str(packet[UDP].dport)
     elif packet.haslayer("ARP"):
         protocol = "ARP"
     elif ICMP in packet:
@@ -209,4 +213,7 @@ class NetworkAnalyzerPage(QWidget):
         self.protocol_filter.setCurrentIndex(0)
         self.status.setText("Ready")
         self.export_btn.setEnabled(False)
-\n    def closeEvent(self, event):\n        self.capture.stop()\n        super().closeEvent(event)\n
+
+    def closeEvent(self, event):
+        self.capture.stop()
+        super().closeEvent(event)
