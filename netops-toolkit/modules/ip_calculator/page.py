@@ -36,6 +36,11 @@ class CalculatorTab(QWidget):
             btn.clicked.connect(lambda checked=False, v=value: self.set_value(v))
             quick.addWidget(btn)
         quick.addStretch()
+        clear_button = QPushButton("Clear")
+        clear_button.setObjectName("clearButton")
+        clear_button.setToolTip("Clear the address, subnet selection and calculated results")
+        clear_button.clicked.connect(self.clear)
+        quick.addWidget(clear_button)
         outer.addLayout(quick)
 
         input_row = QHBoxLayout()
@@ -109,6 +114,12 @@ class CalculatorTab(QWidget):
     def set_value(self, value):
         self.address.setText(value)
 
+    def clear(self):
+        self.address.clear()
+        self.slider.setValue(24 if self.version == 4 else 64)
+        self.split.setCurrentIndex(0)
+        self.prefix_value.setText("/24" if self.version == 4 else "/64")
+
     def _sync_prefix_from_text(self, text):
         if self._building:
             return
@@ -176,10 +187,12 @@ class CalculatorTab(QWidget):
             widget = item.widget()
             if widget:
                 widget.deleteLater()
+        raw = self.address.text().strip()
+        if not raw:
+            self.bit_visual.setText("Enter an IPv address to calculate network details.")
+            self.split_output.setText("Subnet breakdown will appear after entering an address.")
+            return
         try:
-            raw = self.address.text().strip()
-            if not raw:
-                raise ValueError("Enter an IPv address in CIDR notation.")
             network = ipaddress.ip_network(raw, strict=False)
             if network.version != self.version:
                 raise ValueError(f"Please enter an IPv{self.version} address.")
