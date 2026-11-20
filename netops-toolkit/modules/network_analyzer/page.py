@@ -172,22 +172,28 @@ class NetworkAnalyzerPage(QWidget):
         QMessageBox.warning(self, "Packet capture", f"{message}\n\nLinux may require elevated capture permissions. Windows requires Npcap.")
 
     def add_packet(self, packet):
+        self._append_packet_row(len(self.capture.packets), packet)
         self.set_state("Capturing")
-        self.refresh_filter()
 
-    def refresh_filter(self):
+    def _append_packet_row(self, packet_index, packet):
+        info = describe_packet(packet)
         query = self.search.text().lower().strip()
         proto = self.protocol_filter.currentText()
+        if query and query not in " ".join(info.values()).lower():
+            return
+        if proto != "All protocols" and info["protocol"] != proto:
+            return
+        row = self.table.rowCount()
+        self.table.insertRow(row)
+        values = [str(packet_index + 1), info["time"], info["src"], info["dst"],
+                  info["protocol"], info["length"], f'{info["sport"]} → {info["dport"]}']
+        for col, value in enumerate(values):
+            self.table.setItem(row, col, QTableWidgetItem(value))
+
+    def refresh_filter(self):
         self.table.setRowCount(0)
-        for index, packet in enumerate(self.capture.packets, 1):
-            info = describe_packet(packet)
-            line = " ".join(info.values()).lower()
-            if query and query not in line: continue
-            if proto != "All protocols" and info["protocol"] != proto: continue
-            row = self.table.rowCount(); self.table.insertRow(row)
-            values = [str(index), info["time"], info["src"], info["dst"], info["protocol"], info["length"], f'{info["sport"]} → {info["dport"]}']
-            for col, value in enumerate(values):
-                self.table.setItem(row, col, QTableWidgetItem(value))
+        for index, packet in enumerate(self.capture.packets):
+            self._append_packet_row(index, packet)
         self.status.setText(f"{'Capturing' if self.capture.sniffer and self.capture.sniffer.running else 'Stopped'}  |  {len(self.capture.packets)} packets")
 
     def show_packet_details(self):
