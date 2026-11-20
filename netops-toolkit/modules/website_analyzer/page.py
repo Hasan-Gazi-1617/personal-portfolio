@@ -182,13 +182,13 @@ class WebsiteAnalyzerPage(QWidget):
         )
         self.trace_view.setHtml(trace_html)
         self.overview.setHtml(self._overview_html(data, report, reachable, failed, assessment))
-        evidence_text = report + "\\n\\n[LOCAL TCP PORT DIAGNOSTICS]\\n"
+        evidence_text = report + "\n\n[LOCAL TCP PORT DIAGNOSTICS]\n"
         for item in data.get("tcp", []):
             evidence_text += (
                 f"Port {item['port']}: {item['status']} | "
-                f"Latency: {item['latency_ms']} ms | {item['detail']}\\n"
+                f"Latency: {item['latency_ms']} ms | {item['detail']}\n"
             )
-        evidence_text += "\\n[LOCAL ROUTE TRACE]\\n"
+        evidence_text += "\n[LOCAL ROUTE TRACE]\n"
         evidence_text += trace.get("output", "Route trace unavailable")
         self.evidence.setPlainText(evidence_text)
         self.export_button.setEnabled(True)
