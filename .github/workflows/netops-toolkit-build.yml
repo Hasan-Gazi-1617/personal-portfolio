@@ -1,0 +1,48 @@
+name: Build NetOps Toolkit
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    tags: ["netops-v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pyinstaller
+      - run: pip install -r netops-toolkit/requirements.txt
+      - if: runner.os == 'Windows'
+        run: pyinstaller --noconfirm --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes;ui/themes" netops-toolkit/app.py
+      - if: runner.os != 'Windows'
+        run: pyinstaller --noconfirm --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes:ui/themes" netops-toolkit/app.py
+      - if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist/NetOpsToolkit -DestinationPath NetOpsToolkit-windows.zip
+        shell: pwsh
+      - if: runner.os == 'Linux'
+        run: cd dist && zip -qr ../NetOpsToolkit-linux.zip NetOpsToolkit
+      - if: runner.os == 'macOS'
+        run: cd dist && zip -qr ../NetOpsToolkit-macos.zip NetOpsToolkit.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NetOpsToolkit-${{ matrix.platform }}
+          path: NetOpsToolkit-${{ matrix.platform }}.zip
+      - if: startsWith(github.ref, 'refs/tags/netops-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: NetOps Toolkit ${{ github.ref_name }}
+          files: NetOpsToolkit-${{ matrix.platform }}.zip
