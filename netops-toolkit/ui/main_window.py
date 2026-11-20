@@ -11,7 +11,7 @@ from core.worker import Worker
 from modules.diagnostics.ping import ping
 from modules.ip_calculator.page import IPCalculatorPage
 from modules.network_analyzer.page import NetworkAnalyzerPage
-from modules.website_analyzer.lookup import analyze_website
+from modules.website_analyzer.page import WebsiteAnalyzerPage
 
 
 class MainWindow(QMainWindow):
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         pages = [
             ("Dashboard", self.dashboard),
             ("Network Analyzer", NetworkAnalyzerPage),
-            ("Website IP & Block Detection", self.website_page),
+            ("Website IP & Block Detection", WebsiteAnalyzerPage),
             ("Ping Test", self.ping_page),
             ("IP Calculator", IPCalculatorPage),
         ]
@@ -218,15 +218,6 @@ class MainWindow(QMainWindow):
         run_button.clicked.connect(run)
         entry.returnPressed.connect(run)
         return widget
-
-    def website_page(self):
-        return self.tool_page(
-            "Website IP & Block Detection",
-            "Enter a domain to compare local/public DNS, inspect IP allocation and ASN routes, test HTTP/HTTPS and TLS, and receive a plain-language blocking assessment with likely causes and NOC verification steps.",
-            "example.com or https://example.com",
-            analyze_website,
-            "Analyze Website",
-        )
 
     def ping_page(self):
         return self.tool_page(
