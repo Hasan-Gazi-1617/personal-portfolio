@@ -255,3 +255,9 @@ class MainWindow(QMainWindow):
         self.theme_btn.setText(
             "Switch to Light Theme" if self.theme == "dark" else "Switch to Dark Theme"
         )
+
+    def closeEvent(self, event):
+        analyzer = self.stack.widget(1)
+        if hasattr(analyzer, "capture"):
+            analyzer.capture.stop()
+        super().closeEvent(event)
