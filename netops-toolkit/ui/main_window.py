@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow,QWidget,QHBoxLayout,QVBoxLayout,QFrame,QLabel,QPushButton,QStackedWidget,QLineEdit,QSpinBox,QTextEdit,QGridLayout
+from PySide6.QtWidgets import QApplication,QMainWindow,QWidget,QHBoxLayout,QVBoxLayout,QFrame,QLabel,QPushButton,QStackedWidget,QLineEdit,QSpinBox,QTextEdit,QGridLayout
 from core.network_info import snapshot
 from core.worker import Worker
 from modules.diagnostics.ping import ping
@@ -45,13 +45,18 @@ class MainWindow(QMainWindow):
         layout.addLayout(grid); layout.addWidget(QLabel("Detected network interfaces"))
         for item in info["interfaces"]: layout.addWidget(QLabel(f'{item["name"]}  |  IPv4: {item["ipv4"]}  |  MAC: {item["mac"]}'))
         layout.addStretch(); return widget
-    def tool_page(self,title,description,placeholder,function,button_text,with_count=False):
+    def tool_page(self,title,description,placeholder,function,button_text,with_count=False,with_copy=False):
         widget=QWidget(); layout=QVBoxLayout(widget); heading=QLabel(title); heading.setObjectName("title")
         layout.addWidget(heading); layout.addWidget(QLabel(description)); row=QHBoxLayout()
         entry=QLineEdit(); entry.setPlaceholderText(placeholder); row.addWidget(entry,1); count=None
         if with_count:
             count=QSpinBox(); count.setRange(1,20); count.setValue(4); row.addWidget(QLabel("Count")); row.addWidget(count)
         button=QPushButton(button_text); row.addWidget(button)
+        copy_button=QPushButton("Copy Result") if with_copy else None
+        if copy_button:
+            copy_button.setEnabled(False)
+            copy_button.setToolTip("Copy the complete DNS lookup result")
+            row.addWidget(copy_button)
         clear_button=QPushButton("Clear All"); clear_button.setObjectName("clearButton"); clear_button.setToolTip("Clear the input and all displayed results"); row.addWidget(clear_button)
         layout.addLayout(row)
         output=QTextEdit(); output.setReadOnly(True); output.setPlaceholderText("Results will appear here..."); layout.addWidget(output,1)
@@ -59,21 +64,31 @@ class MainWindow(QMainWindow):
             if self.worker and self.worker.isRunning(): return
             entry.clear()
             output.clear()
+            button.setText(button_text)
+            if copy_button: copy_button.setEnabled(False)
             if count: count.setValue(4)
         clear_button.clicked.connect(clear)
         def run():
             if self.worker and self.worker.isRunning(): return
-            button.setEnabled(False); clear_button.setEnabled(False); output.setPlainText("Working...")
+            button.setEnabled(False); clear_button.setEnabled(False); output.setPlainText("Querying DNS records..." if with_copy else "Working...")
+            if with_copy: button.setText("Looking up...")
             args=(entry.text(),count.value()) if count else (entry.text(),)
-            self.worker=Worker(function,*args); self.worker.done.connect(output.setPlainText)
-            self.worker.failed.connect(lambda error:output.setPlainText("Error: "+error))
+            self.worker=Worker(function,*args)
+            def show_result(result):
+                output.setPlainText(result)
+                if copy_button: copy_button.setEnabled(bool(result.strip()))
+            self.worker.done.connect(show_result)
+            self.worker.failed.connect(lambda error:show_result("Error: "+error))
             def finish():
                 button.setEnabled(True)
+                button.setText("Retry Lookup" if with_copy else button_text)
                 clear_button.setEnabled(True)
             self.worker.finished.connect(finish); self.worker.start()
-        button.clicked.connect(run); return widget
+        button.clicked.connect(run)
+        if copy_button: copy_button.clicked.connect(lambda: QApplication.clipboard().setText(output.toPlainText()))
+        return widget
     def ping_page(self): return self.tool_page("Ping Test","Check reachability, response time and packet loss.","1.1.1.1 or example.com",ping,"Run Ping",True)
-    def dns_page(self): return self.tool_page("DNS Lookup","Inspect A, AAAA, CNAME, MX, NS, TXT and SOA records. Enter an IP address for reverse PTR lookup.","example.com or 8.8.8.8",lookup,"Run Lookup")
+    def dns_page(self): return self.tool_page("DNS Lookup","Inspect A, AAAA, CNAME, MX, NS, TXT and SOA records. Enter an IP address for reverse PTR lookup.","example.com or 8.8.8.8",lookup,"Run Lookup",with_copy=True)
     def subnet_page(self):
         return IPCalculatorPage()
     def open_page(self,name):
