@@ -253,6 +253,7 @@ def analyze_website(target, port=443, probe_count=20):
         lines.append(f"  TLS inspection unavailable: {exc}")
 
     lines.extend(["", "[5] GLOBAL COUNTRY / ISP-PROBE REACHABILITY"])
+    probes = []
     try:
         report_url, probes = _global_reachability(host, probe_count)
         if report_url:
@@ -282,6 +283,42 @@ def analyze_website(target, port=443, probe_count=20):
         lines.append(f"  Global probe service unavailable: {exc}")
         lines.append("  Local DNS, IP, allocation and TLS checks are reported separately.")
 
+    lines.extend(["", "[6] AUTOMATIC ROOT-CAUSE FINDINGS"])
+    asn_groups = {}
+    policy_hits = []
+    for probe in probes:
+        asn = str(probe.get("asn") or "Unknown ASN")
+        group = asn_groups.setdefault(asn, {"failed": 0, "responded": 0})
+        if probe.get("status") == "UNREACHABLE":
+            group["failed"] += 1
+        elif probe.get("status") == "HTTP RESPONSE":
+            group["responded"] += 1
+            if probe.get("http_code") in (403, 451):
+                policy_hits.append(probe)
+    failed_total = sum(group["failed"] for group in asn_groups.values())
+    response_total = sum(group["responded"] for group in asn_groups.values())
+    if policy_hits:
+        locations = sorted({str(item.get("country", "Unknown")) for item in policy_hits})
+        lines.append("  HTTP POLICY RESPONSE: 403/451 observed in " + ", ".join(locations) + ".")
+        lines.append("    Likely explanation: website/CDN/WAF or an intermediary returned a policy response; ISP identity is unknown.")
+    correlated = [(asn, group) for asn, group in asn_groups.items() if group["failed"] >= 2 and group["failed"] > group["responded"]]
+    if correlated and response_total:
+        lines.append("  POSSIBLE NETWORK-PATH / ASN ANOMALY:")
+        for asn, group in correlated:
+            lines.append("    " + asn + ": " + str(group["failed"]) + " failed, " + str(group["responded"]) + " responded.")
+        lines.append("    Possible causes: routing, filtering, firewall or probe-node failure. This is not confirmed ISP blocking.")
+    elif failed_total and response_total:
+        lines.append("  MIXED GLOBAL RESULT: " + str(response_total) + " responded; " + str(failed_total) + " failed.")
+        lines.append("    Likely causes include route differences, DNS, TLS, firewall, geo-policy or probe-node failure.")
+        lines.append("    Assessment: INCONCLUSIVE. Repeat tests from the actual affected ISP.")
+    elif failed_total and not response_total:
+        lines.append("  GLOBAL CONNECTIVITY FAILURE: all completed probes failed.")
+        lines.append("    Possible causes: website outage, DNS, routing, firewall or probe-provider issue. Assessment: INCONCLUSIVE.")
+    elif response_total:
+        lines.append("  NO BLOCK SIGNAL IN TESTED PROBES: " + str(response_total) + " probe(s) received an HTTP response.")
+        lines.append("    Redirects such as HTTP 301/302 mean the web endpoint responded successfully.")
+    else:
+        lines.append("  No completed probe data was available for an automatic diagnosis.")
     lines.extend([
         "",
         "[6] BLOCKING / FAILURE ASSESSMENT",
