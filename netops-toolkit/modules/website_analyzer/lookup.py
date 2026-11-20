@@ -295,4 +295,27 @@ def analyze_website(target, port=443, probe_count=20):
         "Use this report for diagnostics. Confirm suspected filtering with repeated tests and independent probes in the affected ISP.",
         "=" * 68,
     ])
+    lines.extend(["", "[7] PLAIN-LANGUAGE ROOT-CAUSE GUIDE"])
+    lines.extend([
+        "  DNS filtering: local DNS returns no answer or a different address from independent resolvers.",
+        "  Routing issue: DNS resolves, but packets cannot reach the destination network.",
+        "  TCP/firewall filtering: port 80/443 is reset, refused or times out.",
+        "  TLS issue: TCP connects, but certificate validation or TLS negotiation fails.",
+        "  Website/CDN policy: HTTP 403/451 is returned by the origin, CDN, WAF or an intermediary.",
+        "  Geo-policy: website/CDN applies rules based on request location.",
+        "  Probe failure: the third-party test node itself may be offline or have a route problem.",
+    ])
+    lines.extend(["", "[8] NOC ENGINEER VERIFICATION"])
+    lines.extend([
+        "  1. Repeat the test at least 3 times at different times.",
+        "  2. Test from the suspected ISP and a second independent ISP.",
+        "  3. Compare local DNS answers with an independent resolver.",
+        "  4. Check TCP 443, TLS handshake and traceroute/MTR from the affected ISP.",
+        "  5. Ask the ISP NOC to inspect DNS policy, firewall/ACL, routing and filtering logs.",
+        "  6. Confirm a block only when repeatable tests or ISP-side logs identify the filtering point.",
+        "",
+        "IMPORTANT: Probe ASN describes the probe node network, not every ISP in that country.",
+        "RDAP allocation ranges and BGP announced prefixes do not prove blocking.",
+        "CONFIRMED requires direct evidence; PROBABLE means multiple matching signals; INCONCLUSIVE means insufficient evidence.",
+    ])
     return "\n".join(lines)
