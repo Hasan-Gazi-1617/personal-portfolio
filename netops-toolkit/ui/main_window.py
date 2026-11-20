@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from pathlib import Path
 from PySide6.QtWidgets import QMainWindow,QWidget,QHBoxLayout,QVBoxLayout,QFrame,QLabel,QPushButton,QStackedWidget,QLineEdit,QSpinBox,QTextEdit,QGridLayout
 from core.network_info import snapshot
@@ -24,6 +25,11 @@ class MainWindow(QMainWindow):
             button.clicked.connect(lambda checked=False,n=name:self.open_page(n))
             sl.addWidget(button); self.nav.append((name,button)); self.stack.addWidget(builder())
         sl.addStretch(); self.theme_btn=QPushButton("Switch to Light Theme"); self.theme_btn.clicked.connect(self.toggle_theme); sl.addWidget(self.theme_btn)
+        credit = QLabel("Developed by Hasan Gazi")
+        credit.setAlignment(Qt.AlignCenter)
+        credit.setStyleSheet(
+            "color: #8b95a5; font-size: 11px; padding-top: 10px;")
+sl.addWidget(credit)
         content=QWidget(); cl=QVBoxLayout(content); cl.setContentsMargins(28,24,28,24)
         heading=QLabel("Monitor  •  Diagnose  •  Optimize your network"); heading.setObjectName("muted")
         cl.addWidget(heading); cl.addWidget(self.stack,1)
