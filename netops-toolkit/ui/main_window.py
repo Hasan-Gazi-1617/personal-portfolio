@@ -4,7 +4,7 @@ from core.network_info import snapshot
 from core.worker import Worker
 from modules.diagnostics.ping import ping
 from modules.dns_tools.lookup import lookup
-from modules.ip_calculator.subnet import calculate
+from modules.ip_calculator.page import IPCalculatorPage
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -58,14 +58,7 @@ class MainWindow(QMainWindow):
     def ping_page(self): return self.tool_page("Ping Test","Check reachability, response time and packet loss.","1.1.1.1 or example.com",ping,"Run Ping",True)
     def dns_page(self): return self.tool_page("DNS Lookup","Resolve IPv4 and IPv6 DNS records.","example.com",lookup,"Lookup")
     def subnet_page(self):
-        widget=QWidget(); layout=QVBoxLayout(widget); title=QLabel("IP / Subnet Calculator"); title.setObjectName("title")
-        layout.addWidget(title); layout.addWidget(QLabel("Enter IPv4 or IPv6 in CIDR notation, e.g. 192.168.1.0/24"))
-        row=QHBoxLayout(); entry=QLineEdit(); entry.setPlaceholderText("192.168.1.0/24"); button=QPushButton("Calculate")
-        output=QTextEdit(); output.setReadOnly(True); row.addWidget(entry,1); row.addWidget(button); layout.addLayout(row); layout.addWidget(output,1)
-        def run():
-            try: output.setPlainText("\\n".join(f"{k}: {v}" for k,v in calculate(entry.text()).items()))
-            except Exception as exc: output.setPlainText("Error: "+str(exc))
-        button.clicked.connect(run); return widget
+        return IPCalculatorPage()
     def open_page(self,name):
         for index,(item,button) in enumerate(self.nav):
             button.setChecked(item==name)
