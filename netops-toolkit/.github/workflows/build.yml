@@ -1,0 +1,29 @@
+name: Build NetOps Toolkit
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+          - os: ubuntu-latest
+            name: Linux
+          - os: macos-latest
+            name: macOS
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pyinstaller
+      - run: pip install -r netops-toolkit/requirements.txt
+      - run: pyinstaller --noconfirm --windowed --name NetOpsToolkit netops-toolkit/app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NetOpsToolkit-${{ matrix.name }}
+          path: dist/NetOpsToolkit*
