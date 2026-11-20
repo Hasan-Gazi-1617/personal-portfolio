@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         credit.setAlignment(Qt.AlignCenter)
         credit.setStyleSheet(
             "color: #8b95a5; font-size: 11px; padding-top: 10px;")
-sl.addWidget(credit)
+        sl.addWidget(credit)
         content=QWidget(); cl=QVBoxLayout(content); cl.setContentsMargins(28,24,28,24)
         heading=QLabel("Monitor  •  Diagnose  •  Optimize your network"); heading.setObjectName("muted")
         cl.addWidget(heading); cl.addWidget(self.stack,1)
