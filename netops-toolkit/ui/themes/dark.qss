@@ -1,1 +1,18 @@
 QWidget{background:#0e1726;color:#e8eef7;font-family:'Segoe UI',sans-serif;font-size:13px}QMainWindow{background:#0e1726}QFrame#sidebar{background:#0a1220;border-right:1px solid #26364b}QLabel#brand{color:#5eead4;font-size:20px;font-weight:700}QLabel#title{font-size:25px;font-weight:700;color:#f8fafc}QLabel#muted{color:#9aabc0}QFrame#panel{background:#162337;border:1px solid #2a3d56;border-radius:12px}QPushButton{background:#1b2d45;color:#edf4fc;border:1px solid #344b68;border-radius:8px;padding:9px 12px}QPushButton:hover,QPushButton:checked{background:#155b58;border-color:#5eead4}QLineEdit,QSpinBox,QTextEdit{background:#0b1422;color:#f1f5f9;border:1px solid #344b68;border-radius:7px;padding:9px}
+
+QFrame#resultCard{background:transparent;border:1px solid #344b68;border-radius:9px}
+QLabel#cardHeading{padding:10px 12px;color:#a9bdd4;font-size:11px;font-weight:700;letter-spacing:1px}
+QLabel#resultValue{color:#f3f7fc;font-family:Consolas,monospace;font-size:12px;padding:3px 0}
+QFrame#cardDivider{color:#344b68;max-height:1px}
+QPushButton#copyButton{padding:5px 8px;font-size:10px;font-weight:700}
+QPushButton#quickChip{border-radius:14px;padding:6px 12px;color:#b8d4ff;background:#172b45}
+QLabel#prefixBadge{background:#244d86;color:#dbeafe;border-radius:6px;padding:4px 12px;font-weight:700}
+QLabel#bitVisual{color:#5b9cff;font-family:Consolas,monospace;font-size:13px;line-height:1.5;padding:8px}
+QLabel#errorText{color:#fca5a5;padding:18px}
+QLabel#splitOutput{background:#101d2e;border:1px solid #2a3d56;border-radius:8px;padding:12px;font-family:Consolas,monospace;color:#d7e5f5}
+QTabWidget::pane{border:1px solid #2a3d56;border-radius:8px;top:-1px}
+QTabBar::tab{background:transparent;color:#9aabc0;padding:11px 30px;border-bottom:2px solid transparent}
+QTabBar::tab:selected{color:#60a5fa;border-bottom:2px solid #2563eb;font-weight:700}
+QComboBox{background:#0b1422;color:#f1f5f9;border:1px solid #344b68;border-radius:7px;padding:7px 10px;min-width:100px}
+QSlider::groove:horizontal{height:5px;background:#344b68;border-radius:2px}
+QSlider::handle:horizontal{background:#3b82f6;width:15px;margin:-6px 0;border-radius:7px}
