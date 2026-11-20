@@ -1,9 +1,6 @@
 name: Build NetOps Toolkit
 on:
   pull_request:
-    paths:
-      - "netops-toolkit/**"
-      - ".github/workflows/netops-toolkit-build.yml"
   workflow_dispatch:
   push:
     tags: ["netops-v*"]
