@@ -188,10 +188,10 @@ class WebsiteAnalyzerPage(QWidget):
         hop_rows = []
         last_responding = None
         for hop_line in trace.get("hops", []):
-            match = re.match(r"^\\s*(\\d+)\\s+(.*)$", hop_line)
-            if not match:
+            parts = hop_line.strip().split(maxsplit=1)
+            if len(parts) < 2 or not parts[0].isdigit():
                 continue
-            hop_number, detail = match.groups()
+            hop_number, detail = parts
             silent = "*" in detail or "timed out" in detail.lower() or "timeout" in detail.lower()
             observation = "No reply from this hop" if silent else "Response received"
             hop_rows.append((hop_number, detail, observation))
