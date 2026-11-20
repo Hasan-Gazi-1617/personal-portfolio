@@ -71,11 +71,14 @@ jobs:
           Type=Application
           Name=NetOps Toolkit
           Exec=NetOpsToolkit
-          Categories=Network;Utility;
+          Categories=Utility;
+          Icon=netops-toolkit
           Terminal=false
           EOF
 
-          cp static/img/netops-toolkit-preview.svg AppDir/netops-toolkit.svg
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 256 -h 256 static/img/netops-toolkit-preview.svg > AppDir/netops-toolkit.png
 
           curl --fail --location --retry 3 \
             "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
