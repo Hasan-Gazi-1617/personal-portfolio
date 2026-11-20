@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
             self.worker.finished.connect(finish); self.worker.start()
         button.clicked.connect(run); return widget
     def ping_page(self): return self.tool_page("Ping Test","Check reachability, response time and packet loss.","1.1.1.1 or example.com",ping,"Run Ping",True)
-    def dns_page(self): return self.tool_page("DNS Lookup","Resolve IPv4 and IPv6 DNS records.","example.com",lookup,"Lookup")
+    def dns_page(self): return self.tool_page("DNS Lookup","Inspect A, AAAA, CNAME, MX, NS, TXT and SOA records. Enter an IP address for reverse PTR lookup.","example.com or 8.8.8.8",lookup,"Run Lookup")
     def subnet_page(self):
         return IPCalculatorPage()
     def open_page(self,name):
