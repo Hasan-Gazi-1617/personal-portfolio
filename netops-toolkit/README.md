@@ -58,7 +58,7 @@ python app.py
 ## Packet capture prerequisites
 
 - **Windows:** Install Npcap from the official Npcap website. Select the WinPcap API-compatible mode if the installer offers it.
-- **Ubuntu / Debian:** Install libpcap and run with the permissions required by your distribution. If using the packaged binary, an administrator can grant capture capabilities to the installed executable with `setcap`; do not run the entire desktop session as root.
+- **Ubuntu / Debian:** The DEB package depends on `libpcap0.8`. Packet capture may require elevated permissions. For a packaged install, an administrator may grant capture capabilities with `sudo setcap cap_net_raw,cap_net_admin=eip /opt/netops-toolkit/NetOpsToolkit`. Do not run the entire desktop session as root.
 - **macOS:** Allow packet capture access when prompted and ensure the account has the required permissions.
 
 ## Project links
