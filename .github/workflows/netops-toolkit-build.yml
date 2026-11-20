@@ -68,8 +68,10 @@ jobs:
             --hidden-import core.network_info \
             --hidden-import core.worker \
             --hidden-import modules.diagnostics.ping \
-            --hidden-import modules.dns_tools.lookup \
             --hidden-import modules.ip_calculator.page \
+            --hidden-import modules.network_analyzer.page \
+            --hidden-import modules.website_analyzer.lookup \
+            --collect-all scapy \
             --add-data "netops-toolkit/ui/themes:ui/themes" \
             --add-data "netops-toolkit/assets/netops-toolkit.png:assets" \
             netops-toolkit/app.py
