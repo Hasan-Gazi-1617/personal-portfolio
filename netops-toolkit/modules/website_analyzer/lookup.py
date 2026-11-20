@@ -388,3 +388,82 @@ def analyze_website(target, port=443, probe_count=20):
         "CONFIRMED requires direct evidence; PROBABLE means multiple matching signals; INCONCLUSIVE means insufficient evidence.",
     ])
     return "\n".join(lines)
+
+
+def _trace_route(host, max_hops=20, timeout=2):
+    """Run a bounded system traceroute. Missing system utilities are reported clearly."""
+    import platform
+    import shutil
+    import subprocess
+
+    system = platform.system().lower()
+    if system == "windows":
+        command = ["tracert", "-d", "-h", str(max_hops), "-w", str(timeout * 1000), host]
+    elif shutil.which("traceroute"):
+        command = ["traceroute", "-n", "-m", str(max_hops), "-w", str(timeout), host]
+    elif shutil.which("tracepath"):
+        command = ["tracepath", "-m", str(max_hops), host]
+    else:
+        return {
+            "available": False,
+            "command": "traceroute / tracepath",
+            "output": "Traceroute utility is not installed. Linux: sudo apt install traceroute",
+            "hops": [],
+        }
+    try:
+        completed = subprocess.run(
+            command, capture_output=True, text=True, timeout=max_hops * timeout + 8,
+            check=False,
+        )
+        output = (completed.stdout or completed.stderr or "").strip()
+        hops = []
+        for line in output.splitlines():
+            stripped = line.strip()
+            if stripped:
+                hops.append(stripped)
+        return {
+            "available": True, "command": " ".join(command[:-1]) + " [target]",
+            "output": output or "No hop output returned.",
+            "hops": hops,
+        }
+    except subprocess.TimeoutExpired:
+        return {"available": True, "command": "traceroute", "output": "Trace timed out.", "hops": []}
+    except Exception as exc:
+        return {"available": False, "command": "traceroute", "output": str(exc), "hops": []}
+
+
+def _tcp_port_checks(host, ports=(80, 443, 8080, 8443), timeout=3):
+    rows = []
+    for port in ports:
+        started = time.perf_counter()
+        try:
+            with socket.create_connection((host, port), timeout=timeout):
+                elapsed = (time.perf_counter() - started) * 1000
+                rows.append({"port": port, "status": "OPEN", "latency_ms": round(elapsed, 1), "detail": "TCP connection established"})
+        except ConnectionRefusedError:
+            rows.append({"port": port, "status": "CLOSED", "latency_ms": None, "detail": "Connection refused"})
+        except socket.timeout:
+            rows.append({"port": port, "status": "FILTERED / TIMEOUT", "latency_ms": None, "detail": "Connection timed out; filtering and route issues are both possible"})
+        except OSError as exc:
+            rows.append({"port": port, "status": "UNREACHABLE", "latency_ms": None, "detail": str(exc)})
+    return rows
+
+
+def analyze_website_dashboard(target, port=443, probe_count=20):
+    """Return the existing evidence report plus structured dashboard diagnostics."""
+    host = _normalise_target(target)
+    report = analyze_website(host, port, probe_count)
+    try:
+        addresses = _resolve_addresses(host)
+    except Exception:
+        addresses = []
+    tcp = _tcp_port_checks(host)
+    trace = _trace_route(host)
+    return {
+        "host": host,
+        "report": report,
+        "addresses": addresses,
+        "tcp": tcp,
+        "trace": trace,
+        "analysis_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
