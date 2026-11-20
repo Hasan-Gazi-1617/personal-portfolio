@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
             if with_family:
                 args.append(family.currentText())
             if title.startswith("Website"):
-                args.extend([443, 8])
+                args.extend([443, 20])
             output.setPlainText("Running diagnostics. Please wait...")
             self.worker = Worker(function, *args)
 
