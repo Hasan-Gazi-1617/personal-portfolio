@@ -9,6 +9,12 @@ Cross-platform network diagnostics desktop application built with Python and PyS
 - Redesigned dual-stack IP Calculator with separate IPv4 and IPv6 tabs\n- Live prefix slider, quick examples, subnet splitting, address ranges, masks and copy actions
 - Dark and light themes
 
+## Installation
+
+See the [Windows and Linux installation guide](INSTALLATION.md) for release downloads, first launch, source setup, and troubleshooting.
+
+Download ready-to-run builds from [GitHub Releases](https://github.com/Hasan-Gazi-1617/personal-portfolio/releases/latest).
+
 ## Run
 Python 3.11+ is required.
 
