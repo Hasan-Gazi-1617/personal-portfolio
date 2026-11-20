@@ -1282,6 +1282,19 @@ document.addEventListener("DOMContentLoaded", function () {
      PROJECTS
 ===================================================== -->
 
+<style>
+.netops-showcase-card{grid-column:1/-1!important;display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr)!important;gap:24px!important;align-items:center!important;padding:22px!important}
+.netops-showcase-preview{overflow:hidden;border:1px solid rgba(94,234,212,.22);border-radius:13px;background:#0b1423}
+.netops-showcase-preview img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.netops-showcase-content{min-width:0}
+.netops-platforms{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 13px}
+.netops-platforms a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid rgba(94,234,212,.25);border-radius:9px;color:var(--text-primary,#e5edf7);background:rgba(20,184,166,.07);font-size:12px;font-weight:700;text-decoration:none}
+.netops-platforms a:hover{border-color:#5eead4;background:rgba(20,184,166,.14)}
+.netops-actions{display:flex;flex-wrap:wrap;gap:18px}
+.netops-release-note{display:block;margin-top:13px;color:var(--text-muted,#8fa2b8);font-size:11px;line-height:1.6}
+html[data-theme="light"] .netops-platforms a{color:#14532d;background:#effcf4;border-color:rgba(21,128,61,.22)}
+@media(max-width:767.98px){.netops-showcase-card{grid-template-columns:1fr!important;padding:16px!important}.netops-showcase-preview{order:0}.netops-showcase-content{order:1}.netops-actions{gap:12px}}
+</style>
 <section id="projects" class="section-padding projects-premium-section">
 <div class="container">
 <div class="projects-heading">
@@ -1301,6 +1314,24 @@ document.addEventListener("DOMContentLoaded", function () {
 <article class="project-resource-card project-orange" data-project-card data-category="planned"><div class="project-resource-icon"><i class="bi bi-diagram-3"></i></div><span class="project-resource-category">04 · IN DEVELOPMENT</span><h3>MikroLab Studio</h3><p>Planned visual lab for building topologies, configuring RouterOS devices and practicing packet flow and troubleshooting.</p><div class="project-resource-tags"><span>RouterOS</span><span>Simulator</span><span>Visual Lab</span></div><span class="project-resource-link project-link-disabled"><span>Coming Soon</span><i class="bi bi-clock-history"></i></span></article>
 <article class="project-resource-card project-cyan" data-project-card data-category="web"><div class="project-resource-icon"><i class="bi bi-truck-front"></i></div><span class="project-resource-category">05 · LIVE WEB APPLICATION</span><h3>Hasoryx Transport Agency</h3><p>A transport agency web application designed to present transport services, support customer enquiries and provide a professional digital presence.</p><div class="project-resource-tags"><span>Django</span><span>Web Development</span><span>Responsive UI</span></div><a class="project-resource-link" href="https://hasoryx-transport-agency.onrender.com/" target="_blank" rel="noopener noreferrer"><span>Visit Website</span><i class="bi bi-arrow-up-right"></i></a></article>
 <article class="project-resource-card project-yellow" data-project-card data-category="network"><div class="project-resource-icon"><i class="bi bi-activity"></i></div><span class="project-resource-category">06 · PRIVATE NETWORK TOOL</span><h3>OLT Monitoring Dashboard</h3><p>Private multi-vendor monitoring for Huawei, VSOL, CDATA and other OLTs, with PON/ONU status and recent online/offline events.</p><div class="project-resource-tags"><span>OLT / ONU</span><span>SNMP / SSH</span><span>Django</span></div><a class="project-resource-link" href="{% url 'olt_monitoring_dashboard' %}"><span>Open Dashboard</span><i class="bi bi-arrow-up-right"></i></a></article>
+<article class="project-resource-card netops-showcase-card" data-project-card data-category="network">
+<div class="netops-showcase-preview"><img src="{% static 'img/netops-toolkit-preview.svg' %}" alt="NetOps Toolkit desktop dashboard preview" loading="lazy"></div>
+<div class="netops-showcase-content">
+<span class="project-resource-category">07 · CROSS-PLATFORM DESKTOP APPLICATION</span>
+<h3>NetOps Toolkit</h3>
+<p>A Python-powered Network Operations toolkit for diagnostics, DNS, IP calculations and system network visibility. Built for Windows, Linux and macOS with Dark and Light themes.</p>
+<div class="project-resource-tags"><span>Python</span><span>PySide6</span><span>Windows</span><span>Linux</span><span>macOS</span></div>
+<div class="netops-platforms" aria-label="Platform releases">
+<a href="https://github.com/Hasan-Gazi-1617/personal-portfolio/releases" target="_blank" rel="noopener noreferrer"><i class="bi bi-windows"></i> Windows</a>
+<a href="https://github.com/Hasan-Gazi-1617/personal-portfolio/releases" target="_blank" rel="noopener noreferrer"><i class="bi bi-ubuntu"></i> Linux</a>
+<a href="https://github.com/Hasan-Gazi-1617/personal-portfolio/releases" target="_blank" rel="noopener noreferrer"><i class="bi bi-apple"></i> macOS</a>
+</div>
+<div class="netops-actions">
+<a class="project-resource-link" href="https://github.com/Hasan-Gazi-1617/personal-portfolio/tree/feature/netops-toolkit-project/netops-toolkit" target="_blank" rel="noopener noreferrer"><span>View Source Code</span><i class="bi bi-code-slash"></i></a>
+<a class="project-resource-link" href="https://github.com/Hasan-Gazi-1617/personal-portfolio/actions/workflows/netops-toolkit-build.yml" target="_blank" rel="noopener noreferrer"><span>Build Downloads</span><i class="bi bi-download"></i></a>
+</div>
+<small class="netops-release-note">Platform installers will be published as verified GitHub Releases after the first successful multi-OS build.</small>
+</div></article>
 </div></section>
 
 
