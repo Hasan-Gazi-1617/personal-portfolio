@@ -62,6 +62,26 @@ To uninstall:
 sudo apt remove netops-toolkit
 ```
 
+**Completely remove NetOps Toolkit from Ubuntu / Debian**
+
+If you want to remove the application, its installed configuration files, desktop launcher and custom icon, run:
+
+```bash
+sudo apt purge netops-toolkit -y
+rm -f ~/.local/share/applications/netops-toolkit.desktop
+rm -f ~/.local/share/icons/hicolor/256x256/apps/netops-toolkit.png
+sudo gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
+sudo apt autoremove --purge -y
+```
+
+Check whether the DEB package is still installed:
+
+```bash
+dpkg -l | grep -i netops
+```
+
+If the command returns no output, the package is no longer installed. These commands do not delete downloaded installer files such as the `.deb` or `.AppImage` in your Downloads folder. Delete those files manually if you no longer need them. This removal procedure applies to the DEB installation; if you used AppImage, delete the AppImage file and any manually created launcher and icon separately.
+
 ### Option B: AppImage (portable, with manual icon setup)
 
 AppImage is portable. It can run directly, but it does not automatically create an Applications Menu entry on every Linux desktop.
