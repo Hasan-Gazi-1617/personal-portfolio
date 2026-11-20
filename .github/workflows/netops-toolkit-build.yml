@@ -44,7 +44,7 @@ jobs:
 
       - name: Build Windows EXE
         if: runner.os == 'Windows'
-        run: pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes;ui/themes" netops-toolkit/app.py
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name NetOpsToolkit --paths netops-toolkit --hidden-import ui.main_window --hidden-import core.network_info --hidden-import core.worker --hidden-import modules.diagnostics.ping --hidden-import modules.ip_calculator.page --hidden-import modules.network_analyzer.page --hidden-import modules.website_analyzer.lookup --collect-all scapy --add-data "netops-toolkit/ui/themes;ui/themes" --add-data "netops-toolkit/assets/netops-toolkit.png;assets" netops-toolkit/app.py
 
       - name: Package Windows EXE
         if: runner.os == 'Windows'
@@ -57,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y librsvg2-bin
+          sudo apt-get install -y librsvg2-bin libpcap0.8 libpcap0.8-dev
           mkdir -p netops-toolkit/assets
           rsvg-convert -w 256 -h 256 netops-toolkit/assets/netops-toolkit.svg > netops-toolkit/assets/netops-toolkit.png
 
@@ -144,7 +144,7 @@ jobs:
       - name: Build macOS DMG
         if: runner.os == 'macOS'
         run: |
-          pyinstaller --noconfirm --clean --windowed --name NetOpsToolkit --add-data "netops-toolkit/ui/themes:ui/themes" netops-toolkit/app.py
+          pyinstaller --noconfirm --clean --windowed --name NetOpsToolkit --paths netops-toolkit --hidden-import ui.main_window --hidden-import core.network_info --hidden-import core.worker --hidden-import modules.diagnostics.ping --hidden-import modules.ip_calculator.page --hidden-import modules.network_analyzer.page --hidden-import modules.website_analyzer.lookup --collect-all scapy --add-data "netops-toolkit/ui/themes:ui/themes" --add-data "netops-toolkit/assets/netops-toolkit.png:assets" netops-toolkit/app.py
           hdiutil create -volname "NetOps Toolkit" -srcfolder dist/NetOpsToolkit.app -ov -format UDZO NetOpsToolkit-macOS.dmg
 
       - name: Upload platform installer
