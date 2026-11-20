@@ -125,6 +125,7 @@ jobs:
           Terminal=false
           Categories=Network;Utility;
           StartupNotify=true
+          StartupWMClass=NetOpsToolkit
           EOF
           cat > "$PKG/DEBIAN/control" <<'EOF'
           Package: netops-toolkit
