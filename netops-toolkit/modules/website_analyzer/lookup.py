@@ -22,24 +22,84 @@ def _get_json(url, timeout=12, accept="application/json"):
         return json.loads(response.read().decode("utf-8", errors="replace"))
 
 
-def _normalise_target(value):
-    value = value.strip()
+def _parse_target(value):
+    """Return a normalized host and the complete HTTP(S) URL to test."""
+    value = (value or "").strip()
     if not value:
-        raise ValueError("Enter a website domain, for example example.com.")
-    parsed = urlparse(value if "://" in value else "//" + value)
+        raise ValueError("Enter a website domain or full URL.")
+    parsed = urlparse(value if "://" in value else "https://" + value)
+    if parsed.scheme.lower() not in ("http", "https"):
+        raise ValueError("Only HTTP and HTTPS website URLs are supported.")
+    if parsed.username or parsed.password:
+        raise ValueError("URLs containing usernames or passwords are not supported.")
     host = parsed.hostname
     if not host:
         raise ValueError("Enter a valid website domain.")
     try:
         host = host.encode("idna").decode("ascii").lower().rstrip(".")
-    except UnicodeError as exc:
-        raise ValueError("Invalid international domain name.") from exc
+        explicit_port = parsed.port
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError("Invalid website hostname or port.") from exc
     if len(host) > 253 or any(not label or len(label) > 63 for label in host.split(".")):
         raise ValueError("The website domain is not valid.")
-    # Avoid accepting a URL path, query or credentials as part of the host.
     if any(ch.isspace() for ch in host):
         raise ValueError("The website domain contains invalid characters.")
-    return host
+    netloc = host + (f":{explicit_port}" if explicit_port else "")
+    target_url = parsed._replace(netloc=netloc, path=parsed.path or "/", fragment="").geturl()
+    port = explicit_port or (443 if parsed.scheme.lower() == "https" else 80)
+    return host, target_url, parsed.scheme.lower(), port
+
+
+def _normalise_target(value):
+    """Backward-compatible hostname-only normalizer."""
+    return _parse_target(value)[0]
+
+
+def _safe_url_display(value):
+    parsed = urlparse(value)
+    return f"{parsed.scheme}://{parsed.netloc}{parsed.path or '/'}" + (
+        "?[query values redacted]" if parsed.query else ""
+    )
+
+
+def _local_url_test(target_url, timeout=12):
+    """Request the exact entered URL and retain HTTP evidence without logging query values."""
+    started = time.perf_counter()
+    result = {
+        "target": _safe_url_display(target_url),
+        "status_code": None,
+        "final_url": None,
+        "server": "Not disclosed",
+        "content_type": "Not disclosed",
+        "elapsed_ms": None,
+        "error": None,
+    }
+    request = Request(target_url, headers={
+        "User-Agent": USER_AGENT,
+        "Range": "bytes=0-0",
+        "Accept": "*/*",
+    }, method="GET")
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            result.update({
+                "status_code": response.status,
+                "final_url": _safe_url_display(response.geturl()),
+                "server": response.headers.get("Server", "Not disclosed"),
+                "content_type": response.headers.get("Content-Type", "Not disclosed"),
+            })
+    except HTTPError as exc:
+        result.update({
+            "status_code": exc.code,
+            "final_url": _safe_url_display(exc.geturl()),
+            "server": exc.headers.get("Server", "Not disclosed"),
+            "content_type": exc.headers.get("Content-Type", "Not disclosed"),
+        })
+    except (URLError, TimeoutError, OSError, ssl.SSLError) as exc:
+        reason = getattr(exc, "reason", exc)
+        result["error"] = f"{type(reason).__name__}: {reason}"
+    finally:
+        result["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 1)
+    return result
 
 
 def _cidr_ranges(start, end):
@@ -219,9 +279,10 @@ def _compare_public_dns(host, local_addresses):
     rows.append("  DNS interpretation: " + finding)
     return rows
 
-def analyze_website(target, port=443, probe_count=20):
-    """Run all website checks from a single domain/URL input."""
-    host = _normalise_target(target)
+def analyze_website(target, port=443, probe_count=20, url_test=None):
+    """Run domain-level checks and an exact full-URL request."""
+    host, target_url, scheme, target_port = _parse_target(target)
+    url_test = url_test or _local_url_test(target_url)
     try:
         addresses = _resolve_addresses(host)
     except socket.gaierror as exc:
@@ -236,7 +297,8 @@ def analyze_website(target, port=443, probe_count=20):
         "=" * 68,
         "NETOPS TOOLKIT | WEBSITE IP & BLOCK DETECTION REPORT",
         "=" * 68,
-        f"Website: {host}",
+        f"Website host: {host}",
+        f"Exact URL tested: {url_test['target']}",
         f"Analysis time (local): {time.strftime('%Y-%m-%d %H:%M:%S')}",
         f"Resolved addresses: {len(addresses)}",
         "",
@@ -272,11 +334,24 @@ def analyze_website(target, port=443, probe_count=20):
     lines.extend(["", "[3] DNS CROSS-CHECK (LOCAL VS PUBLIC RESOLVERS)"])
     lines.extend(_compare_public_dns(host, addresses))
 
-    lines.extend(["", "[3] LOCAL HTTP / HTTPS REACHABILITY"])
+    lines.extend(["", "[4] EXACT URL / APPLICATION-PATH TEST"])
+    lines.append("  Requested URL: " + url_test["target"])
+    if url_test["status_code"] is not None:
+        lines.append(f"  HTTP status: {url_test['status_code']}")
+        lines.append("  Final URL: " + str(url_test["final_url"] or "Not available"))
+        lines.append("  Server: " + str(url_test["server"]))
+        lines.append("  Content-Type: " + str(url_test["content_type"]))
+    else:
+        lines.append("  HTTP response: Not received")
+        lines.append("  Error: " + str(url_test["error"] or "No details"))
+    lines.append("  Request duration: " + str(url_test["elapsed_ms"]) + " ms")
+    lines.append("  Note: this is a local exact-path test; global probes below test the hostname only.")
+
+    lines.extend(["", "[5] LOCAL ROOT HTTP / HTTPS REACHABILITY"])
     for result in _local_web_test(host, port):
         lines.append("  " + result)
 
-    lines.extend(["", "[4] TLS CERTIFICATE / ENCRYPTION"])
+    lines.extend(["", "[6] TLS CERTIFICATE / ENCRYPTION"])
     try:
         cert = _tls_certificate(host, port)
         for key, value in cert.items():
@@ -284,7 +359,7 @@ def analyze_website(target, port=443, probe_count=20):
     except Exception as exc:
         lines.append(f"  TLS inspection unavailable: {exc}")
 
-    lines.extend(["", "[5] GLOBAL COUNTRY / ISP-PROBE REACHABILITY"])
+    lines.extend(["", "[7] GLOBAL COUNTRY / ISP-PROBE REACHABILITY"])
     probes = []
     try:
         report_url, probes = _global_reachability(host, probe_count)
@@ -315,7 +390,7 @@ def analyze_website(target, port=443, probe_count=20):
         lines.append(f"  Global probe service unavailable: {exc}")
         lines.append("  Local DNS, IP, allocation and TLS checks are reported separately.")
 
-    lines.extend(["", "[6] AUTOMATIC ROOT-CAUSE FINDINGS"])
+    lines.extend(["", "[8] AUTOMATIC ROOT-CAUSE FINDINGS"])
     asn_groups = {}
     policy_hits = []
     for probe in probes:
@@ -360,11 +435,11 @@ def analyze_website(target, port=443, probe_count=20):
         "  DNS failure, routing loss, TLS errors, server outage, geo-policy and probe-node failure can produce similar symptoms.",
         "  RDAP allocation ranges and BGP announced prefixes are different data; neither proves that a network blocks the site.",
         "",
-        "Scope: one domain entered by the user; global checks are limited to the probe nodes returned by the external provider.",
+        "Scope: exact URL/path is tested from this computer; global probes below test the hostname only.",
         "Use this report for diagnostics. Confirm suspected filtering with repeated tests and independent probes in the affected ISP.",
         "=" * 68,
     ])
-    lines.extend(["", "[7] PLAIN-LANGUAGE ROOT-CAUSE GUIDE"])
+    lines.extend(["", "[9] PLAIN-LANGUAGE ROOT-CAUSE GUIDE"])
     lines.extend([
         "  DNS filtering: local DNS returns no answer or a different address from independent resolvers.",
         "  Routing issue: DNS resolves, but packets cannot reach the destination network.",
@@ -374,7 +449,7 @@ def analyze_website(target, port=443, probe_count=20):
         "  Geo-policy: website/CDN applies rules based on request location.",
         "  Probe failure: the third-party test node itself may be offline or have a route problem.",
     ])
-    lines.extend(["", "[8] NOC ENGINEER VERIFICATION"])
+    lines.extend(["", "[10] NOC ENGINEER VERIFICATION"])
     lines.extend([
         "  1. Repeat the test at least 3 times at different times.",
         "  2. Test from the suspected ISP and a second independent ISP.",
@@ -450,10 +525,11 @@ def _tcp_port_checks(host, ports=(80, 443, 8080, 8443), timeout=3):
 
 
 def analyze_website_dashboard(target, port=443, probe_count=20):
-    """Return the existing evidence report plus structured dashboard diagnostics."""
-    host = _normalise_target(target)
+    """Return exact-URL and domain-level evidence for the dashboard."""
+    host, target_url, scheme, target_port = _parse_target(target)
+    url_test = _local_url_test(target_url)
     try:
-        report = analyze_website(host, port, probe_count)
+        report = analyze_website(target, port, probe_count, url_test=url_test)
     except RuntimeError as exc:
         # Preserve a useful diagnosis when the local resolver cannot resolve
         # the domain instead of aborting the whole dashboard.
@@ -463,8 +539,31 @@ def analyze_website_dashboard(target, port=443, probe_count=20):
             "=" * 68 + "\n"
             "NETOPS TOOLKIT | WEBSITE NETWORK BLOCK CHECK\n"
             "=" * 68 + "\n"
-            f"Website: {host}\n"
+            f"Website host: {host}\n"
+            f"Exact URL tested: {url_test['target']}\n"
             f"LOCAL DNS ERROR: {exc}\n"
+            f"EXACT URL TEST: HTTP {url_test['status_code']}" if url_test["status_code"] is not None else
+            f"EXACT URL TEST: No HTTP response | {url_test['error']}\n"
+            + "\n".join(_compare_public_dns(host, []))
+        )
+    try:
+        addresses = _resolve_addresses(host)
+    except Exception:
+        addresses = []
+    tcp = _tcp_port_checks(host)
+    trace_target = addresses[0] if addresses else host
+    trace = _trace_route(trace_target)
+    return {
+        "host": host,
+        "target_url": url_test["target"],
+        "url_test": url_test,
+        "trace_target": trace_target,
+        "report": report,
+        "addresses": addresses,
+        "tcp": tcp,
+        "trace": trace,
+        "analysis_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
             + "\n".join(_compare_public_dns(host, []))
         )
     try:
