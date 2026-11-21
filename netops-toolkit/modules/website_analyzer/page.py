@@ -287,11 +287,20 @@ class WebsiteAnalyzerPage(QWidget):
         location = "Not confirmed"
         location_reason = "The current tests cannot identify a specific router or ISP device as the blocking point."
         if verdict == "POSSIBLE NETWORK BLOCK":
-            location_reason = "The website works from other probe locations but not from this network. The exact point (device, router, ISP, upstream or destination) is not confirmed."
+            location = "Your current network / ISP route (possible)"
+            location_reason = "The website works from multiple external probe locations but not from this computer's current network. A local firewall, router rule, ISP DNS/filtering policy or ISP/upstream route may be involved. This is a strong comparison signal, not proof of which device or provider blocked it."
         elif verdict == "POLICY RESPONSE":
-            location_reason = "The HTTP refusal came from the website, CDN, WAF or an intermediary. The responding component's identity is not established."
+            location = "Website server / CDN / WAF or intermediary"
+            location_reason = "An HTTP policy response was received. The refusal came from the website, CDN, WAF or an intermediary, not from a confirmed ISP block."
+        elif verdict == "SERVER ERROR":
+            location = "Website server / CDN"
+            location_reason = "The remote HTTP service responded with a server error. The request reached an HTTP endpoint, so this result points more strongly to the website service than to an ISP block."
         elif not dns_ok:
-            location_reason = "The failure is at the name-resolution stage. Check the configured DNS server and compare public resolver answers."
+            location = "Your configured DNS resolver / local network (possible)"
+            location_reason = "The failure is at the name-resolution stage. If public DNS returns an address while your configured resolver does not, local DNS failure or DNS filtering is possible. Compare resolver answers before calling it an ISP block."
+        elif verdict == "NOT BLOCKED":
+            location = "No block detected on your current network"
+            location_reason = "This computer received a successful HTTP response or redirect from the website. The site was reachable during this test."
 
         return {
             "verdict": verdict, "title": title, "detail": detail, "color": color,
