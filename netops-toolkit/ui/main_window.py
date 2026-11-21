@@ -12,6 +12,7 @@ from core.worker import Worker
 from modules.diagnostics.ping import ping
 from modules.ip_calculator.page import IPCalculatorPage
 from modules.network_analyzer.page import NetworkAnalyzerPage
+from modules.network_analyzer.pcap_page import PCAPInspectorPage
 from modules.website_analyzer.page import WebsiteAnalyzerPage
 from modules.fiber_olt.page import FiberOLTPage
 from modules.bandwidth.page import BandwidthPage
@@ -53,6 +54,7 @@ class MainWindow(QMainWindow):
         pages = [
             ("Dashboard", self.dashboard),
             ("Network Analyzer", NetworkAnalyzerPage),
+            ("PCAP File Inspector", PCAPInspectorPage),
             ("Website Block Detection", WebsiteAnalyzerPage),
             ("Ping Test", self.ping_page),
             ("IP Calculator", IPCalculatorPage),
