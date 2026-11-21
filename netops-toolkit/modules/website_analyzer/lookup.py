@@ -295,7 +295,7 @@ def analyze_website(target, port=443, probe_count=20, url_test=None):
 
     lines = [
         "=" * 68,
-        "NETOPS TOOLKIT | WEBSITE IP & BLOCK DETECTION REPORT",
+        "NETOPS TOOLKIT | WEBSITE & NETWORK ROOT CAUSE REPORT",
         "=" * 68,
         f"Website host: {host}",
         f"Exact URL tested: {url_test['target']}",
@@ -428,7 +428,7 @@ def analyze_website(target, port=443, probe_count=20, url_test=None):
         lines.append("  No completed probe data was available for an automatic diagnosis.")
     lines.extend([
         "",
-        "[6] BLOCKING / FAILURE ASSESSMENT",
+        "[9] BLOCKING / FAILURE ASSESSMENT",
         "  A probe failure is NOT proof that an ISP blocks this website or its IP range.",
         "  Repeated failures from probes sharing an ASN, while other ASNs succeed, are an ISP-level anomaly worth investigating.",
         "  HTTP 403/451 indicates an HTTP policy response from the responding server or an intermediary; it does not by itself identify the blocking ISP.",
@@ -439,7 +439,7 @@ def analyze_website(target, port=443, probe_count=20, url_test=None):
         "Use this report for diagnostics. Confirm suspected filtering with repeated tests and independent probes in the affected ISP.",
         "=" * 68,
     ])
-    lines.extend(["", "[9] PLAIN-LANGUAGE ROOT-CAUSE GUIDE"])
+    lines.extend(["", "[10] PLAIN-LANGUAGE ROOT-CAUSE GUIDE"])
     lines.extend([
         "  DNS filtering: local DNS returns no answer or a different address from independent resolvers.",
         "  Routing issue: DNS resolves, but packets cannot reach the destination network.",
@@ -449,7 +449,7 @@ def analyze_website(target, port=443, probe_count=20, url_test=None):
         "  Geo-policy: website/CDN applies rules based on request location.",
         "  Probe failure: the third-party test node itself may be offline or have a route problem.",
     ])
-    lines.extend(["", "[10] NOC ENGINEER VERIFICATION"])
+    lines.extend(["", "[11] NOC ENGINEER VERIFICATION"])
     lines.extend([
         "  1. Repeat the test at least 3 times at different times.",
         "  2. Test from the suspected ISP and a second independent ISP.",
