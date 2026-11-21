@@ -4,7 +4,7 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 
 ## Features
 
-- **Network Analyzer:** Wireshark-inspired live packet capture, interface selection, BPF capture filters, protocol/IP/port display filters, decoded packet details and PCAP export.
+- **Network Analyzer:** Wireshark-inspired live packet capture, interface selection, BPF capture filters, protocol/IP/port display filters, decoded packet details and PCAP export. The PCAP File Inspector opens offline PCAP/PCAPNG files, shows protocol counts and lets you inspect decoded packet layers.
 - **Website Network Block Checker:** Starts with one clear question: is the website reachable from this computer's current network? Shows a simple final verdict, DNS/TCP/HTTPS status cards, a step-by-step connection path, a possible fault-domain explanation, route trace and technical evidence. Global probes are supporting comparison only. Timeouts, HTTP policy responses and silent traceroute hops are not automatically labelled as ISP blocks.
 - **Ping Test:** User-configurable request count (1-1000), automatic/IPv4/IPv6 mode and raw platform ping output.
 - **IP Calculator:** IPv4 and IPv6 subnet calculation, prefix slider, subnet splitting, address ranges, masks and copy actions.
