@@ -17,7 +17,7 @@ from modules.website_analyzer.page import WebsiteAnalyzerPage
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("NetOps Toolkit")
+        self.setWindowTitle("NetOps Toolkit---Developed By HASAN")
         self.resize(1280, 820)
         self.setMinimumSize(980, 680)
         self.theme = "dark"
@@ -63,10 +63,7 @@ class MainWindow(QMainWindow):
         self.theme_btn = QPushButton("Switch to Light Theme")
         self.theme_btn.clicked.connect(self.toggle_theme)
         side.addWidget(self.theme_btn)
-        credit = QLabel("Developed by Hasan Gazi")
-        credit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        credit.setStyleSheet("color:#8b95a5;font-size:11px;padding-top:10px")
-        side.addWidget(credit)
+        
 
         content = QWidget()
         content_layout = QVBoxLayout(content)
