@@ -1,17 +1,13 @@
 """Bandwidth, data-rate, storage and transfer-time converters."""
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
-    QComboBox, QPushButton, QFrame, QDoubleSpinBox, QSpinBox,
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QComboBox,
+    QPushButton, QFrame, QDoubleSpinBox, QSpinBox,
 )
 
 
 RATE_UNITS = {
     "bps": 1, "Kbps": 1_000, "Mbps": 1_000_000,
     "Gbps": 1_000_000_000, "Tbps": 1_000_000_000_000,
-}
-BYTE_UNITS = {
-    "B/s": 1, "KB/s": 1_000, "MB/s": 1_000_000,
-    "GB/s": 1_000_000_000, "TB/s": 1_000_000_000_000,
 }
 
 
@@ -73,15 +69,19 @@ class BandwidthPage(QWidget):
         self.transfer_output = QLabel("Estimated download time will appear here.")
         self.transfer_output.setObjectName("resultValue")
         self.transfer_output.setWordWrap(True)
+        file_row = QHBoxLayout()
+        file_row.addWidget(self.file_size, 1)
+        file_row.addWidget(self.file_unit)
+        speed_row = QHBoxLayout()
+        speed_row.addWidget(self.speed, 1)
+        speed_row.addWidget(self.speed_unit)
         transfer.addWidget(QLabel("Download size"), 0, 0)
         transfer.addWidget(QLabel("Connection speed"), 0, 1)
-        transfer.addWidget(self.file_size, 1, 0)
-        transfer.addWidget(self.file_unit, 1, 0, alignment=None)
-        transfer.addWidget(self.speed, 1, 1)
-        transfer.addWidget(self.speed_unit, 1, 2)
+        transfer.addLayout(file_row, 1, 0)
+        transfer.addLayout(speed_row, 1, 1)
         self.transfer_button = QPushButton("Calculate Download Time")
-        transfer.addWidget(self.transfer_button, 2, 0, 1, 3)
-        transfer.addWidget(self.transfer_output, 3, 0, 1, 3)
+        transfer.addWidget(self.transfer_button, 2, 0, 1, 2)
+        transfer.addWidget(self.transfer_output, 3, 0, 1, 2)
         root.addWidget(transfer_panel)
 
         share_panel = QFrame()
