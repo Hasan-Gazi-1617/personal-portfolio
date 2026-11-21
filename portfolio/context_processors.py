@@ -49,7 +49,7 @@ OLT_LOCATION_MAP = [
     ("OLT 19", "C-DATA", [
         ("Subidbazar", 1), ("Kodomtoli new", 2), ("Dariapara, Jallarpar", 3),
         ("Shibgonj", 4), ("Baruthkhana", 5), ("Dorgah, Mirermoydan", 6),
-        ("Uposhohor Block-F-J", 7), ("Naiorpool to Mendibag", 8),
+        ("Uposhohor Block-F-J", 7), ("Naiorpool to Mendibag", 8),("Chalibondor", 8),
     ]),
 ]
 
