@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFrame,
     QLabel, QPushButton, QStackedWidget, QLineEdit, QSpinBox, QTextEdit,
-    QGridLayout, QComboBox
+    QGridLayout, QComboBox, QSizePolicy
 )
 from core.network_info import snapshot
 from core.worker import Worker
@@ -12,14 +13,20 @@ from modules.diagnostics.ping import ping
 from modules.ip_calculator.page import IPCalculatorPage
 from modules.network_analyzer.page import NetworkAnalyzerPage
 from modules.website_analyzer.page import WebsiteAnalyzerPage
+from modules.fiber_olt.page import FiberOLTPage
+from modules.bandwidth.page import BandwidthPage
+from modules.noc_reference.page import NOCReferencePage
+
+
+PORTFOLIO_URL = "https://personal-portfolio-069p.onrender.com/"
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("NetOps Toolkit---Developed By HASAN")
-        self.resize(1280, 820)
-        self.setMinimumSize(980, 680)
+        self.setWindowTitle("NetOps Toolkit | Developed by Hasan")
+        self.resize(1480, 940)
+        self.setMinimumSize(1120, 760)
         self.theme = "dark"
         self.worker = None
 
@@ -30,13 +37,13 @@ class MainWindow(QMainWindow):
 
         sidebar = QFrame()
         sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(245)
+        sidebar.setFixedWidth(250)
         side = QVBoxLayout(sidebar)
         side.setContentsMargins(16, 22, 16, 18)
-        brand = QLabel("NetOps Toolkit")
+        brand = QLabel("NETWORK OPS")
         brand.setObjectName("brand")
         side.addWidget(brand)
-        subtitle = QLabel("NETWORK OPERATIONS")
+        subtitle = QLabel("ENGINEERING WORKSPACE")
         subtitle.setObjectName("muted")
         side.addWidget(subtitle)
         side.addSpacing(22)
@@ -46,14 +53,18 @@ class MainWindow(QMainWindow):
         pages = [
             ("Dashboard", self.dashboard),
             ("Network Analyzer", NetworkAnalyzerPage),
-            ("Website Network Block Checker", WebsiteAnalyzerPage),
+            ("Website Block Detection", WebsiteAnalyzerPage),
             ("Ping Test", self.ping_page),
             ("IP Calculator", IPCalculatorPage),
+            ("Fiber & OLT Tools", FiberOLTPage),
+            ("Bandwidth & Unit Converter", BandwidthPage),
+            ("NOC Reference Library", NOCReferencePage),
         ]
         for name, builder in pages:
             button = QPushButton(name)
             button.setCheckable(True)
             button.setChecked(not self.nav)
+            button.setMinimumHeight(42)
             button.clicked.connect(lambda checked=False, n=name: self.open_page(n))
             side.addWidget(button)
             self.nav.append((name, button))
@@ -63,14 +74,45 @@ class MainWindow(QMainWindow):
         self.theme_btn = QPushButton("Switch to Light Theme")
         self.theme_btn.clicked.connect(self.toggle_theme)
         side.addWidget(self.theme_btn)
-        
 
         content = QWidget()
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(28, 24, 28, 24)
-        heading = QLabel("Monitor  •  Analyze  •  Diagnose")
-        heading.setObjectName("muted")
-        content_layout.addWidget(heading)
+        content_layout.setContentsMargins(24, 16, 24, 22)
+        content_layout.setSpacing(16)
+
+        header = QGridLayout()
+        header.setColumnStretch(0, 1)
+        header.setColumnStretch(1, 2)
+        header.setColumnStretch(2, 1)
+        left_spacer = QLabel("")
+        header.addWidget(left_spacer, 0, 0)
+
+        heading = QLabel("NetOps Toolkit")
+        heading.setObjectName("appHeaderTitle")
+        heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header.addWidget(heading, 0, 1)
+
+        credit = QWidget()
+        credit_layout = QHBoxLayout(credit)
+        credit_layout.setContentsMargins(0, 0, 0, 0)
+        credit_layout.setSpacing(10)
+        developed = QLabel("Developed by Hasan")
+        developed.setObjectName("muted")
+        portfolio = QPushButton("Check My Portfolio")
+        portfolio.setObjectName("portfolioLink")
+        portfolio.setCursor(Qt.CursorShape.PointingHandCursor)
+        portfolio.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(PORTFOLIO_URL)))
+        credit_layout.addWidget(developed)
+        credit_layout.addWidget(portfolio)
+        header.addWidget(credit, 0, 2, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        content_layout.addLayout(header)
+
+        divider = QFrame()
+        divider.setObjectName("headerDivider")
+        divider.setFrameShape(QFrame.Shape.HLine)
+        content_layout.addWidget(divider)
+
+        self.stack.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         content_layout.addWidget(self.stack, 1)
 
         root.addWidget(sidebar)
@@ -219,7 +261,7 @@ class MainWindow(QMainWindow):
     def ping_page(self):
         return self.tool_page(
             "Ping Test",
-            "Set the request count yourself and test a hostname or IP using automatic, IPv4 or IPv6 mode.",
+            "Test a hostname or IP from this computer. Choose request count and IPv4/IPv6 mode.",
             "1.1.1.1 or example.com",
             ping,
             "Run Ping",
