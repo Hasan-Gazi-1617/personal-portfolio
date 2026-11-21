@@ -1,6 +1,6 @@
 # NetOps Toolkit
 
-Cross-platform desktop network operations and diagnostics toolkit built with Python and PySide6.
+Cross-platform desktop network operations and diagnostics toolkit built with Python and PySide6. The application header centers the NetOps Toolkit title and provides a direct Check My Portfolio link.
 
 ## Features
 
@@ -8,6 +8,9 @@ Cross-platform desktop network operations and diagnostics toolkit built with Pyt
 - **Website Network Block Checker:** Starts with one clear question: is the website reachable from this computer's current network? Shows a simple final verdict, DNS/TCP/HTTPS status cards, a step-by-step connection path, a possible fault-domain explanation, route trace and technical evidence. Global probes are supporting comparison only. Timeouts, HTTP policy responses and silent traceroute hops are not automatically labelled as ISP blocks.
 - **Ping Test:** User-configurable request count (1-1000), automatic/IPv4/IPv6 mode and raw platform ping output.
 - **IP Calculator:** IPv4 and IPv6 subnet calculation, prefix slider, subnet splitting, address ranges, masks and copy actions.
+- **Fiber & OLT Tools:** GPON optical link-budget estimate, splitter/connector/splice loss, ONU receive-power assessment and practical OLT troubleshooting reference.
+- **Bandwidth & Unit Converter:** bps/Kbps/Mbps/Gbps/Tbps and byte-throughput conversion, download-time estimate, shared-capacity planning and 30-day traffic projection.
+- **NOC Reference Library:** searchable OSI, TCP/UDP ports, private IP ranges, Linux and MikroTik commands, VLAN, DNS, GPON and incident/TKI guides.
 - Dark and light themes. Every diagnostic module includes a **Clear All** action.
 
 ## Website Block Checker: how to read the result
