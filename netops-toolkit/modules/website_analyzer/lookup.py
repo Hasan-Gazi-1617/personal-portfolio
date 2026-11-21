@@ -568,21 +568,3 @@ def analyze_website_dashboard(target, port=443, probe_count=20):
         "trace": trace,
         "analysis_time": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-            + "\n".join(_compare_public_dns(host, []))
-        )
-    try:
-        addresses = _resolve_addresses(host)
-    except Exception:
-        addresses = []
-    tcp = _tcp_port_checks(host)
-    trace_target = addresses[0] if addresses else host
-    trace = _trace_route(trace_target)
-    return {
-        "host": host,
-        "trace_target": trace_target,
-        "report": report,
-        "addresses": addresses,
-        "tcp": tcp,
-        "trace": trace,
-        "analysis_time": time.strftime("%Y-%m-%d %H:%M:%S"),
-    }
