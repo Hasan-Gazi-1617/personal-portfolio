@@ -1,13 +1,15 @@
-"""Bandwidth, data-rate, storage and transfer-time converters."""
+"""Bandwidth, data-rate, storage and traffic calculators."""
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QComboBox,
     QPushButton, QFrame, QDoubleSpinBox, QSpinBox,
 )
 
 
+# All factors are expressed as bits per second (decimal SI units).
 RATE_UNITS = {
     "bps": 1, "Kbps": 1_000, "Mbps": 1_000_000,
     "Gbps": 1_000_000_000, "Tbps": 1_000_000_000_000,
+    "KB/s": 8_000, "MB/s": 8_000_000, "GB/s": 8_000_000_000,
 }
 
 
@@ -29,7 +31,7 @@ class BandwidthPage(QWidget):
         title = QLabel("Bandwidth & Unit Converter")
         title.setObjectName("title")
         root.addWidget(title)
-        intro = QLabel("Convert network speed, estimate download time, calculate shared bandwidth and understand monthly data usage.")
+        intro = QLabel("Convert network speed and byte throughput, estimate download time, calculate shared capacity and project monthly traffic.")
         intro.setObjectName("muted")
         intro.setWordWrap(True)
         root.addWidget(intro)
@@ -46,7 +48,7 @@ class BandwidthPage(QWidget):
         self.rate_output = QLabel("100 Mbps")
         self.rate_output.setObjectName("resultValue")
         self.rate_output.setWordWrap(True)
-        rate.addWidget(QLabel("Network speed"), 0, 0)
+        rate.addWidget(QLabel("Network speed / throughput"), 0, 0)
         rate.addWidget(QLabel("From"), 0, 1)
         rate.addWidget(QLabel("To"), 0, 2)
         rate.addWidget(self.rate_value, 1, 0)
@@ -105,11 +107,29 @@ class BandwidthPage(QWidget):
         share.addWidget(self.share_button, 2, 0, 1, 3)
         share.addWidget(self.shared_output, 3, 0, 1, 3)
         root.addWidget(share_panel)
+
+        usage_panel = QFrame()
+        usage_panel.setObjectName("panel")
+        usage = QGridLayout(usage_panel)
+        self.average_speed = self._number(10)
+        self.utilization = self._number(35, 100)
+        self.usage_output = QLabel("Estimated 30-day traffic will appear here.")
+        self.usage_output.setObjectName("resultValue")
+        self.usage_output.setWordWrap(True)
+        usage.addWidget(QLabel("Average traffic rate (Mbps)"), 0, 0)
+        usage.addWidget(QLabel("Average utilization (%)"), 0, 1)
+        usage.addWidget(self.average_speed, 1, 0)
+        usage.addWidget(self.utilization, 1, 1)
+        self.usage_button = QPushButton("Estimate 30-Day Data Usage")
+        usage.addWidget(self.usage_button, 2, 0, 1, 2)
+        usage.addWidget(self.usage_output, 3, 0, 1, 2)
+        root.addWidget(usage_panel)
         root.addStretch()
 
         self.rate_button.clicked.connect(self._convert_rate)
         self.transfer_button.clicked.connect(self._transfer_time)
         self.share_button.clicked.connect(self._share)
+        self.usage_button.clicked.connect(self._usage)
 
     def _convert_rate(self):
         value = self.rate_value.value() * RATE_UNITS[self.rate_from.currentText()]
@@ -137,3 +157,10 @@ class BandwidthPage(QWidget):
     def _share(self):
         capacity = self.total_bandwidth.value() / max(1, self.subscribers.value()) / max(0.01, self.ratio.value())
         self.shared_output.setText(f"Estimated average capacity per user: {capacity:.2f} Mbps\nThis is a planning estimate, not a guaranteed per-subscriber speed.")
+
+    def _usage(self):
+        seconds = 30 * 24 * 60 * 60
+        bits = self.average_speed.value() * 1_000_000 * (self.utilization.value() / 100) * seconds
+        gigabytes = bits / 8 / 1_000_000_000
+        terabytes = gigabytes / 1000
+        self.usage_output.setText(f"Estimated 30-day transfer: {gigabytes:,.2f} GB ({terabytes:.3f} TB)\nAssumes a constant average rate and decimal units. Actual traffic depends on usage patterns and accounting rules.")
