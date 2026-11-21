@@ -16,3 +16,8 @@ QTabBar::tab:selected{color:#1d4ed8;border-bottom:2px solid #2563eb;font-weight:
 QComboBox{background:#fff;color:#17263a;border:1px solid #cfdae7;border-radius:7px;padding:7px 10px;min-width:100px}
 QSlider::groove:horizontal{height:5px;background:#d6e0ec;border-radius:2px}
 QSlider::handle:horizontal{background:#2563eb;width:15px;margin:-6px 0;border-radius:7px}
+
+QLabel#appHeaderTitle{font-size:26px;font-weight:800;letter-spacing:0.4px;padding:8px}
+QPushButton#portfolioLink{font-weight:700;padding:8px 12px}
+QFrame#headerDivider{max-height:1px}
+QPushButton#clearButton{border-style:solid}
