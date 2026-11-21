@@ -535,15 +535,19 @@ def analyze_website_dashboard(target, port=443, probe_count=20):
         # the domain instead of aborting the whole dashboard.
         if "DNS resolution failed" not in str(exc) and "DNS returned no" not in str(exc):
             raise
+        url_status = (
+            f"HTTP {url_test['status_code']}"
+            if url_test["status_code"] is not None
+            else f"No HTTP response | {url_test['error'] or 'No additional error detail'}"
+        )
         report = (
             "=" * 68 + "\n"
-            "NETOPS TOOLKIT | WEBSITE NETWORK BLOCK CHECK\n"
-            "=" * 68 + "\n"
-            f"Website host: {host}\n"
-            f"Exact URL tested: {url_test['target']}\n"
-            f"LOCAL DNS ERROR: {exc}\n"
-            f"EXACT URL TEST: HTTP {url_test['status_code']}" if url_test["status_code"] is not None else
-            f"EXACT URL TEST: No HTTP response | {url_test['error']}\n"
+            "NETOPS TOOLKIT | WEBSITE & NETWORK ROOT CAUSE REPORT\n"
+            + "=" * 68 + "\n"
+            + f"Website host: {host}\n"
+            + f"Exact URL tested: {url_test['target']}\n"
+            + f"LOCAL DNS ERROR: {exc}\n"
+            + f"EXACT URL TEST: {url_status}\n"
             + "\n".join(_compare_public_dns(host, []))
         )
     try:

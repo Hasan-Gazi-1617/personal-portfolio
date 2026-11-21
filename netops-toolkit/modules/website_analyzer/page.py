@@ -1,4 +1,4 @@
-"""Evidence-led website and application-path root-cause analyzer."""
+"""Simple, evidence-led Website Block Checker dashboard."""
 import html
 import ipaddress
 import re
@@ -24,12 +24,12 @@ class WebsiteAnalyzerPage(QWidget):
         root.setContentsMargins(4, 4, 4, 4)
         root.setSpacing(10)
 
-        title = QLabel("Website & Network Root Cause Analyzer")
+        title = QLabel("Website Network Block Checker")
         title.setObjectName("title")
         root.addWidget(title)
         subtitle = QLabel(
-            "Test the complete URL, application path, DNS, TCP, TLS and network path. "
-            "The tool separates observed facts from possible causes and never assumes ISP blocking."
+            "Main question: Can this website be opened from your current network? "
+            "If not, identify the type of failure and show the network path."
         )
         subtitle.setObjectName("muted")
         subtitle.setWordWrap(True)
@@ -37,7 +37,7 @@ class WebsiteAnalyzerPage(QWidget):
 
         search = QHBoxLayout()
         self.target = QLineEdit()
-        self.target.setPlaceholderText("Enter full URL or domain, e.g. https://example.com/path?id=123")
+        self.target.setPlaceholderText("Enter website, e.g. example.com")
         self.target.setMinimumHeight(44)
         search.addWidget(self.target, 1)
         search.addWidget(QLabel("Global checks"))
@@ -56,7 +56,7 @@ class WebsiteAnalyzerPage(QWidget):
         search.addWidget(self.clear_button)
         root.addLayout(search)
 
-        self.status = QLabel("Enter a full URL or domain and click Check Website.")
+        self.status = QLabel("Enter a website and click Check Website.")
         self.status.setObjectName("muted")
         root.addWidget(self.status)
 
@@ -74,7 +74,7 @@ class WebsiteAnalyzerPage(QWidget):
         )
         verdict_header.addWidget(self.verdict_badge)
         verdict_layout.addLayout(verdict_header)
-        self.verdict_title = QLabel("What is preventing this URL from loading?")
+        self.verdict_title = QLabel("Is this website blocked on my network?")
         self.verdict_title.setStyleSheet("font-size:23px;font-weight:800")
         self.verdict_title.setWordWrap(True)
         verdict_layout.addWidget(self.verdict_title)
@@ -143,8 +143,8 @@ class WebsiteAnalyzerPage(QWidget):
             "font-weight:700;padding:6px 12px;border-radius:8px;background:#64748b;color:white"
         )
         self.verdict_title.setText("Is this website blocked on my network?")
-        self.verdict_detail.setText("Enter a full URL or domain. The exact page and hostname will be tested separately.")
-        self.status.setText("Enter a full URL or domain and click Check Website.")
+        self.verdict_detail.setText("Enter a website and run the check to see whether it opens on your network.")
+        self.status.setText("Enter a website and click Check Website.")
         for value in self.summary_values.values():
             value.setText("Not tested")
         self.path_view.clear()
@@ -182,7 +182,7 @@ class WebsiteAnalyzerPage(QWidget):
         self.run_button.setEnabled(False)
         self.export_button.setEnabled(False)
         self.run_button.setText("Checking…")
-        self.status.setText("Testing the exact URL, DNS, TCP, TLS and hostname reachability…")
+        self.status.setText("Checking your DNS, website connection, HTTPS and network path…")
         self.worker = Worker(analyze_website_dashboard, target, 443, self.probe_count.value())
         self.worker.done.connect(self.show_result)
         self.worker.failed.connect(self.show_error)
@@ -225,12 +225,7 @@ class WebsiteAnalyzerPage(QWidget):
         http = re.search(r"HTTP:\s*HTTP\s+(\d{3})", report, re.I)
         dns_ok = bool(data.get("addresses"))
         tcp443 = tcp.get(443, {}).get("status", "NOT TESTED")
-        url_test = data.get("url_test")
-        # When a full URL was supplied, never substitute a successful homepage
-        # response for a failed exact-path request.
-        code = (url_test.get("status_code") if url_test is not None else
-                (int(https.group(1)) if https else (int(http.group(1)) if http else None)))
-        url_failed = bool(url_test is not None and code is None)
+        code = int(https.group(1)) if https else (int(http.group(1)) if http else None)
         successful_global = sum(1 for p in probes if p["status"] == "HTTP RESPONSE" and p["code"] not in (401, 403, 451))
         global_policy = sum(1 for p in probes if p["code"] in (401, 403, 451))
 
@@ -258,17 +253,6 @@ class WebsiteAnalyzerPage(QWidget):
             detail = "The website endpoint returned an HTTP response, so the network path reached an HTTP service. This response alone does not mean the ISP blocked it."
             color = "#16a34a"
             local_state = f"HTTP {code}"
-        elif url_failed and dns_ok:
-            verdict = "URL PATH FAILURE"
-            title = "The requested page did not return an HTTP response"
-            detail = (
-                "The hostname resolved, but the exact URL/path request failed. "
-                "This can be an application/server issue, CDN/WAF rule, path-specific filtering, "
-                "or a network interruption. It is not enough to confirm ISP blocking. "
-                + str(url_test.get("error") or "No HTTP status was received.")
-            )
-            color = "#d97706"
-            local_state = "Exact URL request failed"
         elif not dns_ok:
             verdict = "WEBSITE NOT OPENING"
             title = "Website name could not be found on this network"
@@ -308,13 +292,6 @@ class WebsiteAnalyzerPage(QWidget):
         elif verdict == "POLICY RESPONSE":
             location = "Website server / CDN / WAF or intermediary"
             location_reason = "An HTTP policy response was received. The refusal came from the website, CDN, WAF or an intermediary, not from a confirmed ISP block."
-        elif verdict == "URL PATH FAILURE":
-            location = "Application path / website server / CDN or network path (not isolated)"
-            location_reason = (
-                "DNS succeeded but the exact URL did not return an HTTP response. "
-                "Compare the homepage and this path, then repeat from another ISP. "
-                "The available evidence does not identify the ISP or a specific filtering device."
-            )
         elif verdict == "SERVER ERROR":
             location = "Website server / CDN"
             location_reason = "The remote HTTP service responded with a server error. The request reached an HTTP endpoint, so this result points more strongly to the website service than to an ISP block."
@@ -328,10 +305,7 @@ class WebsiteAnalyzerPage(QWidget):
         return {
             "verdict": verdict, "title": title, "detail": detail, "color": color,
             "local_state": local_state, "dns_ok": dns_ok, "tcp443": tcp443,
-            "https_state": (f"HTTP {code}" if code is not None else
-                            ("Exact URL request failed" if url_failed else
-                             ("Handshake / request failed" if https_failed else "No HTTP response"))),
-            "url_test": url_test,
+            "https_state": f"HTTP {code}" if code is not None else ("Handshake / request failed" if https_failed else "No HTTP response"),
             "global_ok": successful_global, "global_policy": global_policy,
             "global_failed": sum(1 for p in probes if p["status"] == "UNREACHABLE"),
             "location": location, "location_reason": location_reason,
@@ -348,7 +322,6 @@ class WebsiteAnalyzerPage(QWidget):
             "SERVER ERROR": "WEBSITE SERVER ERROR",
             "POSSIBLE NETWORK BLOCK": "POSSIBLE NETWORK BLOCK",
             "WEBSITE NOT OPENING": "WEBSITE NOT OPENING",
-            "URL PATH FAILURE": "URL / PAGE REQUEST FAILED",
             "REACHABLE (HTTP ERROR)": "WEBSITE REACHED",
         }
         self.verdict_badge.setText(friendly_verdicts.get(diagnosis["verdict"], diagnosis["verdict"]))
@@ -424,9 +397,8 @@ class WebsiteAnalyzerPage(QWidget):
 
     def _technical_report(self, data, d):
         lines = [
-            "WEBSITE & NETWORK ROOT CAUSE ANALYSIS",
-            f"Website host: {data.get('host')}",
-            f"Exact URL tested: {data.get('target_url', data.get('host'))}",
+            "WEBSITE NETWORK BLOCK CHECK",
+            f"Website: {data.get('host')}",
             f"Final verdict: {d['verdict']}",
             f"Explanation: {d['detail']}",
             f"Blocking location: {d['location']}",
@@ -439,19 +411,7 @@ class WebsiteAnalyzerPage(QWidget):
                 f"Port {item['port']}: {item['status']} | "
                 f"Latency: {item['latency_ms']} ms | {item['detail']}"
             )
-        url_test = data.get("url_test") or {}
-        lines.extend([
-            "",
-            "EXACT URL TEST",
-            f"Target: {url_test.get('target', 'Not available')}",
-            f"HTTP status: {url_test.get('status_code', 'No HTTP response')}",
-            f"Final URL: {url_test.get('final_url', 'Not available')}",
-            f"Duration: {url_test.get('elapsed_ms', 'Not available')} ms",
-            f"Error: {url_test.get('error') or 'None'}",
-            "",
-            "FULL ORIGINAL DIAGNOSTIC REPORT",
-            data.get("report", ""),
-        ])
+        lines.extend(["", "FULL ORIGINAL DIAGNOSTIC REPORT", data.get("report", "")])
         lines.extend(["", "LOCAL ROUTE TRACE", data.get("trace", {}).get("output", "Unavailable")])
         return "\n".join(lines)
 
