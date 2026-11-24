@@ -34,11 +34,13 @@ class PublicPageAnalyticsMiddleware:
         ua = request.META.get('HTTP_USER_AGENT','')
         if response.status_code >= 400 or 'text/html' not in content_type or BOT_RE.search(ua):
             return response
-        visitor_id = request.COOKIES.get(self.cookie_name)
+        raw_cookie = request.COOKIES.get(self.cookie_name)
         try:
-            visitor_id = uuid.UUID(visitor_id) if visitor_id else uuid.uuid4()
+            visitor_id = uuid.UUID(raw_cookie) if raw_cookie else uuid.uuid4()
+            valid_cookie = bool(raw_cookie)
         except (ValueError, TypeError, AttributeError):
             visitor_id = uuid.uuid4()
+            valid_cookie = False
         referer = request.META.get('HTTP_REFERER','')
         host = urlparse(referer).hostname or ''
         source = host[:120] if host and host != request.get_host().split(':')[0] else ('Direct' if not host else '')
@@ -52,7 +54,7 @@ class PublicPageAnalyticsMiddleware:
         except Exception:
             # Analytics must never make the public portfolio unavailable.
             pass
-        if not request.COOKIES.get(self.cookie_name):
+        if not valid_cookie:
             response.set_cookie(self.cookie_name, str(visitor_id), max_age=31536000,
                 httponly=True, secure=request.is_secure(), samesite='Lax')
         return response
