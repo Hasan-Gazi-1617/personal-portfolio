@@ -1,32 +1,12 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
 <h1>Portfolio Analytics</h1>
-<p>Daily traffic for {{ start }} through {{ today }}. Visitor identifiers are pseudonymous; IP addresses are not stored.</p>
-<div class="module">
-  <table>
-    <caption>Last 30 days</caption>
-    <tr><th>Unique visitor-days</th><td>{{ total_visitors }}</td><th>Page views</th><td>{{ total_pageviews }}</td><th>Active subscribers</th><td>{{ active_subscribers }}</td></tr>
-  </table>
-</div>
-<div class="module">
-  <h2>Daily visitors</h2><table><thead><tr><th>Date</th><th>Visitors</th></tr></thead><tbody>
-  {% for row in visitors %}<tr><td>{{ row.visit_date }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No traffic recorded yet.</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-<div class="module">
-  <h2>Daily page views</h2><table><thead><tr><th>Date</th><th>Views</th></tr></thead><tbody>
-  {% for row in pageviews %}<tr><td>{{ row.visit_date }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No page views recorded yet.</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-<div class="module">
-  <h2>Most viewed pages</h2><table><thead><tr><th>Path</th><th>Views</th></tr></thead><tbody>
-  {% for row in top_pages %}<tr><td><code>{{ row.path }}</code></td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No page views recorded yet.</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-<div class="module">
-  <h2>Tracked actions</h2><table><thead><tr><th>Action</th><th>Count</th></tr></thead><tbody>
-  {% for row in events %}<tr><td>{{ row.event }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No tracked actions yet.</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-<p><a href="{% url 'admin:site_insights_newslettersubscriber_changelist' %}">Manage newsletter subscribers and export CSV</a></p>
+<p>Anonymous daily traffic and module usage for {{ start }} through {{ today }}. No email collection and no IP addresses stored.</p>
+<div class="module"><table><caption>Last 30 days</caption><tr><th>Unique visitor-days</th><td>{{ total_visitors }}</td><th>Page views</th><td>{{ total_pageviews }}</td></tr></table></div>
+<div class="module"><h2>Daily visitors</h2><table><thead><tr><th>Date</th><th>Visitors</th></tr></thead><tbody>{% for row in visitors %}<tr><td>{{ row.visit_date }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No traffic recorded yet.</td></tr>{% endfor %}</tbody></table></div>
+<div class="module"><h2>Module usage (unique visitors per module per day)</h2><table><thead><tr><th>Module / section ID</th><th>Usage count</th></tr></thead><tbody>{% for row in module_totals %}<tr><td><code>{{ row.module }}</code></td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No module data yet. Data appears as visitors scroll through sections.</td></tr>{% endfor %}</tbody></table></div>
+<div class="module"><h2>Daily module usage</h2><table><thead><tr><th>Date</th><th>Module</th><th>Visitors</th></tr></thead><tbody>{% for row in daily_modules %}<tr><td>{{ row.visit_date }}</td><td><code>{{ row.module }}</code></td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="3">No module usage recorded yet.</td></tr>{% endfor %}</tbody></table></div>
+<div class="module"><h2>Daily page views</h2><table><thead><tr><th>Date</th><th>Views</th></tr></thead><tbody>{% for row in pageviews %}<tr><td>{{ row.visit_date }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No page views recorded yet.</td></tr>{% endfor %}</tbody></table></div>
+<div class="module"><h2>Most viewed pages</h2><table><thead><tr><th>Path</th><th>Views</th></tr></thead><tbody>{% for row in top_pages %}<tr><td><code>{{ row.path }}</code></td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No page views recorded yet.</td></tr>{% endfor %}</tbody></table></div>
+<div class="module"><h2>Tracked actions</h2><table><thead><tr><th>Action</th><th>Count</th></tr></thead><tbody>{% for row in events %}<tr><td>{{ row.event }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No tracked actions yet.</td></tr>{% endfor %}</tbody></table></div>
 {% endblock %}
