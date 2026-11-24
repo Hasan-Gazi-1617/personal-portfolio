@@ -2,7 +2,11 @@ from datetime import timedelta
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from urllib.parse import urlparse
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -16,15 +20,23 @@ def subscribe(request):
     consent = request.POST.get('consent') == 'yes'
     if not consent:
         messages.error(request, 'Please confirm consent before subscribing.')
-    elif not email or len(email) > 254 or '@' not in email:
-        messages.error(request, 'Please enter a valid email address.')
     else:
+        try:
+            validate_email(email)
+        except ValidationError:
+            email = ''
+    if consent and not email:
+        messages.error(request, 'Please enter a valid email address.')
+    elif consent and email:
         subscriber, created = NewsletterSubscriber.objects.get_or_create(email=email)
         if not created and not subscriber.is_active:
             subscriber.is_active = True
             subscriber.save(update_fields=['is_active'])
         messages.success(request, 'You are subscribed. Thank you!')
-    return redirect(request.META.get('HTTP_REFERER','/'))
+    referer = request.META.get('HTTP_REFERER', '/')
+    if not url_has_allowed_host_and_scheme(referer, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        referer = '/'
+    return redirect(referer)
 
 
 @require_POST
@@ -40,7 +52,8 @@ def track_event(request):
     event = request.POST.get('event','')
     if event not in {'cv_download','project_click'}:
         return JsonResponse({'ok':False}, status=400)
-    SiteEvent.objects.create(event=event, path=request.POST.get('path','')[:300])
+    safe_path = urlparse(request.POST.get('path','')).path[:300]
+    SiteEvent.objects.create(event=event, path=safe_path)
     return JsonResponse({'ok':True})
 
 
