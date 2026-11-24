@@ -27,7 +27,8 @@ class PublicPageAnalyticsMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         if (request.method != 'GET' or request.path.startswith(('/admin/','/static/','/media/','/analytics/'))
-                or getattr(request.user, 'is_staff', False)):
+                or getattr(request.user, 'is_staff', False)
+                or request.session.get('owner_access')):
             return response
         content_type = response.get('Content-Type','')
         ua = request.META.get('HTTP_USER_AGENT','')
