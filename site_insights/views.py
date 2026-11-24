@@ -1,0 +1,75 @@
+from datetime import timedelta
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from urllib.parse import urlparse
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+from .models import DailyVisitor, NewsletterSubscriber, PageView, SiteEvent
+
+
+@require_POST
+def subscribe(request):
+    email = request.POST.get('email','').strip().lower()
+    consent = request.POST.get('consent') == 'yes'
+    if not consent:
+        messages.error(request, 'Please confirm consent before subscribing.')
+    else:
+        try:
+            validate_email(email)
+        except ValidationError:
+            email = ''
+    if consent and not email:
+        messages.error(request, 'Please enter a valid email address.')
+    elif consent and email:
+        subscriber, created = NewsletterSubscriber.objects.get_or_create(email=email)
+        if not created and not subscriber.is_active:
+            subscriber.is_active = True
+            subscriber.save(update_fields=['is_active'])
+        messages.success(request, 'You are subscribed. Thank you!')
+    referer = request.META.get('HTTP_REFERER', '/')
+    if not url_has_allowed_host_and_scheme(referer, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        referer = '/'
+    return redirect(referer)
+
+
+@require_POST
+def unsubscribe(request, token):
+    subscriber = get_object_or_404(NewsletterSubscriber, unsubscribe_token=token)
+    subscriber.is_active = False
+    subscriber.save(update_fields=['is_active'])
+    return HttpResponse('You have been unsubscribed from portfolio updates.')
+
+
+@require_POST
+def track_event(request):
+    event = request.POST.get('event','')
+    if event not in {'cv_download','project_click'}:
+        return JsonResponse({'ok':False}, status=400)
+    safe_path = urlparse(request.POST.get('path','')).path[:300]
+    SiteEvent.objects.create(event=event, path=safe_path)
+    return JsonResponse({'ok':True})
+
+
+@staff_member_required
+def dashboard(request):
+    today = timezone.localdate()
+    start = today - timedelta(days=29)
+    visitors = (DailyVisitor.objects.filter(visit_date__gte=start, visit_date__lte=today)
+                .values('visit_date').annotate(total=Count('id')).order_by('visit_date'))
+    pageviews = (PageView.objects.filter(visit_date__gte=start, visit_date__lte=today)
+                 .values('visit_date').annotate(total=Count('id')).order_by('visit_date'))
+    top_pages = PageView.objects.filter(visit_date__gte=start).values('path').annotate(total=Count('id')).order_by('-total')[:10]
+    events = SiteEvent.objects.filter(created_at__date__gte=start).values('event').annotate(total=Count('id'))
+    return render(request, 'admin/site_insights/dashboard.html', {
+        'title': 'Portfolio Analytics', 'today': today, 'start': start,
+        'visitors': visitors, 'pageviews': pageviews, 'top_pages': top_pages,
+        'events': events, 'active_subscribers': NewsletterSubscriber.objects.filter(is_active=True).count(),
+        'total_visitors': DailyVisitor.objects.filter(visit_date__gte=start).count(),
+        'total_pageviews': PageView.objects.filter(visit_date__gte=start).count(),
+    })

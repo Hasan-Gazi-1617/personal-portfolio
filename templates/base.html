@@ -912,6 +912,30 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
     {% endblock %}
 </main>
 
+<!-- ================= NEWSLETTER SIGNUP ================= -->
+<section class="container py-4" aria-labelledby="newsletter-title">
+  <div style="max-width:760px;margin:0 auto;padding:26px;border:1px solid rgba(20,184,166,.25);border-radius:18px;background:rgba(20,184,166,.06)">
+    <div class="row align-items-center g-3">
+      <div class="col-md-7">
+        <h2 id="newsletter-title" style="font-size:clamp(20px,3vw,28px);margin-bottom:8px">Stay connected</h2>
+        <p style="margin:0;color:var(--text-secondary,#64748b)">Occasional updates about my projects and technical articles. No spam. Unsubscribe anytime.</p>
+      </div>
+      <div class="col-md-5">
+        <form method="post" action="{% url 'site_insights:subscribe' %}" class="d-flex flex-column gap-2">
+          {% csrf_token %}
+          <label class="visually-hidden" for="newsletter-email">Email address</label>
+          <input id="newsletter-email" type="email" name="email" maxlength="254" autocomplete="email" required placeholder="Your email address" class="form-control">
+          <label class="d-flex align-items-start gap-2" style="font-size:12px;line-height:1.5">
+            <input type="checkbox" name="consent" value="yes" required style="margin-top:3px">
+            <span>I agree to receive occasional portfolio updates by email.</span>
+          </label>
+          <button type="submit" class="btn btn-success">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= FOOTER ================= -->
 <footer class="footer-section">
     <div class="container">
@@ -1256,5 +1280,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script src="{% static 'js/portfolio-enhancements.js' %}" defer></script>
 <script src="{% static 'js/responsive-navigation.js' %}" defer></script>
+<script>
+(function () {
+  function readCookie(name) {
+    const value = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+    return value ? decodeURIComponent(value.split('=').slice(1).join('=')) : '';
+  }
+  function sendEvent(eventName, path) {
+    const body = new URLSearchParams({event:eventName, path:path || location.pathname});
+    fetch("{% url 'site_insights:track_event' %}", {
+      method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':readCookie('csrftoken')},
+      body:body.toString(), keepalive:true
+    }).catch(function(){});
+  }
+  document.addEventListener('click', function(event) {
+    const link = event.target.closest('a');
+    if (!link) return;
+    const href = (link.getAttribute('href') || '').toLowerCase();
+    if (link.hasAttribute('download') || /(?:cv|resume|curriculum-vitae).*\.pdf/.test(href)) {
+      sendEvent('cv_download', href);
+    } else if (/project|hasoryx|mikrotik|algorithm/.test(href)) {
+      sendEvent('project_click', href);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
