@@ -48,6 +48,14 @@ My work focuses on network operations and infrastructure, ISP/NOC troubleshootin
 - **Other libraries:** Pillow, OpenPyXL, dj-database-url
 - **Hosting configuration:** Render Blueprint (`render.yaml`)
 
+## Visitor Analytics & Newsletter
+
+A staff-only dashboard is available at `/analytics/dashboard/` after deployment and migration. It summarizes daily visitor counts, page views, popular paths, tracked CV/project actions, and active newsletter subscriptions. Subscriber records can be exported from Django Admin using the CSV action.
+
+Analytics uses a random first-party visitor cookie and does **not** save visitor IP addresses or full browser user-agent strings. Newsletter signup is opt-in and stores only the email address and consent record.
+
+**Production persistence:** The current Render free service may use an ephemeral filesystem when SQLite is selected. Analytics and newsletter records must not be treated as durable until the deployment uses persistent database storage. Configure a durable database/storage before relying on subscriber records or historical reporting; this feature does not migrate or change the existing database automatically.
+
 ## Run Locally
 
 ### 1. Clone the repository
