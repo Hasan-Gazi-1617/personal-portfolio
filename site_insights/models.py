@@ -43,15 +43,15 @@ class SiteEvent(models.Model):
         ordering = ['-created_at']
 
 
-class NewsletterSubscriber(models.Model):
-    email = models.EmailField(max_length=254, unique=True)
-    subscribed_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True, db_index=True)
-    unsubscribe_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    consent_text = models.CharField(max_length=180, default='I agree to receive portfolio updates by email.')
+class ModuleUsage(models.Model):
+    visitor_key = models.UUIDField(editable=False)
+    visit_date = models.DateField(default=timezone.localdate, db_index=True)
+    module = models.SlugField(max_length=80, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-subscribed_at']
+        constraints = [models.UniqueConstraint(fields=('visitor_key', 'visit_date', 'module'), name='uniq_module_visitor_day')]
+        ordering = ['-visit_date', 'module']
 
     def __str__(self):
-        return self.email
+        return f'{self.visit_date} · {self.module}'
