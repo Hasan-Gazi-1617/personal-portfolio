@@ -1,3 +1,7 @@
+from datetime import timedelta
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
+from django.utils import timezone
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -38,3 +42,23 @@ def track_event(request):
         return JsonResponse({'ok':False}, status=400)
     SiteEvent.objects.create(event=event, path=request.POST.get('path','')[:300])
     return JsonResponse({'ok':True})
+
+
+@staff_member_required
+
+def dashboard(request):
+    today = timezone.localdate()
+    start = today - timedelta(days=29)
+    visitors = (DailyVisitor.objects.filter(visit_date__gte=start, visit_date__lte=today)
+                .values('visit_date').annotate(total=Count('id')).order_by('visit_date'))
+    pageviews = (PageView.objects.filter(visit_date__gte=start, visit_date__lte=today)
+                 .values('visit_date').annotate(total=Count('id')).order_by('visit_date'))
+    top_pages = PageView.objects.filter(visit_date__gte=start).values('path').annotate(total=Count('id')).order_by('-total')[:10]
+    events = SiteEvent.objects.filter(created_at__date__gte=start).values('event').annotate(total=Count('id'))
+    return render(request, 'admin/site_insights/dashboard.html', {
+        'title': 'Portfolio Analytics', 'today': today, 'start': start,
+        'visitors': visitors, 'pageviews': pageviews, 'top_pages': top_pages,
+        'events': events, 'active_subscribers': NewsletterSubscriber.objects.filter(is_active=True).count(),
+        'total_visitors': DailyVisitor.objects.filter(visit_date__gte=start).count(),
+        'total_pageviews': PageView.objects.filter(visit_date__gte=start).count(),
+    })
