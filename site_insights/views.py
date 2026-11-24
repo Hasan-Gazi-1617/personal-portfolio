@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import NewsletterSubscriber, SiteEvent
+from .models import DailyVisitor, NewsletterSubscriber, PageView, SiteEvent
 
 
 @require_POST
@@ -45,7 +45,6 @@ def track_event(request):
 
 
 @staff_member_required
-
 def dashboard(request):
     today = timezone.localdate()
     start = today - timedelta(days=29)
