@@ -259,3 +259,77 @@ html[data-theme="light"] .navbar-custom .nav-menu-toggle {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Hover-only navigation feedback: no persistent selected/active colour. */
+.navbar-custom .navbar-nav .nav-link,
+.navbar-custom .navbar-nav .nav-link.admin-view-link {
+  color: #c4d0de !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  transform: none;
+}
+.navbar-custom .navbar-nav .nav-link::before,
+.navbar-custom .navbar-nav .nav-link.active::before,
+.navbar-custom .navbar-nav .nav-link[aria-current]::before {
+  transform: scaleX(0) !important;
+}
+.navbar-custom .navbar-nav .nav-link:hover,
+.navbar-custom .navbar-nav .nav-link:focus-visible {
+  color: #5eead4 !important;
+  background: rgba(20,184,166,.12) !important;
+  font-weight: 700 !important;
+  transform: translateY(-1px);
+}
+.navbar-custom .navbar-nav .nav-link:hover::before,
+.navbar-custom .navbar-nav .nav-link:focus-visible::before {
+  transform: scaleX(1) !important;
+}
+.navbar-custom .navbar-nav .nav-link.show,
+.navbar-custom .navbar-nav .nav-link.active,
+.navbar-custom .navbar-nav .nav-link[aria-current] {
+  color: #c4d0de !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+}
+.navbar-custom .navbar-nav .nav-link.show:hover,
+.navbar-custom .navbar-nav .nav-link.active:hover,
+.navbar-custom .navbar-nav .nav-link[aria-current]:hover {
+  color: #5eead4 !important;
+  background: rgba(20,184,166,.12) !important;
+}
+.navbar-custom .navbar-nav .nav-link .nav-item-icon {
+  display: inline-block;
+  margin-right: 7px;
+  font-size: 13px;
+  line-height: 1;
+  opacity: .88;
+}
+.navbar-custom .connect-btn .nav-item-icon {
+  margin-right: 7px;
+}
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link.admin-view-link,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link.show,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link.active,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link[aria-current] {
+  color: #365746 !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+}
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link:hover,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link:focus-visible,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link.show:hover,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link.active:hover,
+html[data-theme="light"] .navbar-custom .navbar-nav .nav-link[aria-current]:hover {
+  color: #047857 !important;
+  background: rgba(16,185,129,.10) !important;
+  font-weight: 700 !important;
+}
+@media (max-width: 991.98px) {
+  .navbar-custom .navbar-nav .nav-link .nav-item-icon {
+    width: 18px;
+    margin-right: 9px;
+    text-align: center;
+  }
+}
