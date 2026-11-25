@@ -1291,7 +1291,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return entry ? decodeURIComponent(entry.split('=').slice(1).join('=')) : '';
   }
   function recordModule(id) {
-    if (!id || !cookie('portfolio_visitor_id')) return;
+    if (!id) return; // visitor ID is HttpOnly; server reads it from the request cookie.
     const data = new URLSearchParams({module: id.toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 80)});
     fetch("{% url 'site_insights:track_module' %}", {
       method: 'POST', credentials: 'same-origin',
