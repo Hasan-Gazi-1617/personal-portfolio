@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  #branding {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  #branding #site-name {
+    margin: 0;
+  }
+  .admin-analytics-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid var(--border-color, rgba(255,255,255,.28));
+    border-radius: 8px;
+    color: var(--header-link-color, #fff) !important;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .admin-analytics-menu:hover,
+  .admin-analytics-menu:focus {
+    background: rgba(255,255,255,.12);
+    color: var(--header-link-color, #fff) !important;
+    text-decoration: none;
+  }
+  .admin-analytics-menu .analytics-menu-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+</h1>
+<a class="admin-analytics-menu" href="{% url 'site_insights:dashboard' %}" aria-label="{% translate 'Open portfolio analytics dashboard' %}">
+  <span class="analytics-menu-icon" aria-hidden="true">▥</span>
+  {% translate "Analytics" %}
+</a>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
