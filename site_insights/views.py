@@ -2,11 +2,10 @@ from datetime import timedelta
 import re
 import uuid
 from urllib.parse import urlparse
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from .models import DailyVisitor, PageView, SiteEvent, ModuleUsage
 
@@ -14,23 +13,45 @@ MODULE_RE = re.compile(r'^[a-z0-9][a-z0-9_-]{0,79}$')
 
 
 def public_dashboard(request):
-    """Show a privacy-safe, aggregated public analytics summary."""
+    """Analytics is private and available only inside the owner's Admin View."""
+    if request.session.get('owner_access'):
+        return redirect('site_insights:owner_dashboard')
+    return redirect('owner_login')
+
+
+def owner_dashboard(request):
+    """Private owner analytics dashboard, protected by the Admin View session."""
+    if not request.session.get('owner_access'):
+        return redirect('owner_login')
+
     today = timezone.localdate()
-    start = today - timedelta(days=13)
+    start = today - timedelta(days=29)
     date_range = {'visit_date__range': (start, today)}
-    daily = DailyVisitor.objects.filter(**date_range).values('visit_date').annotate(
+    daily_rows = DailyVisitor.objects.filter(**date_range).values('visit_date').annotate(
         total=Count('id')
     ).order_by('visit_date')
-    modules = ModuleUsage.objects.filter(**date_range).values('module').annotate(
+    daily_map = {row['visit_date']: row['total'] for row in daily_rows}
+    daily = [
+        {'visit_date': start + timedelta(days=offset),
+         'total': daily_map.get(start + timedelta(days=offset), 0)}
+        for offset in range(30)
+    ]
+    modules = list(ModuleUsage.objects.filter(**date_range).values('module').annotate(
         total=Count('id')
-    ).order_by('-total')[:12]
+    ).order_by('-total')[:10])
+    top_pages = PageView.objects.filter(**date_range).values('path').annotate(
+        total=Count('id')
+    ).order_by('-total')[:8]
     visitors_total = DailyVisitor.objects.filter(**date_range).count()
+    visitors_today = DailyVisitor.objects.filter(visit_date=today).count()
     pageviews_total = PageView.objects.filter(**date_range).count()
     module_total = ModuleUsage.objects.filter(**date_range).count()
-    return render(request, 'site_insights/public_dashboard.html', {
+    max_module = max([row['total'] for row in modules], default=0)
+    return render(request, 'site_insights/owner_dashboard.html', {
         'today': today, 'start': start, 'daily': daily, 'modules': modules,
-        'visitors_total': visitors_total, 'pageviews_total': pageviews_total,
-        'module_total': module_total,
+        'top_pages': top_pages, 'visitors_total': visitors_total,
+        'visitors_today': visitors_today, 'pageviews_total': pageviews_total,
+        'module_total': module_total, 'max_module': max_module,
     })
 
 
@@ -58,21 +79,3 @@ def track_event(request):
     return JsonResponse({'ok': True})
 
 
-@staff_member_required
-def dashboard(request):
-    today = timezone.localdate()
-    start = today - timedelta(days=29)
-    date_range = {'visit_date__range': (start, today)}
-    visitors = DailyVisitor.objects.filter(**date_range).values('visit_date').annotate(total=Count('id')).order_by('visit_date')
-    pageviews = PageView.objects.filter(**date_range).values('visit_date').annotate(total=Count('id')).order_by('visit_date')
-    top_pages = PageView.objects.filter(**date_range).values('path').annotate(total=Count('id')).order_by('-total')[:10]
-    module_totals = ModuleUsage.objects.filter(**date_range).values('module').annotate(total=Count('id')).order_by('-total')
-    daily_modules = ModuleUsage.objects.filter(**date_range).values('visit_date', 'module').annotate(total=Count('id')).order_by('-visit_date', 'module')
-    events = SiteEvent.objects.filter(created_at__date__gte=start).values('event').annotate(total=Count('id'))
-    return render(request, 'admin/site_insights/dashboard.html', {
-        'title': 'Portfolio Analytics', 'today': today, 'start': start,
-        'visitors': visitors, 'pageviews': pageviews, 'top_pages': top_pages,
-        'module_totals': module_totals, 'daily_modules': daily_modules, 'events': events,
-        'total_visitors': DailyVisitor.objects.filter(**date_range).count(),
-        'total_pageviews': PageView.objects.filter(**date_range).count(),
-    })

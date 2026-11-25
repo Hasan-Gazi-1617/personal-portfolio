@@ -711,6 +711,16 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                 {% endif %}
 
                 {% if request.session.owner_access %}
+                <!-- PRIVATE OWNER ANALYTICS -->
+                <li class="nav-item">
+                    <a class="nav-link admin-view-link" href="{% url 'site_insights:owner_dashboard' %}">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Analytics</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.session.owner_access %}
                 <!-- ================= MANOR-IT ================= -->
                 <li class="nav-item dropdown manor-dropdown">
                     <a class="nav-link dropdown-toggle"
@@ -965,7 +975,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
         <!-- FOOTER BOTTOM -->
         <div class="footer-bottom">
             <span>© 2026 Hasan. All rights reserved.</span>
-            <span><a href="{% url 'site_insights:public_dashboard' %}" style="color:inherit;text-decoration:underline">Public Analytics</a> · Network Operations • Infrastructure • Reliability</span>
+            <span>Network Operations • Infrastructure • Reliability</span>
         </div>
     </div>
 </footer>
