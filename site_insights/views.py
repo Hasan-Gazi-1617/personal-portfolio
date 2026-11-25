@@ -2,7 +2,6 @@ from datetime import timedelta
 import re
 import uuid
 from urllib.parse import urlparse
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse
@@ -80,21 +79,3 @@ def track_event(request):
     return JsonResponse({'ok': True})
 
 
-@staff_member_required
-def dashboard(request):
-    today = timezone.localdate()
-    start = today - timedelta(days=29)
-    date_range = {'visit_date__range': (start, today)}
-    visitors = DailyVisitor.objects.filter(**date_range).values('visit_date').annotate(total=Count('id')).order_by('visit_date')
-    pageviews = PageView.objects.filter(**date_range).values('visit_date').annotate(total=Count('id')).order_by('visit_date')
-    top_pages = PageView.objects.filter(**date_range).values('path').annotate(total=Count('id')).order_by('-total')[:10]
-    module_totals = ModuleUsage.objects.filter(**date_range).values('module').annotate(total=Count('id')).order_by('-total')
-    daily_modules = ModuleUsage.objects.filter(**date_range).values('visit_date', 'module').annotate(total=Count('id')).order_by('-visit_date', 'module')
-    events = SiteEvent.objects.filter(created_at__date__gte=start).values('event').annotate(total=Count('id'))
-    return render(request, 'admin/site_insights/dashboard.html', {
-        'title': 'Portfolio Analytics', 'today': today, 'start': start,
-        'visitors': visitors, 'pageviews': pageviews, 'top_pages': top_pages,
-        'module_totals': module_totals, 'daily_modules': daily_modules, 'events': events,
-        'total_visitors': DailyVisitor.objects.filter(**date_range).count(),
-        'total_pageviews': PageView.objects.filter(**date_range).count(),
-    })
