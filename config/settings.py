@@ -199,6 +199,6 @@ BOOKSTORE_BKASH_NUMBER = '01751231617'
 BOOKSTORE_SITE_URL = os.environ.get('BOOKSTORE_SITE_URL', 'https://personal-portfolio-069p.onrender.com')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', os.environ.get('EMAIL_HOST_USER', '') or 'noreply@example.com')
 
-LOGIN_URL = "tki_login"
+LOGIN_URL = "owner_login"
 LOGIN_REDIRECT_URL = "tki_dashboard"
-LOGOUT_REDIRECT_URL = "tki_login"
+LOGOUT_REDIRECT_URL = "/admin/login/"
