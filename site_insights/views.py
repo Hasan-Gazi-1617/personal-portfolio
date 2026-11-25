@@ -112,7 +112,7 @@ def owner_dashboard(request):
     return render(request, 'site_insights/owner_dashboard.html', {
         'today': today, 'start': start, 'end': end, 'period': period,
         'selected_day': selected_day, 'selected_month': selected_month,
-        'selected_year': selected_year, 'chart_title': chart_title,
+        'selected_year': selected_year, 'year_options': list(range(today.year, 2018, -1)), 'chart_title': chart_title,
         'chart_mode': chart_mode, 'series': series,
         'modules': modules, 'top_pages': top_pages,
         'visitors_total': visitors_total, 'visitors_today': visitors_total,
