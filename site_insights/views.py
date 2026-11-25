@@ -13,6 +13,27 @@ from .models import DailyVisitor, PageView, SiteEvent, ModuleUsage
 MODULE_RE = re.compile(r'^[a-z0-9][a-z0-9_-]{0,79}$')
 
 
+def public_dashboard(request):
+    """Show a privacy-safe, aggregated public analytics summary."""
+    today = timezone.localdate()
+    start = today - timedelta(days=13)
+    date_range = {'visit_date__range': (start, today)}
+    daily = DailyVisitor.objects.filter(**date_range).values('visit_date').annotate(
+        total=Count('id')
+    ).order_by('visit_date')
+    modules = ModuleUsage.objects.filter(**date_range).values('module').annotate(
+        total=Count('id')
+    ).order_by('-total')[:12]
+    visitors_total = DailyVisitor.objects.filter(**date_range).count()
+    pageviews_total = PageView.objects.filter(**date_range).count()
+    module_total = ModuleUsage.objects.filter(**date_range).count()
+    return render(request, 'site_insights/public_dashboard.html', {
+        'today': today, 'start': start, 'daily': daily, 'modules': modules,
+        'visitors_total': visitors_total, 'pageviews_total': pageviews_total,
+        'module_total': module_total,
+    })
+
+
 @require_POST
 def track_module(request):
     raw_id = request.COOKIES.get('portfolio_visitor_id', '')

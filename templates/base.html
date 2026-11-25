@@ -965,7 +965,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
         <!-- FOOTER BOTTOM -->
         <div class="footer-bottom">
             <span>© 2026 Hasan. All rights reserved.</span>
-            <span>Network Operations • Infrastructure • Reliability</span>
+            <span><a href="{% url 'site_insights:public_dashboard' %}" style="color:inherit;text-decoration:underline">Public Analytics</a> · Network Operations • Infrastructure • Reliability</span>
         </div>
     </div>
 </footer>
@@ -1291,7 +1291,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return entry ? decodeURIComponent(entry.split('=').slice(1).join('=')) : '';
   }
   function recordModule(id) {
-    if (!id || !cookie('portfolio_visitor_id')) return;
+    if (!id) return; // visitor ID is HttpOnly; server reads it from the request cookie.
     const data = new URLSearchParams({module: id.toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 80)});
     fetch("{% url 'site_insights:track_module' %}", {
       method: 'POST', credentials: 'same-origin',
