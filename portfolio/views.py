@@ -242,17 +242,6 @@ def ielts_learning(request):
             }
             for row in AttendanceRecord.objects.filter(student=profile, sign_in__isnull=False, sign_out__isnull=True).select_related("student")
         ],
-        "course_modules": COURSE_MODULES,
-        "course_student_data": [{"name": row.student.name, "roll": row.student.roll, "course": row.course, "modules": row.modules or []} for row in StudentCourse.objects.filter(student__is_active=True, is_active=True).select_related("student")],
-        "student_profiles": StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user"),
-        "student_admin_data": [{
-            "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
-            "modules": profile.modules or [], "courses": [{"course": item.course, "modules": item.modules or [], "joining_date": item.joining_date.strftime("%d %b %Y") if item.joining_date else "—", "course_finish_date": item.course_finish_date.strftime("%d %b %Y") if item.course_finish_date else "—"} for item in _student_course_enrollments(profile)], "email": profile.user.email if profile.user_id else "",
-            "has_account": bool(profile.user_id),
-            "attendance": [{"date": row.class_date.strftime("%d %b %Y"), "module": row.module_name, "period": row.period, "in": row.sign_in.strftime("%I:%M %p") if row.sign_in else "—", "out": row.sign_out.strftime("%I:%M %p") if row.sign_out else "—", "duration": row.total_duration} for row in profile.attendance_records.all()[:40]],
-            "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment")[:30]],
-            "practice": [{"title": row.practice.title, "score": f"{row.objective_score if row.objective_score is not None else '—'} / {row.total_objective if row.total_objective is not None else '—'}", "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSPracticeAttempt.objects.filter(student_profile=profile).select_related("practice")[:30]],
-        } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
         "assignments": IELTSAssignment.objects.filter(course__in=enrolled_courses, is_published=True),
