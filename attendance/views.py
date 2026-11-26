@@ -44,6 +44,7 @@ def student_attendance(request):
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
+        "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student").order_by("-class_date", "period", "student__name")[:150],
     })
 
 

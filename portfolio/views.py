@@ -143,10 +143,27 @@ def ielts_admin_panel(request):
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action == "notice":
-            IELTSNotice.objects.create(title=request.POST.get("title", "").strip()[:180],
-                                      message=request.POST.get("message", "").strip(),
-                                      is_published=True)
-            messages.success(request, "Class announcement published.")
+            title = request.POST.get("title", "").strip()[:180]
+            message = request.POST.get("message", "").strip()
+            if title and message:
+                IELTSNotice.objects.create(title=title, message=message, is_published=True)
+                messages.success(request, "Notice published successfully.")
+            else:
+                messages.error(request, "Enter both a notice title and details.")
+        elif action == "notice_edit":
+            notice = get_object_or_404(IELTSNotice, pk=request.POST.get("notice_id"))
+            title = request.POST.get("title", "").strip()[:180]
+            message = request.POST.get("message", "").strip()
+            if title and message:
+                notice.title, notice.message = title, message
+                notice.save(update_fields=["title", "message", "updated_at"])
+                messages.success(request, "Notice updated successfully.")
+            else:
+                messages.error(request, "Notice title and details cannot be empty.")
+        elif action == "notice_delete":
+            notice = get_object_or_404(IELTSNotice, pk=request.POST.get("notice_id"))
+            notice.delete()
+            messages.success(request, "Notice deleted successfully.")
         elif action == "assignment":
             title = request.POST.get("title", "").strip()[:180]
             instructions = request.POST.get("instructions", "").strip()
