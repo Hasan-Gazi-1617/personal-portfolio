@@ -48,7 +48,7 @@ class AttendanceRecord(models.Model):
 
     class Meta:
         ordering = ("-class_date", "period", "student__name")
-        constraints = [models.UniqueConstraint(fields=("class_date", "student", "period"), name="unique_attendance_student_period_day")]
+
 
     @property
     def total_minutes(self):

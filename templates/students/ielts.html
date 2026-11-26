@@ -18,40 +18,71 @@
 <section class="ih-section" id="lessons" data-panel="lessons" hidden><div class="ih-heading"><h2><i class="bi bi-journal-bookmark"></i> My Lessons</h2><small>Structured class lessons</small></div><div class="ih-grid">{% for lesson in lessons %}<article class="ih-card"><span class="ih-chip">{{ lesson.get_skill_display }}</span><h3>{{ lesson.order|stringformat:"02d" }} · {{ lesson.title }}</h3>{% if lesson.summary %}<p>{{ lesson.summary }}</p>{% endif %}<details><summary class="ih-link">Open lesson</summary><div style="padding-top:12px;font-size:13px;line-height:1.9;white-space:pre-line;color:var(--text-secondary)">{{ lesson.content }}</div></details></article>{% empty %}<div class="ih-empty">Your teacher's lessons will be listed here.</div>{% endfor %}</div></section>
 <section class="ih-section" id="practice" data-panel="practice" hidden><div class="ih-heading"><h2><i class="bi bi-stopwatch"></i> Practice Sessions</h2><small>Timed, skill-based IELTS format</small></div><div class="ih-grid">{% for practice in practice_sets %}<article class="ih-card"><span class="ih-chip">{{ practice.get_skill_display }}</span><h3>{{ practice.title }}</h3><p>{{ practice.instructions|default:"Complete this practice within the set time." }}</p><p><i class="bi bi-clock"></i> {{ practice.time_minutes }} minutes · {{ practice.questions|length }} questions/tasks</p><a class="ih-link" href="{% url 'ielts_practice' practice.pk %}">Start timed practice <i class="bi bi-arrow-right"></i></a></article>{% empty %}<div class="ih-empty">Timed Reading, Writing, Speaking and Listening practice will be published here. Original IELTS-style content is used, not copied Cambridge test material.</div>{% endfor %}</div></section>
 <section class="ih-section" id="attendance" data-panel="attendance" hidden><div class="ih-heading"><h2><i class="bi bi-calendar2-check"></i> Attendance</h2><small>Sign in, sign out and view your attendance records</small></div>
-<article class="ih-card" style="margin-bottom:16px"><form class="ih-form" method="post" action="{% url 'ielts_learning' %}">{% csrf_token %}<input type="hidden" name="action" value="attendance_clock"><div class="ih-grid">
-<label>Student Name<select name="student_id" id="student-att-student" required><option value="">Select your name</option>{% for student in attendance_students %}<option value="{{ student.pk }}" data-course="{{ student.course }}" data-modules="{{ student.modules|join:'||' }}">{{ student.name }}{% if student.roll %} ({{ student.roll }}){% endif %}</option>{% endfor %}</select></label>
+<article class="ih-card" style="margin-bottom:16px"><form class="ih-form" id="student-attendance-form" method="post" action="{% url 'ielts_learning' %}">{% csrf_token %}<input type="hidden" name="action" value="attendance_clock"><div class="ih-grid">
+<label>Student Name<select name="student_display" id="student-att-student" required><option value="">Select your name</option>{% for student in attendance_students %}<option value="{{ student.pk }}" data-course="{{ student.course }}" data-modules="{{ student.modules|join:'||' }}">{{ student.name }}{% if student.roll %} ({{ student.roll }}){% endif %}</option>{% endfor %}</select><input type="hidden" name="student_id" id="student-att-student-id"></label>
 <label>Course<input id="student-att-course" readonly placeholder="Auto-filled"></label>
-<label>Module<select name="module" id="student-att-module" required disabled><option value="">Select student first</option></select></label>
-<label>Date<input type="date" value="{{ today|date:'Y-m-d' }}" readonly></label>
-<label>Session<select name="period"><option value="AM">AM</option><option value="PM">PM</option></select></label>
-<label>Time<input type="time" name="time_value" value="{{ now_time }}" required></label>
-</div><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px"><button class="ih-btn" name="clock_action" value="sign_in">Sign In</button><button class="ih-btn" name="clock_action" value="sign_out" style="background:#2563eb;color:white">Sign Out</button></div></form></article>
+<label>Module<select name="module_display" id="student-att-module" required disabled><option value="">Select student first</option></select><input type="hidden" name="module" id="student-att-module-value"></label>
+<label>Date<input type="date" id="student-att-date" value="{{ today|date:'Y-m-d' }}" readonly></label>
+<label>Session<select name="period_display" id="student-att-period"><option value="AM">AM</option><option value="PM">PM</option></select><input type="hidden" name="period" id="student-att-period-value" value="AM"></label>
+<label><span id="student-att-time-label">Sign In Time</span><input type="time" name="time_value" id="student-att-time" value="{{ now_time }}" required></label>
+</div><div id="student-att-state" class="ih-message" hidden aria-live="polite"></div><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px"><button class="ih-btn" id="student-att-sign-in" type="submit" name="clock_action" value="sign_in" disabled>Sign In</button><button class="ih-btn" id="student-att-sign-out" type="submit" name="clock_action" value="sign_out" style="background:#2563eb;color:white" disabled>Sign Out</button></div></form></article>
 <div class="ih-attendance"><table class="ih-table"><thead><tr><th>Date</th><th>Day</th><th>Student</th><th>Course</th><th>Module</th><th>Session</th><th>Sign In</th><th>Sign Out</th><th>Duration</th></tr></thead><tbody>{% for record in attendance_records %}<tr><td>{{ record.class_date|date:"d M Y" }}</td><td>{{ record.class_date|date:"l" }}</td><td>{{ record.student.name }}</td><td>{{ record.course_name }}</td><td>{{ record.module_name }}</td><td>{{ record.period }}</td><td>{{ record.sign_in|time:"h:i A"|default:"—" }}</td><td>{{ record.sign_out|time:"h:i A"|default:"—" }}</td><td>{{ record.total_duration }}</td></tr>{% empty %}<tr><td colspan="9" style="text-align:center">No attendance entries yet.</td></tr>{% endfor %}</tbody></table></div>
 <p class="ih-muted" style="margin-top:10px">Attendance entries added by Admin View are shown here automatically. Select your profile and assigned module to record your own time.</p></section>
 
 <section class="ih-section" id="assignments" data-panel="assignments" hidden><div class="ih-heading"><h2><i class="bi bi-clipboard2-check"></i> Assignments</h2><small>Submit your class work here</small></div><div class="ih-grid">{% for assignment in assignments %}<article class="ih-card"><span class="ih-chip">Assignment</span><h3>{{ assignment.title }}</h3><p>{{ assignment.instructions }}</p>{% if assignment.deadline %}<p><i class="bi bi-calendar-event"></i> Deadline: {{ assignment.deadline|date:"d M Y, h:i A" }}</p>{% endif %}<form class="ih-form" method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="action" value="submit_assignment"><input type="hidden" name="assignment_id" value="{{ assignment.pk }}"><input name="student_name" placeholder="Your name" maxlength="100" required><input name="student_roll" placeholder="Student roll (optional)" maxlength="40"><textarea name="answer_text" placeholder="Write your answer here (optional if you attach a file)"></textarea><label class="ih-muted">Attach work (PDF/DOC/image, max 10 MB) <input type="file" name="submission_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"></label><button class="ih-btn" type="submit">Submit Assignment <i class="bi bi-send"></i></button></form></article>{% empty %}<div class="ih-empty">No active assignments at the moment.</div>{% endfor %}</div></section>
 </div></main>
+{{ open_attendance|json_script:"open-attendance-data" }}
 <script>
 (function(){
- const student=document.getElementById('student-att-student'),course=document.getElementById('student-att-course'),module=document.getElementById('student-att-module');
- if(student)student.addEventListener('change',()=>{const o=student.selectedOptions[0];course.value=o.dataset.course||'';module.innerHTML='<option value="">Select module</option>';const items=(o.dataset.modules||'').split('||').filter(Boolean);items.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v;module.appendChild(opt)});module.disabled=!items.length;});
- const nav=document.querySelector('.ih-nav');
- if(!nav)return;
- const links=[...nav.querySelectorAll('[data-section]')];
- const panels=[...document.querySelectorAll('[data-panel]')];
- function activate(name,updateHash){
-   if(!panels.some(p=>p.dataset.panel===name))name='notices';
-   panels.forEach(p=>p.hidden=p.dataset.panel!==name);
-   links.forEach(a=>{if(a.dataset.section===name)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-   if(updateHash&&history.replaceState)history.replaceState(null,'','#'+name);
+ const student=document.getElementById('student-att-student');
+ const studentId=document.getElementById('student-att-student-id');
+ const course=document.getElementById('student-att-course');
+ const module=document.getElementById('student-att-module');
+ const moduleValue=document.getElementById('student-att-module-value');
+ const date=document.getElementById('student-att-date');
+ const period=document.getElementById('student-att-period');
+ const periodValue=document.getElementById('student-att-period-value');
+ const timeLabel=document.getElementById('student-att-time-label');
+ const signIn=document.getElementById('student-att-sign-in');
+ const signOut=document.getElementById('student-att-sign-out');
+ const state=document.getElementById('student-att-state');
+ if(!student)return;
+ const openSessions=JSON.parse(document.getElementById('open-attendance-data').textContent||'[]');
+ const today='{{ today|date:"Y-m-d" }}';
+ function fillModules(){
+   const option=student.selectedOptions[0];
+   course.value=option?.dataset.course||'';
+   module.innerHTML='<option value="">Select module</option>';
+   (option?.dataset.modules||'').split('||').filter(Boolean).forEach(value=>{
+     const item=document.createElement('option');item.value=value;item.textContent=value;module.appendChild(item);
+   });
+   module.disabled=module.options.length===1;
  }
- nav.addEventListener('click',e=>{
-   const link=e.target.closest('a[data-section]');
-   if(!link)return;
-   e.preventDefault();activate(link.dataset.section,true);
- });
- const initial=location.hash.slice(1);
- activate(initial||'notices',false);
+ function unlockForm(){
+   student.disabled=false;module.disabled=!student.value;period.disabled=false;date.value=today;
+   studentId.value=student.value;moduleValue.value=module.value;periodValue.value=period.value;
+   timeLabel.textContent='Sign In Time';
+   state.hidden=true;state.textContent='';
+   signIn.disabled=!(student.value&&module.value);signOut.disabled=true;
+ }
+ function applySession(){
+   if(!student.value){course.value='';module.innerHTML='<option value="">Select student first</option>';module.disabled=true;unlockForm();signIn.disabled=true;return;}
+   const active=openSessions.find(item=>String(item.student_id)===String(student.value));
+   if(!active){unlockForm();return;}
+   studentId.value=String(active.student_id);course.value=active.course_name;
+   module.innerHTML='';
+   const option=document.createElement('option');option.value=active.module_name;option.textContent=active.module_name;module.appendChild(option);
+   module.value=active.module_name;moduleValue.value=active.module_name;
+   period.value=active.period;periodValue.value=active.period;date.value=active.class_date;
+   student.disabled=true;module.disabled=true;period.disabled=true;
+   timeLabel.textContent='Sign Out Time';
+   state.textContent='Active session: Signed in at '+active.sign_in+'. Student, course, module, date and AM/PM are locked until Sign Out.';
+   state.hidden=false;signIn.disabled=true;signOut.disabled=false;
+ }
+ student.addEventListener('change',()=>{fillModules();applySession();});
+ module.addEventListener('change',()=>{moduleValue.value=module.value;signIn.disabled=!(student.value&&module.value);});
+ period.addEventListener('change',()=>{periodValue.value=period.value;});
+ unlockForm();signIn.disabled=true;signOut.disabled=true;
 })();
 </script>
 {% endblock %}

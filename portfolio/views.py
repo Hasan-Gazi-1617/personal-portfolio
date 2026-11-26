@@ -9,6 +9,7 @@ from datetime import datetime
 from io import BytesIO
 
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -48,22 +49,39 @@ def ielts_learning(request):
         action = request.POST.get("action", "")
         if action == "attendance_clock":
             try:
-                student = get_object_or_404(StudentProfile, pk=int(request.POST.get("student_id")), is_active=True)
-                module = request.POST.get("module", "")
-                period = request.POST.get("period", "")
                 clock_action = request.POST.get("clock_action", "")
                 clock_time = datetime.strptime(request.POST.get("time_value", ""), "%H:%M").time()
-                if module not in (student.modules or []) or period not in AttendanceRecord.Period.values or clock_action not in {"sign_in", "sign_out"}:
+                if clock_action not in {"sign_in", "sign_out"}:
                     raise ValueError
-                record, _ = AttendanceRecord.objects.get_or_create(
-                    class_date=timezone.localdate(), student=student, period=period,
-                    defaults={"course_name": student.course, "module_name": module},
-                )
-                if record.module_name != module:
-                    raise ValueError
-                setattr(record, clock_action, clock_time)
-                record.save()
-                messages.success(request, f"{clock_action.replace('_', ' ').title()} saved for {student.name}.")
+                with transaction.atomic():
+                    student = get_object_or_404(
+                        StudentProfile.objects.select_for_update(), pk=int(request.POST.get("student_id")), is_active=True
+                    )
+                    active = AttendanceRecord.objects.select_for_update().filter(
+                        student=student, sign_in__isnull=False, sign_out__isnull=True
+                    ).order_by("-class_date", "-created_at").first()
+                    if clock_action == "sign_in":
+                        module = request.POST.get("module", "")
+                        period = request.POST.get("period", "")
+                        if module not in (student.modules or []) or period not in AttendanceRecord.Period.values:
+                            raise ValueError
+                        if active:
+                            messages.error(request, "You are already signed in. Please sign out before starting a new session.")
+                        else:
+                            AttendanceRecord.objects.create(
+                                class_date=timezone.localdate(), student=student, period=period,
+                                course_name=student.course, module_name=module, sign_in=clock_time,
+                            )
+                            messages.success(request, f"Sign In saved for {student.name}. Your session details are now locked.")
+                    else:
+                        if not active:
+                            messages.error(request, "No active Sign In session was found. Please Sign In first.")
+                        elif active.period != request.POST.get("period") or active.module_name != request.POST.get("module"):
+                            raise ValueError
+                        else:
+                            active.sign_out = clock_time
+                            active.save(update_fields=["sign_out", "updated_at"])
+                            messages.success(request, f"Sign Out saved for {student.name}. You can now start a new session.")
             except (ValueError, TypeError):
                 messages.error(request, "Please select a valid student, assigned module, session and time.")
             return redirect("/students/ielts/#attendance")
@@ -94,6 +112,14 @@ def ielts_learning(request):
         "practice_sets": IELTSPracticeSet.objects.filter(is_published=True),
         "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student")[:300],
         "attendance_students": StudentProfile.objects.filter(is_active=True),
+        "open_attendance": [
+            {
+                "student_id": row.student_id, "class_date": row.class_date.isoformat(),
+                "course_name": row.course_name, "module_name": row.module_name,
+                "period": row.period, "sign_in": row.sign_in.strftime("%H:%M"),
+            }
+            for row in AttendanceRecord.objects.filter(sign_in__isnull=False, sign_out__isnull=True).select_related("student")
+        ],
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
@@ -253,7 +279,10 @@ def ielts_admin_panel(request):
                 if record:
                     record.student, record.class_date, record.period = student, class_date, period
                 else:
-                    record, _ = AttendanceRecord.objects.get_or_create(class_date=class_date, student=student, period=period)
+                    record = AttendanceRecord.objects.create(
+                        class_date=class_date, student=student, period=period,
+                        course_name=student.course, module_name=module,
+                    )
                 record.course_name, record.module_name = student.course, module
                 record.sign_in = datetime.strptime(request.POST["sign_in"], "%H:%M").time() if request.POST.get("sign_in") else None
                 record.sign_out = datetime.strptime(request.POST["sign_out"], "%H:%M").time() if request.POST.get("sign_out") else None
