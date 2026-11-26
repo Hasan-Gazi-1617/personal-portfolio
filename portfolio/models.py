@@ -301,6 +301,7 @@ class OLTEvent(models.Model):
 
 # Public IELTS learning hub content. Owner-managed through the private portfolio panel.
 class IELTSNotice(models.Model):
+    course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     title = models.CharField(max_length=180)
     message = models.TextField()
     is_published = models.BooleanField(default=True, db_index=True)
@@ -315,6 +316,7 @@ class IELTSNotice(models.Model):
 
 
 class IELTSMaterial(models.Model):
+    course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     class Category(models.TextChoices):
         GENERAL = "general", "General"
         GRAMMAR = "grammar", "Grammar"
@@ -339,6 +341,7 @@ class IELTSMaterial(models.Model):
 
 
 class IELTSLesson(models.Model):
+    course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     title = models.CharField(max_length=180)
     skill = models.CharField(max_length=16, choices=IELTSMaterial.Category.choices, default=IELTSMaterial.Category.GENERAL)
     summary = models.CharField(max_length=280, blank=True)
@@ -355,6 +358,7 @@ class IELTSLesson(models.Model):
 
 
 class IELTSPracticeSet(models.Model):
+    course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     class Skill(models.TextChoices):
         READING = "reading", "Reading"
         WRITING = "writing", "Writing"
@@ -378,6 +382,7 @@ class IELTSPracticeSet(models.Model):
 
 
 class IELTSPracticeAttempt(models.Model):
+    student_profile = models.ForeignKey("attendance.StudentProfile", null=True, blank=True, on_delete=models.SET_NULL, related_name="practice_attempts")
     practice = models.ForeignKey(IELTSPracticeSet, on_delete=models.CASCADE, related_name="attempts")
     student_name = models.CharField(max_length=100)
     student_roll = models.CharField(max_length=40, blank=True)
@@ -412,6 +417,7 @@ class IELTSAttendance(models.Model):
 
 
 class IELTSAssignment(models.Model):
+    course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     title = models.CharField(max_length=180)
     instructions = models.TextField()
     time_minutes = models.PositiveSmallIntegerField(default=40, help_text="IELTS writing task duration in minutes")
