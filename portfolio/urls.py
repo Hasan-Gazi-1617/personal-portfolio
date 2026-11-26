@@ -8,6 +8,7 @@ urlpatterns = [
     path("students/access/", views.student_access, name="student_access"),
     path("students/logout/", views.student_logout, name="student_logout"),
     path("students/dashboard/", views.student_dashboard, name="student_dashboard"),
+    path("students/dashboard/assignments/", views.student_assignment_submission, name="student_assignment_submission"),
     path("students/ielts/", views.ielts_learning, name="ielts_learning"),
     path("students/ielts/practice/<int:pk>/", views.ielts_practice, name="ielts_practice"),
     path("students/ielts/material/<int:pk>/download/", views.ielts_material_download, name="ielts_material_download"),
