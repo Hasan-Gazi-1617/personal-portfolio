@@ -59,8 +59,8 @@ def student_attendance(request):
                         messages.error(request, "You are already signed in. Please sign out before starting a new session.")
                     else:
                         AttendanceRecord.objects.create(
-                            class_date=timezone.localdate(), student=student, period=period,
-                            course_name=course, module_name=module, sign_in=form.cleaned_data["time_value"],
+                            class_date=clock_date, student=student, period=period,
+                            course_name=course, module_name=module, sign_in=clock_time,
                         )
                         messages.success(request, f"Sign In saved for {student.name}.")
                 elif not active:
@@ -68,8 +68,9 @@ def student_attendance(request):
                 elif active.period != period or active.module_name != module or active.course_name != course:
                     messages.error(request, "Your active session details are locked until Sign Out.")
                 else:
-                    active.sign_out = form.cleaned_data["time_value"]
-                    active.save(update_fields=["sign_out", "updated_at"])
+                    active.sign_out = clock_time
+                    active.sign_out_date = clock_date
+                    active.save(update_fields=["sign_out", "sign_out_date", "updated_at"])
                     messages.success(request, f"Sign Out saved for {student.name}.")
         else:
             messages.error(request, "Please select your assigned course, module, AM/PM and a valid time.")
