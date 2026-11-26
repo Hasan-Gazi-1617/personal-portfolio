@@ -414,6 +414,9 @@ class IELTSAttendance(models.Model):
 class IELTSAssignment(models.Model):
     title = models.CharField(max_length=180)
     instructions = models.TextField()
+    time_minutes = models.PositiveSmallIntegerField(default=40, help_text="IELTS writing task duration in minutes")
+    min_words = models.PositiveSmallIntegerField(default=250, help_text="Minimum required word count")
+    max_words = models.PositiveSmallIntegerField(default=350, help_text="Maximum permitted word count")
     deadline = models.DateTimeField(null=True, blank=True)
     is_published = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -431,6 +434,8 @@ class IELTSAssignmentSubmission(models.Model):
     student_name = models.CharField(max_length=100)
     student_roll = models.CharField(max_length=40, blank=True)
     answer_text = models.TextField(blank=True)
+    word_count = models.PositiveIntegerField(default=0)
+    elapsed_seconds = models.PositiveIntegerField(null=True, blank=True)
     file = models.FileField(upload_to="ielts/assignments/", blank=True)
     teacher_feedback = models.TextField(blank=True)
     teacher_strengths = models.TextField(blank=True)
