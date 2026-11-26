@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+from django.conf import settings
 
 
 COURSE_MODULES = {
@@ -20,6 +21,7 @@ class StudentProfile(models.Model):
     roll = models.CharField(max_length=40, blank=True)
     course = models.CharField(max_length=40, choices=COURSE_CHOICES)
     modules = models.JSONField(default=list, help_text="Modules assigned to this student")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="student_profile")
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
