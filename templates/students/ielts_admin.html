@@ -5,7 +5,7 @@
 @media(max-width:800px){.ia-grid{grid-template-columns:1fr}.ia-full{grid-column:auto}.ia-head{align-items:start;flex-direction:column}}
 </style>{% endblock %}
 {% block content %}<main class="ia-page"><div class="container ia-wrap">
-<header class="ia-head"><div><span class="ia-sub">OWNER-ONLY TEACHER WORKSPACE</span><h1>IELTS Admin View</h1><p class="ia-sub">Manage lessons, resources, timed tests, attendance, assignments and announcements.</p></div><a class="ia-btn" href="{% url 'ielts_learning' %}">View student portal ↗</a></header>
+<header class="ia-head"><div><span class="ia-sub">OWNER-ONLY TEACHER WORKSPACE</span><h1>IELTS Admin View</h1><p class="ia-sub">Manage lessons, resources, timed tests, attendance, assignments and announcements.</p></div><a class="ia-btn" href="{% url 'ielts_learning' %}">View student portal ↗</a><a class="ia-btn" href="{% url &quot;attendance_admin&quot; %}">Attendance Management ↗</a></header>
 {% if messages %}{% for message in messages %}<div class="ia-msg">{{ message }}</div>{% endfor %}{% endif %}
 <nav class="ia-nav" aria-label="IELTS admin sections"><a href="#notice-admin" data-section="notices" aria-current="page">Notice Board</a><a href="#material-admin" data-section="materials">Course Materials</a><a href="#lesson-admin" data-section="lessons">My Lessons</a><a href="#practice-admin" data-section="practice">Practice Sessions</a><a href="#attendance-admin" data-section="attendance">Attendance</a><a href="#assignment-admin" data-section="assignments">Assignments</a></nav>
 <div class="ia-grid">
