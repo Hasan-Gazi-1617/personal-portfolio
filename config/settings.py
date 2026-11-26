@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'portfolio',
     'books',
     'site_insights',
+    'attendance',
 ]
 
 MIDDLEWARE = [
