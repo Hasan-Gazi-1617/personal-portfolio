@@ -620,6 +620,15 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
     <link rel="stylesheet" href="{% static 'css/theme-refinement.css' %}">
     <link rel="stylesheet" href="{% static 'css/premium-navigation.css' %}">
+    <style>
+    .students-dropdown .dropdown-menu{min-width:205px;padding:8px;border:1px solid rgba(94,234,212,.22);border-radius:13px;background:rgba(13,24,39,.97);box-shadow:0 18px 44px rgba(0,0,0,.22);backdrop-filter:blur(16px)}
+    .students-dropdown .dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:8px;color:#cbd5e1;font:600 13px "Space Grotesk",sans-serif;transition:.18s ease}
+    .students-dropdown .dropdown-item i{color:#5eead4}
+    .students-dropdown .dropdown-item:hover,.students-dropdown .dropdown-item:focus{background:rgba(20,184,166,.14);color:#5eead4}
+    html[data-theme="light"] .students-dropdown .dropdown-menu{background:#fff;border-color:#b7ddc4;box-shadow:0 16px 36px rgba(21,128,61,.14)}
+    html[data-theme="light"] .students-dropdown .dropdown-item{color:#234b34}
+    html[data-theme="light"] .students-dropdown .dropdown-item:hover,html[data-theme="light"] .students-dropdown .dropdown-item:focus{background:#e4f5e9;color:#087443}
+    </style>
 </head>
 
 <body data-contact-email="{{ public_email }}">
@@ -700,6 +709,19 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                 <!-- BOOK LIBRARY -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'books:library' %}"><i class="bi bi-book nav-item-icon" aria-hidden="true"></i><span>Book Library</span></a>
+                </li>
+
+                <!-- STUDENT LEARNING -->
+                <li class="nav-item dropdown students-dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="studentsDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-mortarboard nav-item-icon" aria-hidden="true"></i><span>Students</span>
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="studentsDropdown">
+                        <li><a class="dropdown-item" href="{% url 'ielts_learning' %}">
+                            <i class="bi bi-translate"></i><span>IELTS Learning</span>
+                        </a></li>
+                    </ul>
                 </li>
 {% if not request.session.owner_access %}
                 <!-- ADMIN VIEW -->

@@ -41,6 +41,11 @@ def home(request):
     return render(request, "home.html")
 
 
+def ielts_learning(request):
+    """Public IELTS learning hub for current and future students."""
+    return render(request, "students/ielts.html")
+
+
 def mikrotik_generator(request):
     """Interactive client-side RouterOS configuration generator."""
     return render(request, "mikrotik_generator.html")
