@@ -23,7 +23,7 @@ class TicketActivityAdmin(admin.ModelAdmin):
 from .models import (
     IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet,
     IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment,
-    IELTSAssignmentSubmission,
+    IELTSAssignmentSubmission, IELTSStudent, CourseAttendance,
 )
 
 
