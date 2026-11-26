@@ -325,24 +325,26 @@ def ielts_admin_panel(request):
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
-                fragments = json.loads(request.POST.get("marked_fragments", "[]"))
-                if not isinstance(fragments, list):
-                    raise ValueError("Marking must be a list.")
                 raw_score = request.POST.get("score", "").strip()
-                submission.score = float(raw_score) if raw_score else None
+                score_value = float(raw_score) if raw_score else None
+                if score_value is not None and not 0 <= score_value <= 100:
+                    raise ValueError("Overall score must be between 0 and 100.")
+                submission.score = score_value
                 for field in ("task_response_band", "coherence_cohesion_band", "lexical_resource_band", "grammatical_range_band"):
                     raw_band = request.POST.get(field, "").strip()
                     band_value = float(raw_band) if raw_band else None
                     if band_value is not None and (band_value < 0 or band_value > 9 or band_value * 2 != int(band_value * 2)):
                         raise ValueError("IELTS criterion bands must be between 0 and 9 in 0.5 steps.")
                     setattr(submission, field, band_value)
-                submission.marked_fragments = fragments
                 submission.teacher_feedback = request.POST.get("teacher_feedback", "").strip()
+                submission.teacher_strengths = request.POST.get("teacher_strengths", "").strip()
+                submission.teacher_improvements = request.POST.get("teacher_improvements", "").strip()
+                submission.corrected_sentences = request.POST.get("corrected_sentences", "").strip()
                 submission.reviewed_at = timezone.now()
                 submission.save()
-                messages.success(request, "Submission feedback saved.")
-            except (ValueError, TypeError, json.JSONDecodeError):
-                messages.error(request, "Score or highlighted answer format is invalid.")
+                messages.success(request, "Teacher review published to the student portal.")
+            except (ValueError, TypeError):
+                messages.error(request, "Please check the overall score and IELTS band scores. Bands must use 0.5 steps.")
         return redirect("ielts_admin_panel")
 
     return render(request, "students/ielts_admin.html", {
