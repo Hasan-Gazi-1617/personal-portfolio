@@ -63,7 +63,7 @@ def student_learning_house(request):
         {"slug": "computer-science", "title": "Computer Science", "courses": ["Programming", "CSE Course", "Undergraduate Courses"], "description": "Programming and core computer science learning."},
     ]
     for subject in subjects:
-        subject["student_count"] = StudentProfile.objects.filter(is_active=True, course__in=subject["courses"]).count()
+        subject["student_count"] = StudentCourse.objects.filter(is_active=True, student__is_active=True, course__in=subject["courses"]).values("student_id").distinct().count()
     return render(request, "students/learning_house.html", {"subjects": subjects})
 
 
@@ -78,10 +78,12 @@ def student_course(request, slug):
     if not subject:
         return redirect("student_learning_house")
     profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
-    if not profile or profile.course not in subject["courses"]:
+    if not profile:
         return render(request, "students/course_access.html", {"subject": subject, "authorized": False}, status=403)
-    classmates = StudentProfile.objects.filter(is_active=True, course__in=subject["courses"]).only("name", "course", "modules").order_by("course", "name")
-    return render(request, "students/course_access.html", {"subject": subject, "authorized": True, "student": profile, "classmates": classmates})
+    enrollments = [item for item in _student_course_enrollments(profile) if item.course in subject["courses"]]
+    if not enrollments:
+        return render(request, "students/course_access.html", {"subject": subject, "authorized": False}, status=403)
+    return render(request, "students/course_access.html", {"subject": subject, "authorized": True, "student": profile, "course_enrollments": enrollments})
 
 
 def ielts_learning(request):
