@@ -43,6 +43,7 @@ class AttendanceRecord(models.Model):
     module_name = models.CharField(max_length=120)
     sign_in = models.TimeField(null=True, blank=True)
     sign_out = models.TimeField(null=True, blank=True)
+    sign_out_date = models.DateField(null=True, blank=True, help_text="Bangladesh-local date when the student signed out")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,7 +56,7 @@ class AttendanceRecord(models.Model):
         if not self.sign_in or not self.sign_out:
             return None
         start = datetime.combine(self.class_date, self.sign_in)
-        end = datetime.combine(self.class_date, self.sign_out)
+        end = datetime.combine(self.sign_out_date or self.class_date, self.sign_out)
         if end < start:
             from datetime import timedelta
             end += timedelta(days=1)

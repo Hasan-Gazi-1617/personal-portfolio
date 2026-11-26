@@ -43,6 +43,15 @@ def home(request):
     return render(request, "home.html")
 
 
+def _student_clock_in_dhaka(request):
+    """Convert a browser-local ISO timestamp to the project's Asia/Dhaka timezone."""
+    raw_timestamp = request.POST.get("timestamp_local", "").strip()
+    parsed = datetime.fromisoformat(raw_timestamp.replace("Z", "+00:00"))
+    if timezone.is_naive(parsed):
+        raise ValueError("A timezone-aware student timestamp is required.")
+    return timezone.localtime(parsed)
+
+
 def ielts_learning(request):
     """Open the student learning portal with integrated attendance actions."""
     if request.method == "POST":
@@ -50,7 +59,8 @@ def ielts_learning(request):
         if action == "attendance_clock":
             try:
                 clock_action = request.POST.get("clock_action", "")
-                clock_time = datetime.strptime(request.POST.get("time_value", ""), "%H:%M").time()
+                local_clock = _student_clock_in_dhaka(request)
+                clock_time = local_clock.time().replace(tzinfo=None)
                 if clock_action not in {"sign_in", "sign_out"}:
                     raise ValueError
                 with transaction.atomic():
@@ -69,22 +79,27 @@ def ielts_learning(request):
                             messages.error(request, "You are already signed in. Please sign out before starting a new session.")
                         else:
                             AttendanceRecord.objects.create(
-                                class_date=timezone.localdate(), student=student, period=period,
+                                class_date=local_clock.date(), student=student, period=period,
                                 course_name=student.course, module_name=module, sign_in=clock_time,
                             )
-                            messages.success(request, f"Sign In saved for {student.name}. Your session details are now locked.")
+                            messages.success(request, f"Sign In saved for {student.name}. Your local time was converted to Bangladesh time.")
                     else:
                         if not active:
                             messages.error(request, "No active Sign In session was found. Please Sign In first.")
                         elif active.period != request.POST.get("period") or active.module_name != request.POST.get("module"):
                             raise ValueError
                         else:
+                            sign_in_at = datetime.combine(active.class_date, active.sign_in)
+                            if local_clock.replace(tzinfo=None) < sign_in_at:
+                                raise ValueError
                             active.sign_out = clock_time
-                            active.save(update_fields=["sign_out", "updated_at"])
+                            active.sign_out_date = local_clock.date()
+                            active.save(update_fields=["sign_out", "sign_out_date", "updated_at"])
                             messages.success(request, f"Sign Out saved for {student.name}. You can now start a new session.")
             except (ValueError, TypeError):
                 messages.error(request, "Please select a valid student, assigned module, session and time.")
-            return redirect("/students/ielts/#attendance")
+            selected_id = request.POST.get("student_id", "")
+            return redirect(f"/students/ielts/?attendance_student={selected_id}#attendance")
         if action == "submit_assignment":
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             student_name = request.POST.get("student_name", "").strip()[:100]
@@ -286,6 +301,7 @@ def ielts_admin_panel(request):
                 record.course_name, record.module_name = student.course, module
                 record.sign_in = datetime.strptime(request.POST["sign_in"], "%H:%M").time() if request.POST.get("sign_in") else None
                 record.sign_out = datetime.strptime(request.POST["sign_out"], "%H:%M").time() if request.POST.get("sign_out") else None
+                record.sign_out_date = class_date if record.sign_out else None
                 record.save()
                 messages.success(request, f"Attendance {'updated' if action == 'edit_attendance' else 'saved'} for {student.name}.")
             except (ValueError, KeyError, TypeError):
