@@ -411,32 +411,82 @@ def ielts_admin_panel(request):
                     messages.success(request, "Timed practice set published.")
             except (ValueError, TypeError, json.JSONDecodeError):
                 messages.error(request, "Practice questions must be valid JSON in a list.")
-        elif action == "student_account_register":
+        elif action == "student_registration":
             try:
-                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
-                email = request.POST.get("student_email", "").strip().lower()
-                password = request.POST.get("student_password", "")
-                User = get_user_model()
+                username = request.POST.get("username", "").strip()
+                email = request.POST.get("email", "").strip().lower()
+                password = request.POST.get("password", "")
+                name = request.POST.get("student_name", "").strip()[:120]
+                roll = request.POST.get("roll", "").strip()[:40]
+                course = request.POST.get("course", "")
+                all_modules = request.POST.get("all_modules") == "1"
+                valid_modules = COURSE_MODULES.get(course, [])
+                selected = request.POST.getlist("modules")
+                modules = list(valid_modules) if all_modules else [item for item in selected if item in valid_modules]
+                joining_raw = request.POST.get("joining_date", "").strip()
+                finish_raw = request.POST.get("course_finish_date", "").strip()
+                joining_date = datetime.strptime(joining_raw, "%Y-%m-%d").date() if joining_raw else None
+                finish_date = datetime.strptime(finish_raw, "%Y-%m-%d").date() if finish_raw else None
+                if not username or len(username) > 150:
+                    raise ValueError("Enter a valid username (maximum 150 characters).")
                 if not email or "@" not in email:
                     raise ValueError("Enter a valid email address.")
-                if profile.user_id:
-                    account = profile.user
-                    if User.objects.filter(email__iexact=email).exclude(pk=account.pk).exists() or User.objects.filter(username=email).exclude(pk=account.pk).exists():
-                        raise ValueError("This email is already used by another account.")
-                    account.username, account.email = email, email
+                if not name:
+                    raise ValueError("Enter the student's full name.")
+                if course not in COURSE_MODULES or not modules:
+                    raise ValueError("Choose a course and at least one module, or select All.")
+                if joining_date and finish_date and finish_date < joining_date:
+                    raise ValueError("Course finish date cannot be before the joining date.")
+                User = get_user_model()
+                if User.objects.filter(username__iexact=username).exists():
+                    raise ValueError("This username is already registered.")
+                if User.objects.filter(email__iexact=email).exists():
+                    raise ValueError("This email is already registered.")
+                account = User(username=username, email=email, is_active=True)
+                validate_password(password, account)
+                account.set_password(password)
+                with transaction.atomic():
+                    account.save()
+                    profile, created = StudentProfile.objects.get_or_create(
+                        name=name, roll=roll, course=course,
+                        defaults={"modules": modules, "user": account, "joining_date": joining_date, "course_finish_date": finish_date, "is_active": True},
+                    )
+                    if not created:
+                        if profile.user_id:
+                            raise ValueError("A student profile with this name/course/roll already has an account.")
+                        profile.modules = modules
+                        profile.user = account
+                        profile.joining_date = joining_date
+                        profile.course_finish_date = finish_date
+                        profile.is_active = True
+                        profile.save()
+                messages.success(request, f"Student registration completed for {name}. Login uses {email}.")
+            except ValidationError as exc:
+                messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
+            except (ValueError, TypeError) as exc:
+                messages.error(request, str(exc))
+        elif action == "student_account_update":
+            try:
+                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
+                if not profile.user_id:
+                    raise ValueError("This student has no login account yet. Register the student first.")
+                account = profile.user
+                username = request.POST.get("username", "").strip()
+                email = request.POST.get("email", "").strip().lower()
+                password = request.POST.get("password", "")
+                User = get_user_model()
+                if not username or not email or "@" not in email:
+                    raise ValueError("Enter a valid username and email address.")
+                if User.objects.filter(username__iexact=username).exclude(pk=account.pk).exists():
+                    raise ValueError("This username is already used by another account.")
+                if User.objects.filter(email__iexact=email).exclude(pk=account.pk).exists():
+                    raise ValueError("This email is already used by another account.")
+                account.username, account.email = username, email
+                if password:
                     validate_password(password, account)
                     account.set_password(password)
-                    account.save()
-                else:
-                    if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username=email).exists():
-                        raise ValueError("An account already exists with this email.")
-                    account = User(username=email, email=email, is_active=True)
-                    validate_password(password, account)
-                    account.set_password(password)
-                    account.save()
-                    profile.user = account
-                    profile.save(update_fields=["user"])
-                messages.success(request, f"Student login account created/updated for {profile.name}. Share the email and password securely with the student.")
+                account.save()
+                messages.success(request, f"Student account updated for {profile.name}.")
             except ValidationError as exc:
                 messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
             except ValueError as exc:
@@ -545,6 +595,21 @@ def ielts_admin_panel(request):
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
+        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
+        "student_admin_data": [{
+            "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
+            "modules": profile.modules or [], "username": profile.user.username if profile.user_id else "",
+            "email": profile.user.email if profile.user_id else "", "has_account": bool(profile.user_id),
+            "joining_date": profile.joining_date.strftime("%d %b %Y") if profile.joining_date else "—",
+            "course_finish_date": profile.course_finish_date.strftime("%d %b %Y") if profile.course_finish_date else "—",
+            "attendance": [{"date": row.class_date.strftime("%d %b %Y"), "module": row.module_name, "period": row.period, "in": row.sign_in.strftime("%I:%M %p") if row.sign_in else "—", "out": row.sign_out.strftime("%I:%M %p") if row.sign_out else "—", "duration": row.total_duration} for row in profile.attendance_records.all()[:100]],
+            "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y"), "answer": row.answer_text, "feedback": row.teacher_feedback, "receipt": f"/students/ielts/submission/{row.receipt_code}/", "file": f"/owner/ielts/submission/{row.pk}/file/" if row.file else ""} for row in IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:100]],
+            "practice": [{"title": row.practice.title, "score": f"{row.objective_score if row.objective_score is not None else '—'} / {row.total_objective if row.total_objective is not None else '—'}", "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:100]],
+            "notices": [{"title": row.title, "message": row.message, "date": timezone.localtime(row.created_at).strftime("%d %b %Y")} for row in IELTSNotice.objects.filter(is_published=True)[:40]],
+            "materials": [{"title": row.title, "description": row.description, "category": row.get_category_display(), "url": row.resource_url or (f"/students/ielts/material/{row.pk}/download/" if row.file else "")} for row in IELTSMaterial.objects.filter(is_published=True)[:100]],
+            "lessons": [{"title": row.title, "summary": row.summary, "skill": row.get_skill_display()} for row in IELTSLesson.objects.filter(is_published=True)[:100]],
+            "practice_sets": [{"title": row.title, "skill": row.get_skill_display(), "url": f"/students/ielts/practice/{row.pk}/"} for row in IELTSPracticeSet.objects.filter(is_published=True)[:100]],
+        } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
     })
 
 
