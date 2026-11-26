@@ -202,7 +202,8 @@ def ielts_learning(request):
             for row in AttendanceRecord.objects.filter(sign_in__isnull=False, sign_out__isnull=True).select_related("student")
         ],
         "course_modules": COURSE_MODULES,
-        "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),\n        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
+        "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),
+        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
         "student_admin_data": [{
             "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
             "modules": profile.modules or [], "email": profile.user.email if profile.user_id else "",
