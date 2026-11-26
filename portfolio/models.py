@@ -444,3 +444,61 @@ class IELTSAssignmentSubmission(models.Model):
 
     def __str__(self):
         return f"{self.student_name} · {self.assignment.title}"
+
+
+class IELTSStudent(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    roll = models.CharField(max_length=40, blank=True, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self):
+        return f"{self.name} ({self.roll})" if self.roll else self.name
+
+
+class CourseAttendance(models.Model):
+    COURSE_CHOICES = [
+        ("IELTS", "IELTS"),
+        ("Language Testing", "Language Testing"),
+        ("Programming", "Programming"),
+        ("CSE Course", "CSE Course"),
+        ("School Academy", "School Academy"),
+        ("College Academy", "College Academy"),
+        ("Undergraduate Courses", "Undergraduate Courses"),
+        ("BCS", "BCS"),
+    ]
+    student = models.ForeignKey(IELTSStudent, on_delete=models.CASCADE, related_name="attendance_records")
+    class_date = models.DateField(db_index=True)
+    course_name = models.CharField(max_length=40, choices=COURSE_CHOICES, db_index=True)
+    module_name = models.CharField(max_length=100)
+    sign_in = models.TimeField()
+    sign_out = models.TimeField()
+    duration_minutes = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-class_date", "-sign_in", "student__name")
+        indexes = [models.Index(fields=("student", "class_date"), name="course_att_student_date_idx")]
+
+    def save(self, *args, **kwargs):
+        start = self.sign_in.hour * 60 + self.sign_in.minute
+        end = self.sign_out.hour * 60 + self.sign_out.minute
+        if end <= start:
+            raise ValueError("Sign Out must be later than Sign In on the same day.")
+        self.duration_minutes = end - start
+        super().save(*args, **kwargs)
+
+    @property
+    def day_name(self):
+        return self.class_date.strftime("%A")
+
+    @property
+    def total_duration(self):
+        hours, minutes = divmod(self.duration_minutes, 60)
+        return f"{hours}h {minutes}m" if hours else f"{minutes}m"
+
+    def __str__(self):
+        return f"{self.student.name} · {self.course_name} · {self.class_date}"
