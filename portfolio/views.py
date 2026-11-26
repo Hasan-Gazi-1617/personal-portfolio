@@ -587,7 +587,8 @@ def ielts_admin_panel(request):
             if not name or course not in COURSE_MODULES or not modules:
                 messages.error(request, "Enter a student name, course and at least one assigned module.")
             else:
-                StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
+                profile, _ = StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
+                StudentCourse.objects.update_or_create(student=profile, course=course, defaults={"modules": modules, "is_active": True})
                 messages.success(request, f"Student profile saved for {name}.")
         elif action in {"manual_attendance", "edit_attendance"}:
             try:
