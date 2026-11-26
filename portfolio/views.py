@@ -228,7 +228,7 @@ def ielts_learning(request):
 
     context = {
         "course_enrollments": enrollments,
-        "notices": IELTSNotice.objects.filter(course__in=enrolled_courses, is_published=True),
+        "notices": IELTSNotice.objects.filter(course__in=enrolled_courses, is_published=True).filter(Q(student__isnull=True) | Q(student=profile)),
         "materials": IELTSMaterial.objects.filter(course__in=enrolled_courses, is_published=True),
         "lessons": IELTSLesson.objects.filter(course__in=enrolled_courses, is_published=True),
         "practice_sets": IELTSPracticeSet.objects.filter(course__in=enrolled_courses, is_published=True),
@@ -379,7 +379,7 @@ def student_dashboard(request):
         "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
         "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment")[:100],
         "practice_attempts": IELTSPracticeAttempt.objects.filter(student_profile=profile).select_related("practice")[:100],
-        "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True)[:100],
+        "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True).filter(Q(student__isnull=True) | Q(student=profile))[:100],
         "materials": IELTSMaterial.objects.filter(course__in=courses, is_published=True)[:100],
         "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
         "assignments": IELTSAssignment.objects.filter(course__in=courses, is_published=True)[:100],
@@ -398,8 +398,13 @@ def ielts_admin_panel(request):
             title = request.POST.get("title", "").strip()[:180]
             message = request.POST.get("message", "").strip()
             if title and message and request.POST.get("course") in COURSE_MODULES:
-                IELTSNotice.objects.create(title=title, message=message, course=request.POST["course"], is_published=True)
-                messages.success(request, "Notice published successfully.")
+                target_id = request.POST.get("student_id", "").strip()
+                target_student = get_object_or_404(StudentProfile, pk=target_id, is_active=True) if target_id else None
+                if target_student and not StudentCourse.objects.filter(student=target_student, course=request.POST["course"], is_active=True).exists():
+                    messages.error(request, "The selected student is not enrolled in this course.")
+                else:
+                    IELTSNotice.objects.create(title=title, message=message, course=request.POST["course"], student=target_student, is_published=True)
+                    messages.success(request, f"Notice published for {target_student.name}." if target_student else "Notice published for all students in this course.")
             else:
                 messages.error(request, "Enter both a notice title and details.")
         elif action == "notice_edit":
@@ -408,7 +413,13 @@ def ielts_admin_panel(request):
             message = request.POST.get("message", "").strip()
             if title and message:
                 notice.title, notice.message = title, message
-                notice.save(update_fields=["title", "message", "updated_at"])
+                target_id = request.POST.get("student_id", "").strip()
+                target_student = get_object_or_404(StudentProfile, pk=target_id, is_active=True) if target_id else None
+                if target_student and not StudentCourse.objects.filter(student=target_student, course=notice.course, is_active=True).exists():
+                    messages.error(request, "The selected student is not enrolled in this notice's course.")
+                else:
+                    notice.student = target_student
+                    notice.save(update_fields=["title", "message", "student", "updated_at"])
                 messages.success(request, "Notice updated successfully.")
             else:
                 messages.error(request, "Notice title and details cannot be empty.")
@@ -698,7 +709,7 @@ def ielts_admin_panel(request):
             "attendance": [{"date": row.class_date.strftime("%d %b %Y"), "module": row.module_name, "period": row.period, "in": row.sign_in.strftime("%I:%M %p") if row.sign_in else "—", "out": row.sign_out.strftime("%I:%M %p") if row.sign_out else "—", "duration": row.total_duration} for row in profile.attendance_records.all()[:100]],
             "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y"), "answer": row.answer_text, "feedback": row.teacher_feedback, "receipt": f"/students/ielts/submission/{row.receipt_code}/", "file": f"/owner/ielts/submission/{row.pk}/file/" if row.file else ""} for row in IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:100]],
             "practice": [{"title": row.practice.title, "score": f"{row.objective_score if row.objective_score is not None else '—'} / {row.total_objective if row.total_objective is not None else '—'}", "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:100]],
-            "notices": [{"title": row.title, "message": row.message, "date": timezone.localtime(row.created_at).strftime("%d %b %Y")} for row in IELTSNotice.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:40]],
+            "notices": [{"title": row.title, "message": row.message, "date": timezone.localtime(row.created_at).strftime("%d %b %Y")} for row in IELTSNotice.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True).filter(Q(student__isnull=True) | Q(student=profile))[:40]],
             "materials": [{"title": row.title, "description": row.description, "category": row.get_category_display(), "url": row.resource_url or (f"/students/ielts/material/{row.pk}/download/" if row.file else "")} for row in IELTSMaterial.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "lessons": [{"title": row.title, "summary": row.summary, "skill": row.get_skill_display()} for row in IELTSLesson.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "practice_sets": [{"title": row.title, "skill": row.get_skill_display(), "url": f"/students/ielts/practice/{row.pk}/"} for row in IELTSPracticeSet.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
