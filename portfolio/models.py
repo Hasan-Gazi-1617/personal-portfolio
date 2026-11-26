@@ -430,6 +430,7 @@ class IELTSAssignment(models.Model):
 
 class IELTSAssignmentSubmission(models.Model):
     receipt_code = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    student_profile = models.ForeignKey("attendance.StudentProfile", null=True, blank=True, on_delete=models.SET_NULL, related_name="ielts_submissions")
     assignment = models.ForeignKey(IELTSAssignment, on_delete=models.CASCADE, related_name="submissions")
     student_name = models.CharField(max_length=100)
     student_roll = models.CharField(max_length=40, blank=True)
