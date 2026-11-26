@@ -73,6 +73,7 @@
  const now=new Date();
  const pad=value=>String(value).padStart(2,'0');
  date.value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+ const localToday=date.value;
  timeInput.value=pad(now.getHours())+':'+pad(now.getMinutes());
  timezoneInput.value=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
  const selectedStudent=new URLSearchParams(location.search).get('attendance_student');
@@ -87,7 +88,7 @@
    module.disabled=module.options.length===1;
  }
  function unlockForm(){
-   student.disabled=false;module.disabled=!student.value;period.disabled=false;date.value=today;
+   student.disabled=false;module.disabled=!student.value;period.disabled=false;date.value=localToday;
    studentId.value=student.value;moduleValue.value=module.value;periodValue.value=period.value;
    timeLabel.textContent='Sign In Time (Your Local Time)';
    state.hidden=true;state.textContent='';
@@ -104,7 +105,6 @@
    period.value=active.period;periodValue.value=active.period;
    const signInDhaka=new Date(active.class_date+'T'+active.sign_in+':00+06:00');
    date.value=signInDhaka.getFullYear()+'-'+pad(signInDhaka.getMonth()+1)+'-'+pad(signInDhaka.getDate());
-   const localSignInTime=pad(signInDhaka.getHours())+':'+pad(signInDhaka.getMinutes());
    student.disabled=true;module.disabled=true;period.disabled=true;
    timeLabel.textContent='Sign Out Time (Your Local Time)';
    state.textContent='Active session: Signed in at '+signInDhaka.toLocaleString()+'. Student, course, module, sign-in date and AM/PM are locked until Sign Out.';
