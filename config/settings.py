@@ -192,9 +192,15 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://personal-portfolio-069p.onrender.com',
+]
 if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f'https://{render_hostname}')
+# Keep Django's CSRF protection enabled. If a stale mobile/browser page submits
+# an expired token, send the student back to a fresh, uncached login form.
+CSRF_FAILURE_VIEW = 'portfolio.views.student_csrf_failure'
 
 BOOKSTORE_BKASH_NUMBER = '01751231617'
 BOOKSTORE_SITE_URL = os.environ.get('BOOKSTORE_SITE_URL', 'https://personal-portfolio-069p.onrender.com')
