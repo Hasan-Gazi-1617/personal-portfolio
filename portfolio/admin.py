@@ -22,7 +22,7 @@ class TicketActivityAdmin(admin.ModelAdmin):
 
 from .models import (
     IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet,
-    IELTSPracticeAttempt, IELTSAssignment, IELTSAssignmentSubmission,
+    IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission,
 )
 from attendance.models import StudentProfile, StudentCourse, AttendanceRecord
 
@@ -33,6 +33,7 @@ for model, singular, plural in (
     (IELTSLesson, "Course lesson", "Course lessons"),
     (IELTSPracticeSet, "Course practice set", "Course practice sets"),
     (IELTSPracticeAttempt, "Student practice attempt", "Student practice attempts"),
+    (IELTSAttendance, "Class attendance sheet", "Class attendance sheets"),
     (IELTSAssignment, "Course assignment", "Course assignments"),
     (IELTSAssignmentSubmission, "Student assignment submission", "Student assignment submissions"),
 ):
@@ -103,20 +104,42 @@ class IELTSAssignmentSubmissionAdmin(admin.ModelAdmin):
         return obj.assignment.course
 
 
+class StudentCourseInline(admin.TabularInline):
+    model = StudentCourse
+    extra = 1
+    fields = ("course", "modules", "joining_date", "course_finish_date", "is_active")
+    show_change_link = True
+
+
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ("name", "roll", "course", "username_display", "email_display", "is_active")
-    list_filter = ("course", "is_active")
+    list_display = ("name", "roll", "course", "username_display", "email_display", "is_active", "created_at")
+    list_filter = ("course", "is_active", "joining_date")
     search_fields = ("name", "roll", "course", "user__username", "user__email")
     autocomplete_fields = ("user",)
+    inlines = (StudentCourseInline,)
+    readonly_fields = ("created_at",)
+    fieldsets = (
+        ("Student information", {"fields": ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")}),
+        ("Login account", {"fields": ("user",)}),
+        ("System information", {"fields": ("created_at",)}),
+    )
 
-    @admin.display(description="Username")
+    @admin.display(description="Username", ordering="user__username")
     def username_display(self, obj):
         return obj.user.username if obj.user_id else "No account"
 
-    @admin.display(description="Email")
+    @admin.display(description="Email", ordering="user__email")
     def email_display(self, obj):
         return obj.user.email if obj.user_id else "—"
+
+
+@admin.register(IELTSAttendance)
+class IELTSAttendanceAdmin(admin.ModelAdmin):
+    list_display = ("class_date", "batch", "topic", "updated_at")
+    list_filter = ("batch", "class_date")
+    search_fields = ("batch", "topic")
+    readonly_fields = ("updated_at",)
 
 
 @admin.register(AttendanceRecord)
