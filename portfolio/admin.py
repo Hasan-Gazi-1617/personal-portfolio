@@ -30,7 +30,7 @@ from .models import (
     IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet,
     IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission,
 )
-from attendance.models import StudentProfile, StudentCourse, AttendanceRecord
+from attendance.models import StudentProfile, StudentCourse, AttendanceRecord, COURSE_MODULES
 
 # Use course/student terminology in Django Admin instead of IELTS-only labels.
 for model, singular, plural in (
@@ -118,6 +118,17 @@ class StudentCourseInline(admin.TabularInline):
 
 
 class StudentProfileAdminForm(forms.ModelForm):
+    modules = forms.MultipleChoiceField(
+        label="Modules",
+        required=False,
+        choices=sorted({(module, module) for course_modules in COURSE_MODULES.values() for module in course_modules}),
+        widget=forms.SelectMultiple(attrs={
+            "class": "student-module-select",
+            "data-module-map": __import__("json").dumps(COURSE_MODULES),
+        }),
+        help_text="Select one or more modules. Choose the course first; the list will filter automatically. Use Ctrl (Windows/Linux) or Cmd (Mac) for multiple selections.",
+    )
+
     username = forms.CharField(max_length=150, label="Login username")
     email = forms.EmailField(label="Login email")
     password = forms.CharField(
@@ -141,6 +152,15 @@ class StudentProfileAdminForm(forms.ModelForm):
             self.fields["email"].initial = linked_user.email
         else:
             self.fields["password"].required = True
+
+    def clean_modules(self):
+        modules = self.cleaned_data.get("modules", [])
+        course = self.cleaned_data.get("course")
+        allowed = COURSE_MODULES.get(course, [])
+        invalid = [module for module in modules if module not in allowed]
+        if invalid:
+            raise forms.ValidationError("Please select modules belonging to the selected course.")
+        return modules
 
     def clean(self):
         cleaned = super().clean()
@@ -184,6 +204,8 @@ class StudentProfileAdmin(admin.ModelAdmin):
     search_fields = ("name", "roll", "course", "user__username", "user__email")
     inlines = (StudentCourseInline,)
     readonly_fields = ("created_at",)
+    class Media:
+        js = ("admin/course-module-select.js",)
     fieldsets = (
         ("Student information", {"fields": ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")}),
         ("Student login credentials", {"fields": ("username", "email", "password")}),
@@ -193,6 +215,7 @@ class StudentProfileAdmin(admin.ModelAdmin):
     @transaction.atomic
     def save_model(self, request, obj, form, change):
         User = get_user_model()
+        obj.modules = form.cleaned_data.get("modules", [])
         username = form.cleaned_data["username"]
         email = form.cleaned_data["email"]
         password = form.cleaned_data.get("password")
