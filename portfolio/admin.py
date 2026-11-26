@@ -24,7 +24,7 @@ from .models import (
     IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet,
     IELTSPracticeAttempt, IELTSAssignment, IELTSAssignmentSubmission,
 )
-from attendance.models import StudentProfile, AttendanceRecord
+from attendance.models import StudentProfile, StudentCourse, AttendanceRecord
 
 # Use course/student terminology in Django Admin instead of IELTS-only labels.
 for model, singular, plural in (
@@ -116,4 +116,12 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
     list_display = ("class_date", "student", "course_name", "module_name", "period", "sign_in", "sign_out")
     list_filter = ("course_name", "module_name", "period", "class_date")
     search_fields = ("student__name", "student__roll", "student__user__username", "course_name", "module_name")
+    autocomplete_fields = ("student",)
+
+
+@admin.register(StudentCourse)
+class StudentCourseAdmin(admin.ModelAdmin):
+    list_display = ("student", "course", "is_active", "joining_date", "course_finish_date")
+    list_filter = ("course", "is_active")
+    search_fields = ("student__name", "student__roll", "student__user__username", "course")
     autocomplete_fields = ("student",)
