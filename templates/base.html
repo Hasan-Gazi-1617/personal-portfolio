@@ -800,7 +800,8 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
-                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-mortarboard"></i><span>Learning House</span></a>
+                                    <a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a>
+                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
                                     <ul class="dropdown-menu submenu-menu">
                                         <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
                                         <li><a class="dropdown-item" href="{% url 'student_course' 'bcs' %}"><i class="bi bi-journal-check"></i><span>BCS</span></a></li>
