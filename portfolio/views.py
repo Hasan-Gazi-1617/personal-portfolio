@@ -18,6 +18,7 @@ from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 
 logger = logging.getLogger(__name__)
@@ -354,12 +355,22 @@ def ielts_student_submission_file(request, receipt_code):
         return redirect("ielts_submission_receipt", receipt_code=receipt_code)
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
+def student_csrf_failure(request, reason=""):
+    """Recover student login from stale cached CSRF pages without disabling protection."""
+    if request.path == "/students/access/" and request.method == "POST":
+        return redirect("student_access" + "?csrf_refresh=1")
+    return HttpResponse("Security verification failed. Please reload the page and try again.", status=403)
+
+
+@never_cache
 @ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
 def student_access(request):
     """Student access using the roll number and private code issued by an admin."""
     if request.user.is_authenticated and StudentProfile.objects.filter(user=request.user, is_active=True).exists():
         return redirect("student_dashboard")
+    if request.GET.get("csrf_refresh") == "1":
+        messages.info(request, "Your secure login session was refreshed. Please enter your Roll Number and Access Code again.")
     if request.method == "POST":
         roll = request.POST.get("roll", "").strip()
         access_code = request.POST.get("access_code", "").strip().upper()
