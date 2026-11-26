@@ -353,6 +353,8 @@ def student_register(request):
             errors.append("Please enter your full name.")
         if not email or "@" not in email:
             errors.append("Please enter a valid email address.")
+        elif len(email) > 150:
+            errors.append("Email address must be 150 characters or fewer.")
         elif get_user_model().objects.filter(email__iexact=email).exists():
             errors.append("This email is already registered. Please sign in instead.")
         if not password:
