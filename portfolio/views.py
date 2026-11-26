@@ -87,7 +87,9 @@ def student_course(request, slug):
 def ielts_learning(request):
     """Open the IELTS portal only for currently enrolled student accounts."""
     profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
-    if not profile or profile.course not in {"IELTS", "Language Testing"}:
+    enrollments = _student_course_enrollments(profile) if profile else []
+    enrolled_courses = {item.course for item in enrollments}
+    if not profile or not enrolled_courses.intersection({"IELTS", "Language Testing"}):
         return render(request, "students/course_access.html", {"subject": {"title": "IELTS"}, "authorized": False}, status=403)
     if request.method == "POST":
         action = request.POST.get("action", "")
@@ -108,14 +110,16 @@ def ielts_learning(request):
                     if clock_action == "sign_in":
                         module = request.POST.get("module", "")
                         period = request.POST.get("period", "")
-                        if module not in (student.modules or []) or period not in AttendanceRecord.Period.values:
+                        course_name = request.POST.get("course", "").strip() or student.course
+                        course_enrollment = next((item for item in _student_course_enrollments(student) if item.course == course_name), None)
+                        if not course_enrollment or module not in (course_enrollment.modules or []) or period not in AttendanceRecord.Period.values:
                             raise ValueError
                         if active:
                             messages.error(request, "You are already signed in. Please sign out before starting a new session.")
                         else:
                             AttendanceRecord.objects.create(
                                 class_date=local_clock.date(), student=student, period=period,
-                                course_name=student.course, module_name=module, sign_in=clock_time,
+                                course_name=course_name, module_name=module, sign_in=clock_time,
                             )
                             messages.success(request, f"Sign In saved for {student.name}. Your local time was converted to Bangladesh time.")
                     else:
@@ -137,9 +141,11 @@ def ielts_learning(request):
             return redirect(f"/students/ielts/?attendance_student={selected_id}#attendance")
         if action == "start_assignment":
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
+            linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+            if not linked_profile or assignment.course not in {item.course for item in _student_course_enrollments(linked_profile)}:
+                return JsonResponse({"ok": False, "message": "This assignment is not available in your enrolled courses."}, status=403)
             student_name = request.POST.get("student_name", "").strip()[:100]
             student_roll = request.POST.get("student_roll", "").strip()[:40]
-            linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
             if linked_profile:
                 student_name, student_roll = linked_profile.name, linked_profile.roll
             if not student_name:
@@ -219,10 +225,10 @@ def ielts_learning(request):
             return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
 
     context = {
-        "notices": IELTSNotice.objects.filter(is_published=True),
-        "materials": IELTSMaterial.objects.filter(is_published=True),
-        "lessons": IELTSLesson.objects.filter(is_published=True),
-        "practice_sets": IELTSPracticeSet.objects.filter(is_published=True),
+        "notices": IELTSNotice.objects.filter(course__in=enrolled_courses, is_published=True),
+        "materials": IELTSMaterial.objects.filter(course__in=enrolled_courses, is_published=True),
+        "lessons": IELTSLesson.objects.filter(course__in=enrolled_courses, is_published=True),
+        "practice_sets": IELTSPracticeSet.objects.filter(course__in=enrolled_courses, is_published=True),
         "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student")[:300],
         "attendance_students": StudentProfile.objects.filter(is_active=True),
         "open_attendance": [
@@ -246,7 +252,7 @@ def ielts_learning(request):
         } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
-        "assignments": IELTSAssignment.objects.filter(is_published=True),
+        "assignments": IELTSAssignment.objects.filter(course__in=enrolled_courses, is_published=True),
         "my_submissions": IELTSAssignmentSubmission.objects.filter(receipt_code__in=request.session.get("ielts_submission_receipts", [])).select_related("assignment").order_by("-submitted_at"),
     }
     return render(request, "students/ielts.html", context)
@@ -254,11 +260,13 @@ def ielts_learning(request):
 
 def ielts_practice(request, pk):
     practice = get_object_or_404(IELTSPracticeSet, pk=pk, is_published=True)
+    linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+    if not linked_profile or practice.course not in {item.course for item in _student_course_enrollments(linked_profile)}:
+        return HttpResponse("This practice is not available in your enrolled courses.", status=403)
     result = None
     if request.method == "POST":
         name = request.POST.get("student_name", "").strip()[:100]
         roll = request.POST.get("student_roll", "").strip()[:40]
-        linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
         if linked_profile:
             name, roll = linked_profile.name, linked_profile.roll
         if not name:
@@ -289,7 +297,7 @@ def ielts_practice(request, pk):
                 from .ielts_services import score_subjective
                 ai_score, feedback = score_subjective(practice.skill, subjective_prompt, subjective_response)
             result = IELTSPracticeAttempt.objects.create(
-                practice=practice, student_name=name, student_roll=roll,
+                practice=practice, student_profile=linked_profile, student_name=name, student_roll=roll,
                 answers=answers, objective_score=objective_score,
                 total_objective=objective_total, ai_score=ai_score, ai_feedback=feedback,
             )
