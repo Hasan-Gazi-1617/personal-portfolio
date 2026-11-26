@@ -1,0 +1,65 @@
+
+{% extends "base.html" %}
+{% block title %}Assignment Submission | Student Account{% endblock %}
+{% block extra_css %}
+<style>
+.as-page{padding:120px 0 70px;min-height:80vh;background:radial-gradient(ellipse at 80% 0,rgba(34,197,94,.10),transparent 40%),var(--bg-primary);color:var(--text-primary)}
+.as-wrap{max-width:1050px}.as-head{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.as-head h1{font-size:clamp(25px,4vw,38px);font-weight:850;margin:7px 0}.as-muted{font-size:12px;color:var(--text-muted)}
+.as-card{background:var(--bg-card);border:1px solid var(--border);border-radius:15px;padding:20px;margin:15px 0}
+.as-btn{display:inline-flex;padding:10px 14px;border-radius:9px;background:#22c55e;color:#052b16;text-decoration:none;font-size:12px;font-weight:850;border:0;cursor:pointer}
+.as-form{display:grid;gap:12px}.as-form input,.as-form textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:13px}
+.as-writing{min-height:420px;resize:both;line-height:1.8;padding:16px!important;font-size:14px!important;box-sizing:border-box}
+.as-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;padding:16px;border:1px solid var(--border);border-radius:14px;background:rgba(34,197,94,.06)}
+.as-stat{display:flex;flex-direction:column;gap:5px}.as-stat span{font-size:10px;font-weight:900;letter-spacing:1px;color:var(--text-muted)}
+.as-stat strong{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}.as-stat small{font-size:11px;color:var(--text-muted)}
+.as-progress{height:6px;grid-column:1/-1;background:var(--border);border-radius:99px;overflow:hidden}.as-progress span{display:block;width:0;height:100%;background:#22c55e}
+.as-warning{padding:12px;margin:10px 0;border-radius:9px;background:rgba(245,158,11,.12);font-size:13px;font-weight:700}.as-warning[hidden]{display:none}
+.as-empty{padding:22px;text-align:center;border:1px dashed var(--border);border-radius:12px;color:var(--text-muted);font-size:13px}
+.as-row{padding:14px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:560px){.as-stats{grid-template-columns:1fr}.as-writing{min-height:320px}}
+</style>
+{% endblock %}
+{% block content %}
+<main class="as-page"><div class="container as-wrap">
+<header class="as-head"><div><span class="as-muted">PERSONAL STUDENT ACCOUNT · ASSIGNMENT SUBMISSION</span><h1>Assignment Submission</h1><p class="as-muted">Welcome, {{ student_first_name }} · Roll {{ student.roll|default:"Not assigned" }}</p></div><a class="as-btn" href="{% url 'student_dashboard' %}">Back to Student Account</a></header>
+{% if messages %}{% for message in messages %}<div class="as-card">{{ message }}</div>{% endfor %}{% endif %}
+<section class="as-card"><h2 style="font-size:18px;font-weight:850;margin:0 0 6px">Available Assignments</h2><p class="as-muted">Assignments published for your enrolled courses.</p>
+{% for assignment in assignments %}
+<article class="as-card as-assignment" style="margin:15px 0">
+<span class="as-muted">{{ assignment.course }}</span><h3 style="font-size:19px;font-weight:850;margin:5px 0 8px">{{ assignment.title }}</h3>
+<p style="font-size:13px;line-height:1.7;white-space:pre-line">{{ assignment.instructions }}</p>
+<p class="as-muted">{{ assignment.time_minutes }} minutes · {{ assignment.min_words }} to {{ assignment.max_words }} words</p>
+<div class="as-stats"><div class="as-stat"><span>TIME REMAINING</span><strong class="as-timer">--:--</strong><small>{{ assignment.time_minutes }} minute timed task</small></div><div class="as-stat"><span>WORD COUNT</span><strong class="as-count">0 <em style="font-size:13px;font-style:normal">/ {{ assignment.max_words }}</em></strong><small>Minimum {{ assignment.min_words }} words</small></div><div class="as-progress"><span></span></div></div>
+<form class="as-form as-timed-form" method="post" action="{% url 'student_assignment_submission' %}" data-duration="{{ assignment.time_minutes }}" data-min="{{ assignment.min_words }}" data-max="{{ assignment.max_words }}">
+{% csrf_token %}<input type="hidden" name="action" value="start_assignment"><input type="hidden" name="assignment_id" value="{{ assignment.pk }}"><input type="hidden" name="submission_id" value="">
+<label class="as-muted">Student Name<input name="student_name" value="{{ student.name }}" readonly></label><label class="as-muted">Roll Number<input name="student_roll" value="{{ student.roll }}" readonly></label>
+<div><button class="as-btn as-start" type="button">Start Assignment</button><span class="as-muted"> Timer starts after clicking.</span></div>
+<div class="as-workspace" hidden><div class="as-warning" hidden role="status" aria-live="polite"></div>
+<label style="font-size:13px;font-weight:800">Your written answer <span class="as-muted">Type directly. Copy/paste is not allowed.</span><textarea class="as-writing" name="answer_text" disabled placeholder="Start the assignment to begin writing..."></textarea></label>
+<p class="as-muted">Three paste attempts will lock this attempt and mark it failed.</p><button class="as-btn as-submit" type="submit">Submit Assignment</button></div>
+</form></article>
+{% empty %}<div class="as-empty">No assignments have been published for your enrolled courses yet.</div>{% endfor %}
+</section>
+<section class="as-card"><h2 style="font-size:18px;font-weight:850;margin:0 0 10px">Submission History</h2>
+{% for item in submissions %}<div class="as-row"><div><strong>{{ item.assignment.title }}</strong><p class="as-muted">{{ item.assignment.course }} · {{ item.submitted_at|date:"d M Y, h:i A" }}</p><p class="as-muted">Status: {{ item.get_status_display }}{% if item.failed_reason %} · {{ item.failed_reason }}{% endif %}</p></div><a class="as-btn" href="{% url 'ielts_submission_receipt' item.receipt_code %}">View Submission</a></div>{% empty %}<div class="as-empty">You have not submitted any assignments yet.</div>{% endfor %}
+</section>
+</div></main>
+<script>
+(function(){
+ document.querySelectorAll(".as-timed-form").forEach(form=>{
+  const card=form.closest(".as-assignment"),start=form.querySelector(".as-start"),workspace=form.querySelector(".as-workspace"),area=form.querySelector("textarea"),action=form.querySelector('[name="action"]'),subId=form.querySelector('[name="submission_id"]'),csrf=form.querySelector('[name="csrfmiddlewaretoken"]'),timer=card.querySelector(".as-timer"),count=card.querySelector(".as-count"),bar=card.querySelector(".as-progress span"),warning=workspace.querySelector(".as-warning"),submit=form.querySelector(".as-submit");
+  const total=Number(form.dataset.duration||40)*60,min=Number(form.dataset.min||250),max=Number(form.dataset.max||350);let started=0,locked=false,expired=false;
+  const words=()=>area.value.trim()?area.value.trim().split(/\s+/).length:0;
+  const warn=message=>{warning.textContent=message;warning.hidden=false;};
+  function updateCount(){let n=words();if(n>max){area.value=area.value.trim().split(/\s+/).slice(0,max).join(" ");n=max;}count.innerHTML=n+' <em style="font-size:13px;font-style:normal">/ '+max+'</em>';bar.style.width=Math.min(100,n/max*100)+"%";}
+  async function pasteAttempt(){const data=new FormData();data.append("csrfmiddlewaretoken",csrf.value);data.append("action","track_assignment_paste");data.append("submission_id",subId.value);try{const response=await fetch(location.pathname,{method:"POST",body:data,credentials:"same-origin"}),result=await response.json();warn(result.message||"Copy/paste is not allowed.");if(result.locked){locked=true;area.disabled=true;submit.disabled=true;start.disabled=true;}}catch(error){warn("Paste is blocked. Please type your answer directly.");}}
+  function tick(){if(!started||locked||expired)return;const left=Math.max(0,total-Math.floor((Date.now()-started)/1000));timer.textContent=String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");if(left<=0){expired=true;area.readOnly=true;warn("Time is over. Your assignment is being submitted.");form.requestSubmit();}}
+  start.addEventListener("click",async()=>{start.disabled=true;const data=new FormData(form);data.set("action","start_assignment");try{const response=await fetch(location.pathname,{method:"POST",body:data,credentials:"same-origin"}),result=await response.json();if(!response.ok||!result.ok)throw new Error(result.message||"Unable to start assignment.");subId.value=result.submission_id;action.value="submit_assignment";started=Date.now();workspace.hidden=false;area.disabled=false;area.value=result.answer_text||"";start.textContent="Assignment Started";warn("Timer started. Please type your answer directly.");updateCount();tick();const clock=setInterval(()=>{tick();if(expired||locked)clearInterval(clock);},1000);}catch(error){start.disabled=false;alert(error.message);}});
+  area.addEventListener("paste",event=>{event.preventDefault();pasteAttempt();});area.addEventListener("drop",event=>{event.preventDefault();pasteAttempt();});area.addEventListener("input",updateCount);
+  form.addEventListener("submit",event=>{if(!subId.value){event.preventDefault();alert("Start the assignment first.");return;}if(locked){event.preventDefault();return;}if(!expired&&words()<min){event.preventDefault();alert("Please write at least "+min+" words before submitting.");return;}});
+  updateCount();
+ });
+})();
+</script>
+{% endblock %}
