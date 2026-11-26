@@ -109,7 +109,7 @@ def ielts_learning(request):
                 messages.error(request, "Enter your name and provide written work or attach a file.")
             elif uploaded and uploaded.size > 10 * 1024 * 1024:
                 messages.error(request, "The attachment must be 10 MB or smaller.")
-            elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg"):
+            elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".docx", ".png", ".jpg", ".jpeg"):
                 messages.error(request, "Please upload a PDF, Word document or image file.")
             else:
                 extracted_text = ""
@@ -128,7 +128,7 @@ def ielts_learning(request):
                 assessment = score_assignment(assignment.title, assignment.instructions, final_answer) if final_answer else {
                     "status": "extraction_failed", "notice": extraction_error or "No readable text was found."
                 }
-                if extraction_error and not extracted_text:
+                if extraction_error and not extracted_text and not answer_text:
                     assessment = {"status": "extraction_failed", "notice": extraction_error}
                 submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name,
