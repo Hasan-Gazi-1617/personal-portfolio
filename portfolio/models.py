@@ -1,4 +1,5 @@
 from datetime import timedelta
+import uuid
 
 from django.conf import settings
 from django.core.validators import RegexValidator
@@ -296,3 +297,150 @@ class OLTEvent(models.Model):
 
     def __str__(self):
         return f"{self.olt.name} {self.onu_id}: {self.event_type} at {self.occurred_at}"
+
+
+# Public IELTS learning hub content. Owner-managed through the private portfolio panel.
+class IELTSNotice(models.Model):
+    title = models.CharField(max_length=180)
+    message = models.TextField()
+    is_published = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return self.title
+
+
+class IELTSMaterial(models.Model):
+    class Category(models.TextChoices):
+        GENERAL = "general", "General"
+        GRAMMAR = "grammar", "Grammar"
+        SPEAKING = "speaking", "Speaking"
+        WRITING = "writing", "Writing"
+        READING = "reading", "Reading"
+        LISTENING = "listening", "Listening"
+
+    title = models.CharField(max_length=180)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=16, choices=Category.choices, default=Category.GENERAL)
+    resource_url = models.URLField(blank=True)
+    file = models.FileField(upload_to="ielts/materials/", blank=True)
+    is_published = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("category", "-created_at")
+
+    def __str__(self):
+        return self.title
+
+
+class IELTSLesson(models.Model):
+    title = models.CharField(max_length=180)
+    skill = models.CharField(max_length=16, choices=IELTSMaterial.Category.choices, default=IELTSMaterial.Category.GENERAL)
+    summary = models.CharField(max_length=280, blank=True)
+    content = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("order", "title")
+
+    def __str__(self):
+        return self.title
+
+
+class IELTSPracticeSet(models.Model):
+    class Skill(models.TextChoices):
+        READING = "reading", "Reading"
+        WRITING = "writing", "Writing"
+        SPEAKING = "speaking", "Speaking"
+        LISTENING = "listening", "Listening"
+
+    title = models.CharField(max_length=180)
+    skill = models.CharField(max_length=12, choices=Skill.choices, db_index=True)
+    instructions = models.TextField(blank=True)
+    time_minutes = models.PositiveSmallIntegerField(default=20)
+    # Admin supplies original IELTS-style questions and answer keys as JSON.
+    questions = models.JSONField(default=list, blank=True)
+    is_published = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("skill", "-created_at")
+
+    def __str__(self):
+        return f"{self.get_skill_display()} · {self.title}"
+
+
+class IELTSPracticeAttempt(models.Model):
+    practice = models.ForeignKey(IELTSPracticeSet, on_delete=models.CASCADE, related_name="attempts")
+    student_name = models.CharField(max_length=100)
+    student_roll = models.CharField(max_length=40, blank=True)
+    answers = models.JSONField(default=dict)
+    objective_score = models.PositiveSmallIntegerField(null=True, blank=True)
+    total_objective = models.PositiveSmallIntegerField(null=True, blank=True)
+    ai_score = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    ai_feedback = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-submitted_at",)
+
+    def __str__(self):
+        return f"{self.student_name} · {self.practice.title}"
+
+
+class IELTSAttendance(models.Model):
+    class_date = models.DateField(db_index=True)
+    batch = models.CharField(max_length=100, default="IELTS")
+    topic = models.CharField(max_length=180, blank=True)
+    # Entries contain only student display name/roll and attendance status.
+    roster = models.JSONField(default=list, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-class_date", "batch")
+        constraints = [models.UniqueConstraint(fields=("class_date", "batch"), name="unique_ielts_attendance_batch_date")]
+
+    def __str__(self):
+        return f"{self.batch} · {self.class_date}"
+
+
+class IELTSAssignment(models.Model):
+    title = models.CharField(max_length=180)
+    instructions = models.TextField()
+    deadline = models.DateTimeField(null=True, blank=True)
+    is_published = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return self.title
+
+
+class IELTSAssignmentSubmission(models.Model):
+    receipt_code = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    assignment = models.ForeignKey(IELTSAssignment, on_delete=models.CASCADE, related_name="submissions")
+    student_name = models.CharField(max_length=100)
+    student_roll = models.CharField(max_length=40, blank=True)
+    answer_text = models.TextField(blank=True)
+    file = models.FileField(upload_to="ielts/assignments/", blank=True)
+    teacher_feedback = models.TextField(blank=True)
+    # Admin marks individual answer fragments: [{"text": "...", "correct": true}, ...]
+    marked_fragments = models.JSONField(default=list, blank=True)
+    score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-submitted_at",)
+
+    def __str__(self):
+        return f"{self.student_name} · {self.assignment.title}"
