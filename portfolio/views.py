@@ -402,21 +402,33 @@ def student_register(request):
 
 
 def student_login(request):
-    if request.user.is_authenticated and hasattr(request.user, "student_profile"):
+    if request.user.is_authenticated and StudentProfile.objects.filter(user=request.user, is_active=True).exists():
         return redirect("student_dashboard")
+
     if request.method == "POST":
         email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
         User = get_user_model()
-        account = User.objects.filter(email__iexact=email, is_active=True).first()
-        user = authenticate(request, username=account.get_username(), password=password) if account else None
-        if user:
-            profile = StudentProfile.objects.filter(user=user, is_active=True).first()
+
+        # Registration stores the email as both username and email. Look up
+        # either field so existing accounts remain usable if their username
+        # was changed independently of their email address.
+        account = User.objects.filter(is_active=True).filter(
+            Q(email__iexact=email) | Q(username__iexact=email)
+        ).order_by("pk").first()
+
+        # Verify the stored password directly. This keeps student sign-in
+        # aligned with the self-registration flow and avoids a mismatch
+        # between email lookup and a configured authentication backend.
+        if account and account.check_password(password):
+            profile = StudentProfile.objects.filter(user=account, is_active=True).first()
             if profile:
-                login(request, user)
+                login(request, account, backend="django.contrib.auth.backends.ModelBackend")
                 request.session.cycle_key()
                 return redirect("student_dashboard")
+
         messages.error(request, "Email or password is incorrect, or your student account is inactive.")
+
     return render(request, "students/student_login.html")
 
 
