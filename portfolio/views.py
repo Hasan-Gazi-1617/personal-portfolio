@@ -19,7 +19,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
-from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission
+from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission, IELTSStudent, CourseAttendance
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -39,6 +39,117 @@ def _owner_can_manage_tki(request):
 
 def home(request):
     return render(request, "home.html")
+
+
+
+
+COURSE_MODULES = {
+    "IELTS": [
+        "Listening",
+        "Reading",
+        "Writing",
+        "Speaking",
+        "Lexical Resources"
+    ],
+    "Language Testing": [
+        "Listening",
+        "Reading",
+        "Writing",
+        "Speaking",
+        "Lexical Resources",
+        "Grammatical Theory"
+    ],
+    "Programming": [
+        "C",
+        "C++",
+        "C#",
+        "Java",
+        "Python",
+        "Ruby",
+        "Fortran",
+        "Golang"
+    ],
+    "CSE Course": [
+        "Structured Programming",
+        "Object-Oriented Programming",
+        "Data Structures",
+        "Algorithms",
+        "Discrete Mathematics",
+        "Digital Logic Design",
+        "Computer Organization and Architecture",
+        "Database Management Systems",
+        "Operating Systems",
+        "Computer Networks",
+        "Data Communication",
+        "Software Engineering",
+        "Web Engineering",
+        "Artificial Intelligence",
+        "Machine Learning",
+        "Compiler Design",
+        "Theory of Computation",
+        "Microprocessors and Assembly Language",
+        "Computer Graphics",
+        "Information Security",
+        "Cyber Security",
+        "Distributed Systems",
+        "Cloud Computing",
+        "Human-Computer Interaction",
+        "Numerical Methods",
+        "Linear Algebra",
+        "Calculus",
+        "Probability and Statistics"
+    ],
+    "School Academy": [
+        "General Science",
+        "Mathematics",
+        "Chemistry",
+        "Physics",
+        "Biology",
+        "ICT"
+    ],
+    "College Academy": [
+        "Mathematics",
+        "Physics",
+        "Chemistry",
+        "ICT"
+    ],
+    "Undergraduate Courses": [
+        "Calculus",
+        "Linear Algebra",
+        "Differential Equations",
+        "Probability and Statistics",
+        "Physics",
+        "Chemistry",
+        "Economics",
+        "Academic English",
+        "Research Methodology",
+        "Introduction to Programming",
+        "Database Systems",
+        "Computer Networks"
+    ],
+    "BCS": [
+        "Bangladesh Affairs",
+        "International Affairs",
+        "Bangla Language and Literature",
+        "English Language and Literature",
+        "Mathematical Reasoning",
+        "Mental Ability",
+        "General Science",
+        "Computer and ICT",
+        "Geography, Environment and Disaster Management",
+        "Ethics, Values and Good Governance"
+    ]
+}
+
+
+def _parse_attendance_time(post, prefix):
+    hour = int(post.get(prefix + "_hour", "0"))
+    minute = int(post.get(prefix + "_minute", "0"))
+    period = post.get(prefix + "_period", "AM").upper()
+    if hour < 1 or hour > 12 or minute < 0 or minute > 59 or period not in {"AM", "PM"}:
+        raise ValueError("Choose a valid 12-hour time.")
+    hour = hour % 12 + (12 if period == "PM" else 0)
+    return datetime.strptime(f"{hour:02d}:{minute:02d}", "%H:%M").time()
 
 
 def ielts_learning(request):
@@ -72,6 +183,11 @@ def ielts_learning(request):
         "lessons": IELTSLesson.objects.filter(is_published=True),
         "practice_sets": IELTSPracticeSet.objects.filter(is_published=True),
         "attendance": IELTSAttendance.objects.all()[:20],
+        "students": IELTSStudent.objects.filter(is_active=True),
+        "selected_student": request.GET.get("student", ""),
+        "selected_module": request.GET.get("module", ""),
+        "student_modules": list(CourseAttendance.objects.filter(student_id=request.GET.get("student", "")).values_list("module_name", flat=True).distinct()) if request.GET.get("student", "").isdigit() else [],
+        "student_attendance": CourseAttendance.objects.filter(student_id=request.GET.get("student", "")).select_related("student")[:100] if request.GET.get("student", "").isdigit() else [],
         "assignments": IELTSAssignment.objects.filter(is_published=True),
     }
     return render(request, "students/ielts.html", context)
@@ -189,23 +305,38 @@ def ielts_admin_panel(request):
                     messages.success(request, "Timed practice set published.")
             except (ValueError, TypeError, json.JSONDecodeError):
                 messages.error(request, "Practice questions must be valid JSON in a list.")
+        elif action == "add_student":
+            name = request.POST.get("student_name", "").strip()[:120]
+            roll = request.POST.get("student_roll", "").strip()[:40]
+            if name:
+                IELTSStudent.objects.get_or_create(name=name, defaults={"roll": roll})
+                messages.success(request, "Student added to the student list.")
+                return redirect("/students/ielts/admin/#attendance")
+            else:
+                messages.error(request, "Enter a student name.")
         elif action == "attendance":
             try:
                 class_date = datetime.strptime(request.POST.get("class_date", ""), "%Y-%m-%d").date()
-                batch = request.POST.get("batch", "IELTS").strip()[:100] or "IELTS"
-                roster = []
-                for line in request.POST.get("roster", "").splitlines():
-                    parts = [part.strip() for part in line.split("|", 2)]
-                    if len(parts) >= 2 and parts[1]:
-                        roster.append({"roll": parts[0][:40], "name": parts[1][:100],
-                                      "status": parts[2].lower() if len(parts) > 2 and parts[2].lower() in {"present", "absent", "late"} else "present"})
-                IELTSAttendance.objects.update_or_create(
-                    class_date=class_date, batch=batch,
-                    defaults={"topic": request.POST.get("topic", "")[:180], "roster": roster},
+                student = get_object_or_404(IELTSStudent, pk=request.POST.get("student_id"), is_active=True)
+                course_name = request.POST.get("course_name", "")
+                module_name = request.POST.get("module_name", "").strip()
+                if course_name not in COURSE_MODULES or module_name not in COURSE_MODULES[course_name]:
+                    raise ValueError("Choose a valid course and module.")
+                sign_in = _parse_attendance_time(request.POST, "sign_in")
+                sign_out = _parse_attendance_time(request.POST, "sign_out")
+                start_minutes = sign_in.hour * 60 + sign_in.minute
+                end_minutes = sign_out.hour * 60 + sign_out.minute
+                if end_minutes <= start_minutes:
+                    raise ValueError("Sign Out must be later than Sign In.")
+                CourseAttendance.objects.create(
+                    student=student, class_date=class_date, course_name=course_name,
+                    module_name=module_name, sign_in=sign_in, sign_out=sign_out,
+                    duration_minutes=end_minutes - start_minutes,
                 )
-                messages.success(request, "Attendance sheet saved.")
-            except ValueError:
-                messages.error(request, "Choose a valid class date.")
+                messages.success(request, "Attendance saved successfully.")
+            except (ValueError, TypeError):
+                messages.error(request, "Check the date, student, course, module and time fields.")
+            return redirect("/students/ielts/admin/#attendance")
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
@@ -231,6 +362,10 @@ def ielts_admin_panel(request):
         "lessons": IELTSLesson.objects.all()[:20],
         "practice_sets": IELTSPracticeSet.objects.all()[:20],
         "attendance": IELTSAttendance.objects.all()[:20],
+        "students": IELTSStudent.objects.filter(is_active=True),
+        "course_modules_json": json.dumps(COURSE_MODULES),
+        "course_choices": CourseAttendance.COURSE_CHOICES,
+        "course_attendance": CourseAttendance.objects.select_related("student")[:100],
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
     })
 
