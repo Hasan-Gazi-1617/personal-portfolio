@@ -42,57 +42,65 @@ for model, singular, plural in (
 
 @admin.register(IELTSNotice)
 class IELTSNoticeAdmin(admin.ModelAdmin):
-    list_display = ("title", "is_published", "created_at")
-    list_filter = ("is_published", "created_at")
+    list_display = ("title", "course", "is_published", "created_at")
+    list_filter = ("course", "is_published", "created_at")
     search_fields = ("title", "message")
 
 
 @admin.register(IELTSMaterial)
 class IELTSMaterialAdmin(admin.ModelAdmin):
-    list_display = ("title", "category", "is_published", "created_at")
-    list_filter = ("category", "is_published")
+    list_display = ("title", "course", "category", "is_published", "created_at")
+    list_filter = ("course", "category", "is_published")
     search_fields = ("title", "description")
 
 
 @admin.register(IELTSLesson)
 class IELTSLessonAdmin(admin.ModelAdmin):
-    list_display = ("title", "skill", "order", "is_published")
-    list_filter = ("skill", "is_published")
+    list_display = ("title", "course", "skill", "order", "is_published")
+    list_filter = ("course", "skill", "is_published")
     search_fields = ("title", "content")
 
 
 @admin.register(IELTSPracticeSet)
 class IELTSPracticeSetAdmin(admin.ModelAdmin):
-    list_display = ("title", "skill", "time_minutes", "is_published")
-    list_filter = ("skill", "is_published")
+    list_display = ("title", "course", "skill", "time_minutes", "is_published")
+    list_filter = ("course", "skill", "is_published")
     search_fields = ("title",)
-    fields = ("title", "skill", "instructions", "time_minutes", "questions", "is_published")
+    fields = ("title", "course", "skill", "instructions", "time_minutes", "questions", "is_published")
 
 
 @admin.register(IELTSPracticeAttempt)
 class IELTSPracticeAttemptAdmin(admin.ModelAdmin):
-    list_display = ("student_name", "student_roll", "practice", "objective_score", "ai_score", "submitted_at")
-    list_filter = ("practice__skill", "submitted_at")
+    list_display = ("student_name", "student_roll", "practice", "course_display", "objective_score", "ai_score", "submitted_at")
+    list_filter = ("practice__course", "practice__skill", "submitted_at")
     search_fields = ("student_name", "student_roll", "practice__title")
-    readonly_fields = ("practice", "student_name", "student_roll", "answers", "objective_score", "total_objective", "submitted_at")
+    readonly_fields = ("practice", "student_profile", "student_name", "student_roll", "answers", "objective_score", "total_objective", "submitted_at")
+
+    @admin.display(description="Course")
+    def course_display(self, obj):
+        return obj.practice.course
 
 
  
 
 @admin.register(IELTSAssignment)
 class IELTSAssignmentAdmin(admin.ModelAdmin):
-    list_display = ("title", "deadline", "is_published", "created_at")
-    list_filter = ("is_published",)
+    list_display = ("title", "course", "deadline", "is_published", "created_at")
+    list_filter = ("course", "is_published")
     search_fields = ("title", "instructions")
 
 
 @admin.register(IELTSAssignmentSubmission)
 class IELTSAssignmentSubmissionAdmin(admin.ModelAdmin):
-    list_display = ("student_name", "student_roll", "student_profile", "assignment", "score", "reviewed_at", "submitted_at")
-    list_filter = ("assignment", "reviewed_at", "student_profile__course")
+    list_display = ("student_name", "student_roll", "student_profile", "assignment", "course_display", "score", "reviewed_at", "submitted_at")
+    list_filter = ("assignment__course", "assignment", "reviewed_at")
     search_fields = ("student_name", "student_roll", "assignment__title", "student_profile__name", "student_profile__user__username")
     fields = ("student_profile", "assignment", "student_name", "student_roll", "answer_text", "file", "teacher_feedback", "marked_fragments", "score", "reviewed_at", "submitted_at")
     readonly_fields = ("submitted_at",)
+
+    @admin.display(description="Course")
+    def course_display(self, obj):
+        return obj.assignment.course
 
 
 @admin.register(StudentProfile)
