@@ -104,9 +104,20 @@ def ielts_learning(request):
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             student_name = request.POST.get("student_name", "").strip()[:100]
             answer_text = request.POST.get("answer_text", "").strip()
+            words = len(answer_text.split())
+            try:
+                elapsed_seconds = max(0, int(request.POST.get("writing_elapsed_seconds", "0") or 0))
+            except (TypeError, ValueError):
+                elapsed_seconds = 0
             uploaded = request.FILES.get("submission_file")
             if not student_name or (not answer_text and not uploaded):
                 messages.error(request, "Enter your name and provide written work or attach a file.")
+            elif answer_text and words < assignment.min_words:
+                messages.error(request, f"This task requires at least {assignment.min_words} words. Your answer has {words}.")
+            elif answer_text and words > assignment.max_words:
+                messages.error(request, f"The maximum word count is {assignment.max_words}. Your answer has {words}.")
+            elif answer_text and elapsed_seconds > assignment.time_minutes * 60 + 15:
+                messages.error(request, "The writing time has ended. Please submit within the assignment timer.")
             elif uploaded and uploaded.size > 10 * 1024 * 1024:
                 messages.error(request, "The attachment must be 10 MB or smaller.")
             elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".docx", ".png", ".jpg", ".jpeg"):
@@ -117,7 +128,8 @@ def ielts_learning(request):
                 submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name,
                     student_roll=request.POST.get("student_roll", "").strip()[:40],
-                    answer_text=answer_text, file=uploaded,
+                    answer_text=answer_text, word_count=words,
+                    elapsed_seconds=elapsed_seconds, file=uploaded,
                 )
                 receipts = request.session.get("ielts_submission_receipts", [])
                 receipts = [code for code in receipts if code != str(submission.receipt_code)]
@@ -250,9 +262,15 @@ def ielts_admin_panel(request):
         elif action == "assignment":
             title = request.POST.get("title", "").strip()[:180]
             instructions = request.POST.get("instructions", "").strip()
+            try:
+                duration = max(1, min(180, int(request.POST.get("time_minutes", 40))))
+                min_words = max(1, min(5000, int(request.POST.get("min_words", 250))))
+                max_words = max(min_words, min(5000, int(request.POST.get("max_words", 350))))
+            except (TypeError, ValueError):
+                duration, min_words, max_words = 40, 250, 350
             if title and instructions:
-                IELTSAssignment.objects.create(title=title, instructions=instructions, is_published=True)
-                messages.success(request, "Assignment published.")
+                IELTSAssignment.objects.create(title=title, instructions=instructions, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                messages.success(request, "IELTS timed writing assignment published.")
         elif action == "material":
             title = request.POST.get("title", "").strip()[:180]
             if title:
