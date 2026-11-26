@@ -711,11 +711,25 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                     <a class="nav-link" href="{% url 'books:library' %}"><i class="bi bi-book nav-item-icon" aria-hidden="true"></i><span>Book Library</span></a>
                 </li>
 
-                <!-- Student Login is a direct top-level link until authenticated -->
-                {% if request.user.is_authenticated and request.user.student_profile.is_active %}
-                <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" id="studentAccountMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-mortarboard nav-item-icon"></i><span>Student Login</span></a><ul class="dropdown-menu" aria-labelledby="studentAccountMenu"><li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Dashboard</span></a></li><li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li></ul></li>
-                {% else %}<li class="nav-item"><a class="nav-link" href="{% url 'student_login' %}"><i class="bi bi-mortarboard nav-item-icon"></i><span>Student Login</span></a></li>{% endif %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'ielts_learning' %}"><i class="bi bi-translate nav-item-icon"></i><span>IELTS Learning</span></a></li>
+                <li class="nav-item dropdown students-dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon"></i><span>Student Forum</span></a>
+                    <ul class="dropdown-menu" aria-labelledby="studentForumMenu">
+                        {% if request.user.is_authenticated %}
+                        <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Dashboard</span></a></li>
+                        <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="bi bi-box-arrow-in-right"></i><span>Student Login</span></a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-submenu"><a class="dropdown-item dropdown-toggle submenu-toggle" href="#" aria-expanded="false"><i class="bi bi-mortarboard"></i><span>Learning House</span></a>
+                            <ul class="dropdown-menu submenu-menu">
+                                <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_course' 'bcs' %}"><i class="bi bi-journal-check"></i><span>BCS</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_course' 'computer-science' %}"><i class="bi bi-cpu"></i><span>Computer Science</span></a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
 {% if not request.session.owner_access %}
                 <!-- ADMIN VIEW -->
                 <li class="nav-item">
