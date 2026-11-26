@@ -330,6 +330,12 @@ def ielts_admin_panel(request):
                     raise ValueError("Marking must be a list.")
                 raw_score = request.POST.get("score", "").strip()
                 submission.score = float(raw_score) if raw_score else None
+                for field in ("task_response_band", "coherence_cohesion_band", "lexical_resource_band", "grammatical_range_band"):
+                    raw_band = request.POST.get(field, "").strip()
+                    band_value = float(raw_band) if raw_band else None
+                    if band_value is not None and (band_value < 0 or band_value > 9 or band_value * 2 != int(band_value * 2)):
+                        raise ValueError("IELTS criterion bands must be between 0 and 9 in 0.5 steps.")
+                    setattr(submission, field, band_value)
                 submission.marked_fragments = fragments
                 submission.teacher_feedback = request.POST.get("teacher_feedback", "").strip()
                 submission.reviewed_at = timezone.now()
