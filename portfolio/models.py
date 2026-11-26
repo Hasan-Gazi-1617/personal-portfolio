@@ -301,6 +301,7 @@ class OLTEvent(models.Model):
 
 # Public IELTS learning hub content. Owner-managed through the private portfolio panel.
 class IELTSNotice(models.Model):
+    student = models.ForeignKey("attendance.StudentProfile", null=True, blank=True, on_delete=models.CASCADE, related_name="personal_notices", help_text="Leave empty to publish to all students in the selected course")
     course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
     title = models.CharField(max_length=180)
     message = models.TextField()
