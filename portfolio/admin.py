@@ -86,3 +86,18 @@ class IELTSAssignmentSubmissionAdmin(admin.ModelAdmin):
     search_fields = ("student_name", "student_roll", "assignment__title")
     fields = ("assignment", "student_name", "student_roll", "answer_text", "file", "teacher_feedback", "marked_fragments", "score", "reviewed_at", "submitted_at")
     readonly_fields = ("submitted_at",)
+
+
+@admin.register(IELTSStudent)
+class IELTSStudentAdmin(admin.ModelAdmin):
+    list_display = ("name", "roll", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("name", "roll")
+
+
+@admin.register(CourseAttendance)
+class CourseAttendanceAdmin(admin.ModelAdmin):
+    list_display = ("student", "class_date", "course_name", "module_name", "sign_in", "sign_out", "duration_minutes")
+    list_filter = ("course_name", "class_date")
+    search_fields = ("student__name", "student__roll", "module_name")
+    readonly_fields = ("duration_minutes",)
