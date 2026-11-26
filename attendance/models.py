@@ -35,6 +35,26 @@ class StudentProfile(models.Model):
         return f"{self.name} ({self.roll or 'No roll'}) · {self.course}"
 
 
+class StudentCourse(models.Model):
+    """A course enrolment attached to one student login/profile."""
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="course_enrollments")
+    course = models.CharField(max_length=40, choices=StudentProfile.COURSE_CHOICES)
+    modules = models.JSONField(default=list, help_text="Modules assigned for this course")
+    joining_date = models.DateField(null=True, blank=True)
+    course_finish_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("course",)
+        constraints = [
+            models.UniqueConstraint(fields=("student", "course"), name="unique_student_course_enrollment")
+        ]
+
+    def __str__(self):
+        return f"{self.student.name} · {self.course}"
+
+
 class AttendanceRecord(models.Model):
     class Period(models.TextChoices):
         AM = "AM", "AM"
