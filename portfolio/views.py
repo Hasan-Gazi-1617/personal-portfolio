@@ -89,8 +89,8 @@ def ielts_learning(request):
     profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
     enrollments = _student_course_enrollments(profile) if profile else []
     enrolled_courses = {item.course for item in enrollments}
-    if not profile or not enrolled_courses.intersection({"IELTS", "Language Testing"}):
-        return render(request, "students/course_access.html", {"subject": {"title": "IELTS"}, "authorized": False}, status=403)
+    if not profile or not enrolled_courses:
+        return render(request, "students/course_access.html", {"subject": {"title": "Student Portal"}, "authorized": False}, status=403)
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action == "attendance_clock":
@@ -229,15 +229,15 @@ def ielts_learning(request):
         "materials": IELTSMaterial.objects.filter(course__in=enrolled_courses, is_published=True),
         "lessons": IELTSLesson.objects.filter(course__in=enrolled_courses, is_published=True),
         "practice_sets": IELTSPracticeSet.objects.filter(course__in=enrolled_courses, is_published=True),
-        "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student")[:300],
-        "attendance_students": StudentProfile.objects.filter(is_active=True),
+        "attendance_records": AttendanceRecord.objects.filter(student=profile).select_related("student")[:300],
+        "attendance_students": StudentProfile.objects.filter(pk=profile.pk, is_active=True),
         "open_attendance": [
             {
                 "student_id": row.student_id, "class_date": row.class_date.isoformat(),
                 "course_name": row.course_name, "module_name": row.module_name,
                 "period": row.period, "sign_in": row.sign_in.strftime("%H:%M"),
             }
-            for row in AttendanceRecord.objects.filter(sign_in__isnull=False, sign_out__isnull=True).select_related("student")
+            for row in AttendanceRecord.objects.filter(student=profile, sign_in__isnull=False, sign_out__isnull=True).select_related("student")
         ],
         "course_modules": COURSE_MODULES,
         "course_student_data": [{"name": row.student.name, "roll": row.student.roll, "course": row.course, "modules": row.modules or []} for row in StudentCourse.objects.filter(student__is_active=True, is_active=True).select_related("student")],
@@ -252,7 +252,7 @@ def ielts_learning(request):
         } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
-        "assignments": IELTSAssignment.objects.filter(is_published=True),
+        "assignments": IELTSAssignment.objects.filter(course__in=enrolled_courses, is_published=True),
         "my_submissions": IELTSAssignmentSubmission.objects.filter(receipt_code__in=request.session.get("ielts_submission_receipts", [])).select_related("assignment").order_by("-submitted_at"),
     }
     return render(request, "students/ielts.html", context)
@@ -382,6 +382,8 @@ def student_dashboard(request):
         "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True)[:100],
         "materials": IELTSMaterial.objects.filter(course__in=courses, is_published=True)[:100],
         "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
+        "assignments": IELTSAssignment.objects.filter(course__in=courses, is_published=True)[:100],
+        "practice_sets": IELTSPracticeSet.objects.filter(course__in=courses, is_published=True)[:100],
     })
 
 
