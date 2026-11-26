@@ -83,7 +83,8 @@ def attendance_admin(request):
             if not name or course not in COURSE_MODULES or not modules or any(m not in COURSE_MODULES[course] for m in modules):
                 messages.error(request, "Enter a student name, valid course and at least one valid assigned module.")
             else:
-                StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
+                profile, _ = StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
+                StudentCourse.objects.update_or_create(student=profile, course=course, defaults={"modules": modules, "is_active": True})
                 messages.success(request, f"Student profile saved: {name}.")
         elif action == "manual_attendance":
             try:
@@ -91,11 +92,13 @@ def attendance_admin(request):
                 class_date = datetime.strptime(request.POST.get("class_date", ""), "%Y-%m-%d").date()
                 period = request.POST.get("period")
                 module = request.POST.get("module", "")
-                if period not in AttendanceRecord.Period.values or module not in student.modules:
+                course = request.POST.get("course", "")
+                enrollment = StudentCourse.objects.filter(student=student, course=course, is_active=True).first()
+                if period not in AttendanceRecord.Period.values or not enrollment or module not in enrollment.modules:
                     raise ValueError
                 AttendanceRecord.objects.create(
                     class_date=class_date, student=student, period=period,
-                    course_name=student.course, module_name=module,
+                    course_name=course, module_name=module,
                     sign_in=datetime.strptime(request.POST["sign_in"], "%H:%M").time() if request.POST.get("sign_in") else None,
                     sign_out=datetime.strptime(request.POST["sign_out"], "%H:%M").time() if request.POST.get("sign_out") else None,
                 )
@@ -112,4 +115,5 @@ def attendance_admin(request):
     return render(request, "attendance/admin.html", {
         "students": StudentProfile.objects.all(), "active_students": StudentProfile.objects.filter(is_active=True),
         "records": records, "course_modules": COURSE_MODULES, "today": timezone.localdate(),
+        "attendance_enrollment_data": [{"student_id": row.student_id, "course": row.course, "modules": row.modules or []} for row in StudentCourse.objects.filter(student__is_active=True, is_active=True)],
     })
