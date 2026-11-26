@@ -387,7 +387,7 @@ def student_register(request):
                         student=profile, course=selected_course,
                         modules=modules, is_active=True,
                     )
-                messages.success(request, "Registration successful! You can now log in using your email and password.")
+                messages.success(request, f"Registration successful, {name.strip().split()[0]}! Please log in using your email and password.")
                 return redirect("student_login")
             except Exception:
                 logger.exception("Student self-registration failed")
@@ -434,6 +434,50 @@ def _student_course_enrollments(profile):
     return enrollments
 
 
+@require_http_methods(["GET", "POST"])
+def student_profile(request):
+    if not request.user.is_authenticated:
+        return redirect("student_login")
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
+    if not profile:
+        return redirect("student_login")
+    errors = []
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()[:120]
+        roll = request.POST.get("roll", "").strip()[:40]
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
+        User = get_user_model()
+        if not name:
+            errors.append("Please enter your full name.")
+        if not email or "@" not in email or len(email) > 150:
+            errors.append("Please enter a valid email address.")
+        elif User.objects.filter(email__iexact=email).exclude(pk=request.user.pk).exists():
+            errors.append("This email is already used by another account.")
+        elif User.objects.filter(username__iexact=email).exclude(pk=request.user.pk).exists():
+            errors.append("This email cannot be used as a login name.")
+        if password:
+            try:
+                validate_password(password, request.user)
+            except ValidationError as exc:
+                errors.extend(exc.messages)
+        if not errors:
+            with transaction.atomic():
+                request.user.email = email
+                request.user.username = email
+                if password:
+                    request.user.set_password(password)
+                request.user.save()
+                profile.name = name
+                profile.roll = roll
+                profile.save()
+            if password:
+                login(request, request.user)
+            messages.success(request, "Your profile information has been updated.")
+            return redirect("student_profile")
+    return render(request, "students/student_profile.html", {"student": profile, "errors": errors})
+
+
 def student_dashboard(request):
     if not request.user.is_authenticated:
         return redirect("student_login")
@@ -446,6 +490,7 @@ def student_dashboard(request):
     courses = [item.course for item in enrollments]
     return render(request, "students/student_dashboard.html", {
         "student": profile,
+        "student_first_name": profile.name.strip().split()[0] if profile.name.strip() else "Student",
         "course_enrollments": enrollments,
         "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
         "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment")[:100],
