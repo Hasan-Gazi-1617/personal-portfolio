@@ -309,6 +309,14 @@ def ielts_practice(request, pk):
 
 def ielts_submission_receipt(request, receipt_code):
     submission = get_object_or_404(IELTSAssignmentSubmission.objects.select_related("assignment"), receipt_code=receipt_code)
+    if request.session.get("owner_access"):
+        pass
+    elif request.user.is_authenticated:
+        profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
+        if not profile or submission.student_profile_id != profile.pk:
+            return HttpResponse("This submission belongs to another student account.", status=403)
+    elif str(receipt_code) not in request.session.get("ielts_submission_receipts", []):
+        return HttpResponse("This private submission link is not available in this browser session.", status=403)
     return render(request, "students/ielts_submission_receipt.html", {"submission": submission})
 
 
@@ -427,10 +435,11 @@ def ielts_admin_panel(request):
                 duration, min_words, max_words = 40, 250, 350
             if title and instructions:
                 course = request.POST.get("course", "")
-                if course not in COURSE_MODULES:
-                    raise ValueError("Select a valid course for this assignment.")
-                IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
-                messages.success(request, f"{course} assignment published.")
+                if course in COURSE_MODULES:
+                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                    messages.success(request, f"{course} assignment published.")
+                else:
+                    messages.error(request, "Select a valid course for this assignment.")
         elif action == "material":
             title = request.POST.get("title", "").strip()[:180]
             if title and request.POST.get("course") in COURSE_MODULES:
@@ -703,6 +712,9 @@ def ielts_admin_panel(request):
 
 def ielts_material_download(request, pk):
     material = get_object_or_404(IELTSMaterial, pk=pk, is_published=True)
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+    if not profile or material.course not in {item.course for item in _student_course_enrollments(profile)}:
+        return HttpResponse("This material is not available in your enrolled courses.", status=403)
     if not material.file:
         return redirect(material.resource_url or "ielts_learning")
     return FileResponse(material.file.open("rb"), as_attachment=True, filename=material.file.name.rsplit("/", 1)[-1])
