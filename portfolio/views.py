@@ -55,8 +55,40 @@ def _student_clock_in_dhaka(request):
     return timezone.localtime(parsed)
 
 
+def student_learning_house(request):
+    """Public overview of available subjects; only aggregate enrollment counts are shown."""
+    subjects = [
+        {"slug": "ielts", "title": "IELTS", "courses": ["IELTS", "Language Testing"], "description": "English skills and IELTS preparation."},
+        {"slug": "bcs", "title": "BCS", "courses": ["BCS"], "description": "BCS preliminary and subject-wise preparation."},
+        {"slug": "computer-science", "title": "Computer Science", "courses": ["Programming", "CSE Course", "Undergraduate Courses"], "description": "Programming and core computer science learning."},
+    ]
+    for subject in subjects:
+        subject["student_count"] = StudentProfile.objects.filter(is_active=True, course__in=subject["courses"]).count()
+    return render(request, "students/learning_house.html", {"subjects": subjects})
+
+
+def student_course(request, slug):
+    """Require an active student account assigned to the selected subject."""
+    subject_map = {
+        "ielts": {"title": "IELTS", "courses": ["IELTS", "Language Testing"], "modules": ["Listening", "Reading", "Writing", "Speaking", "Lexical Resources", "Grammatical Theory"]},
+        "bcs": {"title": "BCS", "courses": ["BCS"], "modules": COURSE_MODULES["BCS"]},
+        "computer-science": {"title": "Computer Science", "courses": ["Programming", "CSE Course", "Undergraduate Courses"], "modules": sorted({m for c in ["Programming", "CSE Course", "Undergraduate Courses"] for m in COURSE_MODULES[c]})},
+    }
+    subject = subject_map.get(slug)
+    if not subject:
+        return redirect("student_learning_house")
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+    if not profile or profile.course not in subject["courses"]:
+        return render(request, "students/course_access.html", {"subject": subject, "authorized": False}, status=403)
+    classmates = StudentProfile.objects.filter(is_active=True, course__in=subject["courses"]).only("name", "course", "modules").order_by("course", "name")
+    return render(request, "students/course_access.html", {"subject": subject, "authorized": True, "student": profile, "classmates": classmates})
+
+
 def ielts_learning(request):
-    """Open the student learning portal with integrated attendance actions."""
+    """Open the IELTS portal only for currently enrolled student accounts."""
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+    if not profile or profile.course not in {"IELTS", "Language Testing"}:
+        return render(request, "students/course_access.html", {"subject": {"title": "IELTS"}, "authorized": False}, status=403)
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action == "attendance_clock":
@@ -68,7 +100,7 @@ def ielts_learning(request):
                     raise ValueError
                 with transaction.atomic():
                     student = get_object_or_404(
-                        StudentProfile.objects.select_for_update(), pk=int(request.POST.get("student_id")), is_active=True
+                        StudentProfile.objects.select_for_update(), pk=profile.pk, is_active=True
                     )
                     active = AttendanceRecord.objects.select_for_update().filter(
                         student=student, sign_in__isnull=False, sign_out__isnull=True
