@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
 from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission
+from attendance.models import AttendanceRecord, COURSE_MODULES, StudentProfile
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -42,9 +43,30 @@ def home(request):
 
 
 def ielts_learning(request):
-    """Open IELTS learning portal. Public actions are limited to submitting practice and assignments."""
+    """Open the student learning portal with integrated attendance actions."""
     if request.method == "POST":
         action = request.POST.get("action", "")
+        if action == "attendance_clock":
+            try:
+                student = get_object_or_404(StudentProfile, pk=int(request.POST.get("student_id")), is_active=True)
+                module = request.POST.get("module", "")
+                period = request.POST.get("period", "")
+                clock_action = request.POST.get("clock_action", "")
+                clock_time = datetime.strptime(request.POST.get("time_value", ""), "%H:%M").time()
+                if module not in (student.modules or []) or period not in AttendanceRecord.Period.values or clock_action not in {"sign_in", "sign_out"}:
+                    raise ValueError
+                record, _ = AttendanceRecord.objects.get_or_create(
+                    class_date=timezone.localdate(), student=student, period=period,
+                    defaults={"course_name": student.course, "module_name": module},
+                )
+                if record.module_name != module:
+                    raise ValueError
+                setattr(record, clock_action, clock_time)
+                record.save()
+                messages.success(request, f"{clock_action.replace('_', ' ').title()} saved for {student.name}.")
+            except (ValueError, TypeError):
+                messages.error(request, "Please select a valid student, assigned module, session and time.")
+            return redirect("/students/ielts/#attendance")
         if action == "submit_assignment":
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             student_name = request.POST.get("student_name", "").strip()[:100]
@@ -63,7 +85,6 @@ def ielts_learning(request):
                     answer_text=answer_text, file=uploaded,
                 )
                 return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
-
             return redirect("/students/ielts/#assignments")
 
     context = {
@@ -71,7 +92,11 @@ def ielts_learning(request):
         "materials": IELTSMaterial.objects.filter(is_published=True),
         "lessons": IELTSLesson.objects.filter(is_published=True),
         "practice_sets": IELTSPracticeSet.objects.filter(is_published=True),
-        "attendance": IELTSAttendance.objects.all()[:20],
+        "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student")[:300],
+        "attendance_students": StudentProfile.objects.filter(is_active=True),
+        "course_modules": COURSE_MODULES,
+        "today": timezone.localdate(),
+        "now_time": timezone.localtime().strftime("%H:%M"),
         "assignments": IELTSAssignment.objects.filter(is_published=True),
     }
     return render(request, "students/ielts.html", context)
@@ -206,23 +231,44 @@ def ielts_admin_panel(request):
                     messages.success(request, "Timed practice set published.")
             except (ValueError, TypeError, json.JSONDecodeError):
                 messages.error(request, "Practice questions must be valid JSON in a list.")
-        elif action == "attendance":
+        elif action == "attendance_student":
+            name = request.POST.get("name", "").strip()[:120]
+            roll = request.POST.get("roll", "").strip()[:40]
+            course = request.POST.get("course", "")
+            modules = [m for m in request.POST.getlist("modules") if m in COURSE_MODULES.get(course, [])]
+            if not name or course not in COURSE_MODULES or not modules:
+                messages.error(request, "Enter a student name, course and at least one assigned module.")
+            else:
+                StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
+                messages.success(request, f"Student profile saved for {name}.")
+        elif action in {"manual_attendance", "edit_attendance"}:
             try:
+                student = get_object_or_404(StudentProfile, pk=int(request.POST.get("student_id")), is_active=True)
                 class_date = datetime.strptime(request.POST.get("class_date", ""), "%Y-%m-%d").date()
-                batch = request.POST.get("batch", "IELTS").strip()[:100] or "IELTS"
-                roster = []
-                for line in request.POST.get("roster", "").splitlines():
-                    parts = [part.strip() for part in line.split("|", 2)]
-                    if len(parts) >= 2 and parts[1]:
-                        roster.append({"roll": parts[0][:40], "name": parts[1][:100],
-                                      "status": parts[2].lower() if len(parts) > 2 and parts[2].lower() in {"present", "absent", "late"} else "present"})
-                IELTSAttendance.objects.update_or_create(
-                    class_date=class_date, batch=batch,
-                    defaults={"topic": request.POST.get("topic", "")[:180], "roster": roster},
-                )
-                messages.success(request, "Attendance sheet saved.")
-            except ValueError:
-                messages.error(request, "Choose a valid class date.")
+                period = request.POST.get("period", "")
+                module = request.POST.get("module", "")
+                if period not in AttendanceRecord.Period.values or module not in (student.modules or []):
+                    raise ValueError
+                record = get_object_or_404(AttendanceRecord, pk=request.POST.get("attendance_id")) if action == "edit_attendance" else None
+                if record:
+                    record.student, record.class_date, record.period = student, class_date, period
+                else:
+                    record, _ = AttendanceRecord.objects.get_or_create(class_date=class_date, student=student, period=period)
+                record.course_name, record.module_name = student.course, module
+                record.sign_in = datetime.strptime(request.POST["sign_in"], "%H:%M").time() if request.POST.get("sign_in") else None
+                record.sign_out = datetime.strptime(request.POST["sign_out"], "%H:%M").time() if request.POST.get("sign_out") else None
+                record.save()
+                messages.success(request, f"Attendance {'updated' if action == 'edit_attendance' else 'saved'} for {student.name}.")
+            except (ValueError, KeyError, TypeError):
+                messages.error(request, "Check the date, student, module and time values.")
+        elif action == "delete_attendance":
+            get_object_or_404(AttendanceRecord, pk=request.POST.get("attendance_id")).delete()
+            messages.success(request, "Attendance entry deleted.")
+        elif action == "toggle_attendance_student":
+            student = get_object_or_404(StudentProfile, pk=request.POST.get("student_id"))
+            student.is_active = not student.is_active
+            student.save(update_fields=["is_active"])
+            messages.success(request, f"Student {'activated' if student.is_active else 'deactivated'}.")
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
@@ -247,7 +293,11 @@ def ielts_admin_panel(request):
         "materials": IELTSMaterial.objects.all()[:20],
         "lessons": IELTSLesson.objects.all()[:20],
         "practice_sets": IELTSPracticeSet.objects.all()[:20],
-        "attendance": IELTSAttendance.objects.all()[:20],
+        "attendance_students": StudentProfile.objects.all(),
+        "active_attendance_students": StudentProfile.objects.filter(is_active=True),
+        "attendance_records": AttendanceRecord.objects.select_related("student").all()[:300],
+        "course_modules": COURSE_MODULES,
+        "today": timezone.localdate(),
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
     })
 
