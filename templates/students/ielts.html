@@ -22,7 +22,7 @@
 <label>Student Name<select name="student_display" id="student-att-student" required><option value="">Select your name</option>{% for student in attendance_students %}<option value="{{ student.pk }}" data-course="{{ student.course }}" data-modules="{{ student.modules|join:'||' }}">{{ student.name }}{% if student.roll %} ({{ student.roll }}){% endif %}</option>{% endfor %}</select><input type="hidden" name="student_id" id="student-att-student-id"></label>
 <label>Course<input id="student-att-course" readonly placeholder="Auto-filled"></label>
 <label>Module<select name="module_display" id="student-att-module" required disabled><option value="">Select student first</option></select><input type="hidden" name="module" id="student-att-module-value"></label>
-<label>Date<input type="date" id="student-att-date" value="{{ today|date:'Y-m-d' }}" readonly></label>
+<label>Date (Your Local Date)<input type="date" id="student-att-date" value="{{ today|date:'Y-m-d' }}" readonly></label>
 <label>Session<select name="period_display" id="student-att-period"><option value="AM">AM</option><option value="PM">PM</option></select><input type="hidden" name="period" id="student-att-period-value" value="AM"></label>
 <label><span id="student-att-time-label">Sign In Time (Your Local Time)</span><input type="time" name="time_value" id="student-att-time" required></label>
 <input type="hidden" name="timestamp_local" id="student-att-timestamp">
@@ -101,10 +101,13 @@
    module.innerHTML='';
    const option=document.createElement('option');option.value=active.module_name;option.textContent=active.module_name;module.appendChild(option);
    module.value=active.module_name;moduleValue.value=active.module_name;
-   period.value=active.period;periodValue.value=active.period;date.value=active.class_date;
+   period.value=active.period;periodValue.value=active.period;
+   const signInDhaka=new Date(active.class_date+'T'+active.sign_in+':00+06:00');
+   date.value=signInDhaka.getFullYear()+'-'+pad(signInDhaka.getMonth()+1)+'-'+pad(signInDhaka.getDate());
+   const localSignInTime=pad(signInDhaka.getHours())+':'+pad(signInDhaka.getMinutes());
    student.disabled=true;module.disabled=true;period.disabled=true;
    timeLabel.textContent='Sign Out Time (Your Local Time)';
-   state.textContent='Active session: Signed in at '+active.sign_in+'. Student, course, module, date and AM/PM are locked until Sign Out.';
+   state.textContent='Active session: Signed in at '+signInDhaka.toLocaleString()+'. Student, course, module, sign-in date and AM/PM are locked until Sign Out.';
    state.hidden=false;signIn.disabled=true;signOut.disabled=false;
  }
  student.addEventListener('change',()=>{fillModules();applySession();});
@@ -114,7 +117,11 @@
    const submitter=event.submitter;
    if(!submitter||!['sign_in','sign_out'].includes(submitter.value))return;
    if(!student.value||!moduleValue.value||!timeInput.value){event.preventDefault();return;}
-   const parts=date.value.split('-').map(Number),clock=timeInput.value.split(':').map(Number);
+   const now=new Date();
+   const parts=(submitter.value==='sign_out'
+     ? [now.getFullYear(),now.getMonth()+1,now.getDate()]
+     : date.value.split('-').map(Number));
+   const clock=timeInput.value.split(':').map(Number);
    const localDate=new Date(parts[0],parts[1]-1,parts[2],clock[0],clock[1],0,0);
    if(Number.isNaN(localDate.getTime())){event.preventDefault();return;}
    timestampInput.value=localDate.toISOString();
