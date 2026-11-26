@@ -1,4 +1,5 @@
 {% load static %}
+{% load forum_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -751,7 +752,23 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="adminPanelMenu">
                                 <li><a class="dropdown-item" href="{% url 'site_insights:owner_dashboard' %}"><i class="bi bi-graph-up-arrow"></i><span>Analytics</span></a></li>
-                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-people"></i><span>Student Forum</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-people"></i><span>Student Records</span></a></li>
+                                <li class="dropdown-submenu">
+                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-people"></i><span>Student Forum</span></a>
+                                    <ul class="dropdown-menu submenu-menu">
+                                        <li><a class="dropdown-item" href="{% url 'student_register' %}"><i class="bi bi-person-plus"></i><span>Student Registration</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="bi bi-box-arrow-in-right"></i><span>Student Login</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a></li>
+                                        <li class="dropdown-submenu">
+                                            <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
+                                            <ul class="dropdown-menu submenu-menu">
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'bcs' %}"><i class="bi bi-journal-check"></i><span>BCS</span></a></li>
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'computer-science' %}"><i class="bi bi-cpu"></i><span>Computer Science</span></a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
                                 <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}"><i class="bi bi-easel"></i><span>Teacher View</span></a></li>
                                 <li class="dropdown-submenu manor-dropdown">
                                     <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-diagram-2"></i><span>Manor-IT</span></a>
@@ -789,17 +806,9 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item dropdown students-dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="studentForumOwnerMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>Student Forum</span></a>
-                            <ul class="dropdown-menu" aria-labelledby="studentForumOwnerMenu">
-                                <li><a class="dropdown-item" href="{% url 'student_register' %}"><i class="bi bi-person-plus"></i><span>Student Registration</span></a></li>
-                                <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="bi bi-box-arrow-in-right"></i><span>Student Login</span></a></li>
-                            </ul>
-                        </li>
-
                         {% else %}
                         <li class="nav-item dropdown students-dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>Student Forum</span></a>
+                            <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>{% if request.user.is_authenticated and request.user.studentprofile %}{{ request.user.studentprofile.name|first_word|default:"Student" }} Forum{% else %}Student Forum{% endif %}</span></a>
                             <ul class="dropdown-menu" aria-labelledby="studentForumMenu">
                                 <li><a class="dropdown-item" href="{% url 'student_register' %}"><i class="bi bi-person-plus"></i><span>Student Registration</span></a></li>
                                 {% if not request.user.is_authenticated %}
