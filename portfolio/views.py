@@ -225,6 +225,7 @@ def ielts_learning(request):
             return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
 
     context = {
+        "course_enrollments": enrollments,
         "notices": IELTSNotice.objects.filter(course__in=enrolled_courses, is_published=True),
         "materials": IELTSMaterial.objects.filter(course__in=enrolled_courses, is_published=True),
         "lessons": IELTSLesson.objects.filter(course__in=enrolled_courses, is_published=True),
