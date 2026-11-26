@@ -225,6 +225,9 @@ def ielts_practice(request, pk):
     if request.method == "POST":
         name = request.POST.get("student_name", "").strip()[:100]
         roll = request.POST.get("student_roll", "").strip()[:40]
+        linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+        if linked_profile:
+            name, roll = linked_profile.name, linked_profile.roll
         if not name:
             messages.error(request, "Please enter your name before starting the practice.")
         else:
