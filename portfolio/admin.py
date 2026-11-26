@@ -118,131 +118,105 @@ class StudentCourseInline(admin.TabularInline):
 
 
 class StudentProfileAdminForm(forms.ModelForm):
+    email = forms.EmailField(label="Student email")
+    password = forms.CharField(
+        label="Student password",
+        required=False,
+        widget=forms.PasswordInput,
+        help_text="Required for a new student. Leave blank when editing to keep the current password.",
+    )
     modules = forms.MultipleChoiceField(
         label="Modules",
         required=False,
-        choices=sorted({(module, module) for course_modules in COURSE_MODULES.values() for module in course_modules}),
+        choices=[(module, module) for module in sorted({m for values in COURSE_MODULES.values() for m in values})],
         widget=forms.SelectMultiple(attrs={
-            "class": "student-module-select",
             "data-module-map": __import__("json").dumps(COURSE_MODULES),
         }),
-        help_text="Select one or more modules. Choose the course first; the list will filter automatically. Use Ctrl (Windows/Linux) or Cmd (Mac) for multiple selections.",
-    )
-
-    username = forms.CharField(max_length=150, label="Login username")
-    email = forms.EmailField(label="Login email")
-    password = forms.CharField(
-        label="Login password", required=False,
-        widget=forms.PasswordInput,
-        help_text="Required for a new account. Leave blank when editing to keep the current password.",
+        help_text="Select the course first, then choose its modules. Hold Ctrl to select multiple modules.",
     )
 
     class Meta:
         model = StudentProfile
-        fields = (
-            "name", "roll", "course", "modules", "joining_date",
-            "course_finish_date", "is_active",
-        )
+        fields = ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         linked_user = getattr(self.instance, "user", None) if self.instance and self.instance.pk else None
         if linked_user:
-            self.fields["username"].initial = linked_user.get_username()
             self.fields["email"].initial = linked_user.email
         else:
             self.fields["password"].required = True
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+        User = get_user_model()
+        users = User._default_manager.filter(email__iexact=email)
+        linked_user = getattr(self.instance, "user", None) if self.instance and self.instance.pk else None
+        if linked_user:
+            users = users.exclude(pk=linked_user.pk)
+        if users.exists():
+            raise forms.ValidationError("This email already has a student account.")
+        return email
+
     def clean_modules(self):
         modules = self.cleaned_data.get("modules", [])
         course = self.cleaned_data.get("course")
-        allowed = COURSE_MODULES.get(course, [])
-        invalid = [module for module in modules if module not in allowed]
-        if invalid:
-            raise forms.ValidationError("Please select modules belonging to the selected course.")
+        if any(module not in COURSE_MODULES.get(course, []) for module in modules):
+            raise forms.ValidationError("Choose modules from the selected course only.")
         return modules
 
     def clean(self):
         cleaned = super().clean()
-        User = get_user_model()
-        username_field = User.USERNAME_FIELD
-        username = cleaned.get("username")
-        email = cleaned.get("email")
         password = cleaned.get("password")
         linked_user = getattr(self.instance, "user", None) if self.instance and self.instance.pk else None
-
-        if username:
-            matches = User._default_manager.filter(**{f"{username_field}__iexact": username})
-            if linked_user:
-                matches = matches.exclude(pk=linked_user.pk)
-            if matches.exists():
-                self.add_error("username", "This username is already in use.")
-
-        if email:
-            matches = User._default_manager.filter(email__iexact=email)
-            if linked_user:
-                matches = matches.exclude(pk=linked_user.pk)
-            if matches.exists():
-                self.add_error("email", "This email is already in use.")
-
-        if password:
-            candidate = linked_user or User(**{username_field: username or ""}, email=email or "")
-            try:
-                validate_password(password, candidate)
-            except ValidationError as exc:
-                self.add_error("password", exc)
-        elif not linked_user:
-            self.add_error("password", "Enter a password for the student's login account.")
+        if not linked_user and not password:
+            self.add_error("password", "Enter a password for student login.")
         return cleaned
 
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     form = StudentProfileAdminForm
-    list_display = ("name", "roll", "course", "username_display", "email_display", "is_active", "created_at")
+    list_display = ("name", "roll", "course", "email_display", "is_active", "created_at")
     list_filter = ("course", "is_active", "joining_date")
-    search_fields = ("name", "roll", "course", "user__username", "user__email")
+    search_fields = ("name", "roll", "course", "user__email")
     inlines = (StudentCourseInline,)
     readonly_fields = ("created_at",)
+
     class Media:
         js = ("admin/course-module-select.js",)
+
     fieldsets = (
-        ("Student information", {"fields": ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")}),
-        ("Student login credentials", {"fields": ("username", "email", "password")}),
+        ("Student registration", {"fields": ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")}),
+        ("Student login", {"fields": ("email", "password")}),
         ("System information", {"fields": ("created_at",)}),
     )
 
     @transaction.atomic
     def save_model(self, request, obj, form, change):
         User = get_user_model()
-        obj.modules = form.cleaned_data.get("modules", [])
-        username = form.cleaned_data["username"]
         email = form.cleaned_data["email"]
         password = form.cleaned_data.get("password")
-
         if obj.user_id:
             account = obj.user
-            setattr(account, User.USERNAME_FIELD, username)
             account.email = email
+            setattr(account, User.USERNAME_FIELD, email)
             if password:
                 account.set_password(password)
             account.save()
         else:
             account = User._default_manager.create_user(
-                **{User.USERNAME_FIELD: username},
+                **{User.USERNAME_FIELD: email},
                 email=email,
                 password=password,
             )
         obj.user = account
+        obj.modules = form.cleaned_data.get("modules", [])
         super().save_model(request, obj, form, change)
 
-    @admin.display(description="Username", ordering="user__username")
-    def username_display(self, obj):
-        return obj.user.get_username() if obj.user_id else "No account"
-
-    @admin.display(description="Email", ordering="user__email")
+    @admin.display(description="Student email", ordering="user__email")
     def email_display(self, obj):
-        return obj.user.email if obj.user_id else "—"
+        return obj.user.email if obj.user_id else "Account not created"
 
 
 @admin.register(IELTSAttendance)
