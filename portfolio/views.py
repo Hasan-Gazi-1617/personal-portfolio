@@ -54,13 +54,16 @@ def ielts_learning(request):
                 messages.error(request, "Enter your name and provide written work or attach a file.")
             elif uploaded and uploaded.size > 10 * 1024 * 1024:
                 messages.error(request, "The attachment must be 10 MB or smaller.")
+            elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg"):
+                messages.error(request, "Please upload a PDF, Word document or image file.")
             else:
-                IELTSAssignmentSubmission.objects.create(
+                submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name,
                     student_roll=request.POST.get("student_roll", "").strip()[:40],
                     answer_text=answer_text, file=uploaded,
                 )
-                messages.success(request, "Assignment submitted. Your teacher will review it.")
+                return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
+
             return redirect("/students/ielts/#assignments")
 
     context = {
@@ -117,6 +120,20 @@ def ielts_practice(request, pk):
             })
     return render(request, "students/ielts_practice.html", {"practice": practice})
 
+
+def ielts_submission_receipt(request, receipt_code):
+    submission = get_object_or_404(IELTSAssignmentSubmission.objects.select_related("assignment"), receipt_code=receipt_code)
+    return render(request, "students/ielts_submission_receipt.html", {"submission": submission})
+
+
+def ielts_submission_file(request, pk):
+    denied = _owner_required(request)
+    if denied:
+        return denied
+    submission = get_object_or_404(IELTSAssignmentSubmission, pk=pk)
+    if not submission.file:
+        return redirect("ielts_admin_panel")
+    return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
 def ielts_admin_panel(request):
     """Teacher tools are protected by the existing private owner session."""
