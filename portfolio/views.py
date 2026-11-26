@@ -9,6 +9,9 @@ from datetime import datetime
 from io import BytesIO
 
 from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, JsonResponse
@@ -194,7 +197,7 @@ def ielts_learning(request):
             for row in AttendanceRecord.objects.filter(sign_in__isnull=False, sign_out__isnull=True).select_related("student")
         ],
         "course_modules": COURSE_MODULES,
-        "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),
+        "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),\n        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
         "assignments": IELTSAssignment.objects.filter(is_published=True),
@@ -269,6 +272,50 @@ def ielts_student_submission_file(request, receipt_code):
     if not submission.file:
         return redirect("ielts_submission_receipt", receipt_code=receipt_code)
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
+
+def student_login(request):
+    if request.user.is_authenticated and hasattr(request.user, "student_profile"):
+        return redirect("student_dashboard")
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
+        User = get_user_model()
+        account = User.objects.filter(email__iexact=email, is_active=True).first()
+        user = authenticate(request, username=account.get_username(), password=password) if account else None
+        if user:
+            profile = StudentProfile.objects.filter(user=user, is_active=True).first()
+            if profile:
+                login(request, user)
+                request.session.cycle_key()
+                return redirect("student_dashboard")
+        messages.error(request, "Email or password is incorrect, or your student account is inactive.")
+    return render(request, "students/student_login.html")
+
+
+def student_logout(request):
+    if request.user.is_authenticated and not request.session.get("owner_access"):
+        logout(request)
+    return redirect("student_login")
+
+
+def student_dashboard(request):
+    if not request.user.is_authenticated:
+        return redirect("student_login")
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
+    if not profile:
+        logout(request)
+        messages.error(request, "No active student profile is linked to this account. Please contact your teacher.")
+        return redirect("student_login")
+    return render(request, "students/student_dashboard.html", {
+        "student": profile,
+        "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
+        "submissions": IELTSAssignmentSubmission.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("assignment")[:100],
+        "practice_attempts": IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:100],
+        "notices": IELTSNotice.objects.filter(is_published=True)[:30],
+        "materials": IELTSMaterial.objects.filter(is_published=True)[:100],
+        "lessons": IELTSLesson.objects.filter(is_published=True)[:100],
+    })
+
 
 def ielts_admin_panel(request):
     """Teacher tools are protected by the existing private owner session."""
@@ -347,6 +394,36 @@ def ielts_admin_panel(request):
                     messages.success(request, "Timed practice set published.")
             except (ValueError, TypeError, json.JSONDecodeError):
                 messages.error(request, "Practice questions must be valid JSON in a list.")
+        elif action == "student_account_register":
+            try:
+                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
+                email = request.POST.get("student_email", "").strip().lower()
+                password = request.POST.get("student_password", "")
+                User = get_user_model()
+                if not email or "@" not in email:
+                    raise ValueError("Enter a valid email address.")
+                if profile.user_id:
+                    account = profile.user
+                    if User.objects.filter(email__iexact=email).exclude(pk=account.pk).exists() or User.objects.filter(username=email).exclude(pk=account.pk).exists():
+                        raise ValueError("This email is already used by another account.")
+                    account.username, account.email = email, email
+                    validate_password(password, account)
+                    account.set_password(password)
+                    account.save()
+                else:
+                    if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username=email).exists():
+                        raise ValueError("An account already exists with this email.")
+                    account = User(username=email, email=email, is_active=True)
+                    validate_password(password, account)
+                    account.set_password(password)
+                    account.save()
+                    profile.user = account
+                    profile.save(update_fields=["user"])
+                messages.success(request, f"Student login account created/updated for {profile.name}. Share the email and password securely with the student.")
+            except ValidationError as exc:
+                messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
+            except ValueError as exc:
+                messages.error(request, str(exc))
         elif action == "attendance_student":
             name = request.POST.get("name", "").strip()[:120]
             roll = request.POST.get("roll", "").strip()[:40]
