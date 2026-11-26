@@ -15,7 +15,7 @@
 <p class="af-feedback" style="margin-top:14px">Your assignment has been submitted successfully. Your teacher will review it manually and publish the band scores, sentence corrections and feedback here. Please keep this private link to check your review later.</p>
 {% endif %}
 {% if submission.answer_text %}<h2 style="font-size:19px;font-weight:850;margin:28px 0 12px">Your Submitted Writing</h2><div class="af-answer">{{ submission.answer_text }}</div>{% endif %}
-{% if submission.file %}<p style="margin-top:16px"><a href="{% url 'ielts_submission_file' submission.pk %}" target="_blank" rel="noopener">View uploaded attachment (teacher access required)</a></p>{% endif %}
+{% if submission.file %}<p style="margin-top:16px"><a href="{% url 'ielts_student_submission_file' submission.receipt_code %}" target="_blank" rel="noopener">Download your uploaded attachment</a></p>{% endif %}
 {% if submission.reviewed_at %}
 <div style="margin-top:28px;border-top:1px solid var(--border);padding-top:20px">
 <h2 style="font-size:19px;font-weight:850;margin:14px 0 8px">IELTS Writing Assessment</h2>
