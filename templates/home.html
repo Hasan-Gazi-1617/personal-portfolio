@@ -441,15 +441,19 @@ html[data-theme="light"] #live-network-topology {
                 </p>
 
 
-              <div class="hero-buttons"> 
-                <a href="{% static 'files/CV_HASAN.pdf' %}"
-                 class="btn btn-primary-custom" download> 
-                    Download CV <i class="bi bi-download"></i> </a>
-
-
-                    <a href="#projects" class="btn btn-secondary-custom"> 
-                        View Projects <i class="bi bi-arrow-right"></i> </a>
-
+              <div class="hero-buttons">
+                    <a href="{% static 'files/CV_HASAN.pdf' %}" class="btn btn-primary-custom" download>
+                        <i class="bi bi-download" aria-hidden="true"></i><span>Download CV</span>
+                    </a>
+                    <a href="{% static 'files/CV_HASAN.pdf' %}" class="btn btn-secondary-custom" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-eye" aria-hidden="true"></i><span>Preview CV</span>
+                    </a>
+                    <a href="#projects" class="btn btn-secondary-custom">
+                        <i class="bi bi-grid" aria-hidden="true"></i><span>View Projects</span>
+                    </a>
+                    <a href="mailto:{{ public_email }}" class="btn btn-secondary-custom hero-connect-btn">
+                        <i class="bi bi-envelope" aria-hidden="true"></i><span>Let's Connect</span>
+                    </a>
                 </div>
 
 
