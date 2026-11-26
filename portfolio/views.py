@@ -362,7 +362,7 @@ def ielts_admin_panel(request):
         "practice_sets": IELTSPracticeSet.objects.all()[:20],
         "attendance": IELTSAttendance.objects.all()[:20],
         "students": IELTSStudent.objects.filter(is_active=True),
-        "course_modules_json": json.dumps(COURSE_MODULES),
+        "course_modules_json": json.dumps(COURSE_MODULES),\n        "course_choices": CourseAttendance.COURSE_CHOICES,
         "course_attendance": CourseAttendance.objects.select_related("student")[:100],
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
     })
