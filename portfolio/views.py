@@ -194,6 +194,7 @@ def ielts_learning(request):
             for row in AttendanceRecord.objects.filter(sign_in__isnull=False, sign_out__isnull=True).select_related("student")
         ],
         "course_modules": COURSE_MODULES,
+        "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
         "assignments": IELTSAssignment.objects.filter(is_published=True),
