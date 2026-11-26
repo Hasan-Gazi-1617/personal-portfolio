@@ -100,44 +100,72 @@ def ielts_learning(request):
                 messages.error(request, "Please select a valid student, assigned module, session and time.")
             selected_id = request.POST.get("student_id", "")
             return redirect(f"/students/ielts/?attendance_student={selected_id}#attendance")
-        if action == "submit_assignment":
+        if action == "start_assignment":
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             student_name = request.POST.get("student_name", "").strip()[:100]
+            student_roll = request.POST.get("student_roll", "").strip()[:40]
+            if not student_name:
+                return JsonResponse({"ok": False, "message": "Enter your name before starting the timed assignment."}, status=400)
+            submission = IELTSAssignmentSubmission.objects.create(
+                assignment=assignment, student_name=student_name, student_roll=student_roll,
+                status="in_progress", started_at=timezone.now(),
+            )
+            receipts = request.session.get("ielts_submission_receipts", [])
+            receipts.insert(0, str(submission.receipt_code))
+            request.session["ielts_submission_receipts"] = list(dict.fromkeys(receipts))[:30]
+            request.session.modified = True
+            return JsonResponse({"ok": True, "submission_id": submission.pk, "started_at": submission.started_at.isoformat(), "duration": assignment.time_minutes * 60})
+        if action == "track_assignment_paste":
+            allowed_codes = request.session.get("ielts_submission_receipts", [])
+            submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"), receipt_code__in=allowed_codes)
+            if submission.status != "in_progress":
+                return JsonResponse({"ok": False, "locked": True, "message": submission.failed_reason or "This attempt is no longer active."}, status=409)
+            submission.paste_attempts = min(3, submission.paste_attempts + 1)
+            if submission.paste_attempts >= 3:
+                submission.status = "failed"
+                submission.failed_reason = "Assignment failed: copy/paste was attempted 3 times. The writing box has been locked. Ask your teacher/admin to reopen this attempt to start again."
+                submission.save(update_fields=["paste_attempts", "status", "failed_reason"])
+                return JsonResponse({"ok": False, "locked": True, "attempts": 3, "message": submission.failed_reason}, status=403)
+            submission.save(update_fields=["paste_attempts"])
+            return JsonResponse({"ok": True, "attempts": submission.paste_attempts, "remaining": 3-submission.paste_attempts, "message": f"Paste is disabled. Warning {submission.paste_attempts} of 3. Type your answer directly."})
+        if action == "submit_assignment":
+            allowed_codes = request.session.get("ielts_submission_receipts", [])
+            submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"), receipt_code__in=allowed_codes)
+            assignment = submission.assignment
             answer_text = request.POST.get("answer_text", "").strip()
             words = len(answer_text.split())
-            try:
-                elapsed_seconds = max(0, int(request.POST.get("writing_elapsed_seconds", "0") or 0))
-            except (TypeError, ValueError):
-                elapsed_seconds = 0
             uploaded = request.FILES.get("submission_file")
-            if not student_name or (not answer_text and not uploaded):
-                messages.error(request, "Enter your name and provide written work or attach a file.")
-            elif answer_text and words < assignment.min_words:
+            if submission.status == "failed":
+                messages.error(request, submission.failed_reason or "This attempt is locked. Ask the teacher to reopen it.")
+            elif submission.status != "in_progress" or not submission.started_at:
+                messages.error(request, "Please click Start Assignment first.")
+            elif (timezone.now()-submission.started_at).total_seconds() > assignment.time_minutes*60+10:
+                submission.status="failed"
+                submission.failed_reason="Assignment failed: the allotted writing time expired before submission."
+                submission.answer_text=answer_text
+                submission.word_count=words
+                submission.save(update_fields=["status","failed_reason","answer_text","word_count"])
+                messages.error(request, submission.failed_reason)
+            elif not answer_text and not uploaded:
+                messages.error(request, "Write your answer in the box before submitting.")
+            elif words < assignment.min_words:
                 messages.error(request, f"This task requires at least {assignment.min_words} words. Your answer has {words}.")
-            elif answer_text and words > assignment.max_words:
+            elif words > assignment.max_words:
                 messages.error(request, f"The maximum word count is {assignment.max_words}. Your answer has {words}.")
-            elif answer_text and elapsed_seconds > assignment.time_minutes * 60 + 15:
-                messages.error(request, "The writing time has ended. Please submit within the assignment timer.")
             elif uploaded and uploaded.size > 10 * 1024 * 1024:
                 messages.error(request, "The attachment must be 10 MB or smaller.")
             elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".docx", ".png", ".jpg", ".jpeg"):
                 messages.error(request, "Please upload a PDF, Word document or image file.")
             else:
-                # Assignments are assessed manually by the teacher. Keep the original
-                # uploaded file available in Teacher Admin View for review.
-                submission = IELTSAssignmentSubmission.objects.create(
-                    assignment=assignment, student_name=student_name,
-                    student_roll=request.POST.get("student_roll", "").strip()[:40],
-                    answer_text=answer_text, word_count=words,
-                    elapsed_seconds=elapsed_seconds, file=uploaded,
-                )
-                receipts = request.session.get("ielts_submission_receipts", [])
-                receipts = [code for code in receipts if code != str(submission.receipt_code)]
-                receipts.insert(0, str(submission.receipt_code))
-                request.session["ielts_submission_receipts"] = receipts[:25]
-                request.session.modified = True
+                submission.answer_text=answer_text
+                submission.word_count=words
+                submission.elapsed_seconds=max(0,int((timezone.now()-submission.started_at).total_seconds()))
+                submission.file=uploaded or submission.file
+                submission.status="submitted"
+                submission.failed_reason=""
+                submission.save()
                 return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
-            return redirect("/students/ielts/#assignments")
+            return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
 
     context = {
         "notices": IELTSNotice.objects.filter(is_published=True),
@@ -349,6 +377,30 @@ def ielts_admin_panel(request):
             student.is_active = not student.is_active
             student.save(update_fields=["is_active"])
             messages.success(request, f"Student {'activated' if student.is_active else 'deactivated'}.")
+        elif action == "assignment_submission_edit":
+            submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
+            submission.student_name = request.POST.get("student_name", "").strip()[:100] or submission.student_name
+            submission.student_roll = request.POST.get("student_roll", "").strip()[:40]
+            submission.answer_text = request.POST.get("answer_text", "").strip()
+            submission.word_count = len(submission.answer_text.split())
+            submission.save(update_fields=["student_name", "student_roll", "answer_text", "word_count"])
+            messages.success(request, "Assignment attempt edited.")
+        elif action == "assignment_submission_delete":
+            get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id")).delete()
+            messages.success(request, "Assignment attempt deleted.")
+        elif action == "assignment_submission_reopen":
+            submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
+            submission.status = "in_progress"
+            submission.paste_attempts = 0
+            submission.failed_reason = ""
+            submission.started_at = timezone.now()
+            submission.elapsed_seconds = None
+            submission.answer_text = ""
+            submission.word_count = 0
+            submission.file = ""
+            submission.reviewed_at = None
+            submission.save(update_fields=["status", "paste_attempts", "failed_reason", "started_at", "elapsed_seconds", "answer_text", "word_count", "file", "reviewed_at"])
+            messages.success(request, f"Reopened for {submission.student_name}. The timer has restarted and the student can begin again from their private submission link.")
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
