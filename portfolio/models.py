@@ -433,7 +433,10 @@ class IELTSAssignmentSubmission(models.Model):
     answer_text = models.TextField(blank=True)
     file = models.FileField(upload_to="ielts/assignments/", blank=True)
     teacher_feedback = models.TextField(blank=True)
-    # Admin marks individual answer fragments: [{"text": "...", "correct": true}, ...]
+    teacher_strengths = models.TextField(blank=True)
+    teacher_improvements = models.TextField(blank=True)
+    corrected_sentences = models.TextField(blank=True, help_text="Teacher-written sentence corrections and explanations")
+    # Backward-compatible structured annotations for individual answer fragments.
     marked_fragments = models.JSONField(default=list, blank=True)
     score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
     task_response_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
@@ -442,6 +445,20 @@ class IELTSAssignmentSubmission(models.Model):
     grammatical_range_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def overall_band_score(self):
+        from decimal import Decimal, ROUND_HALF_UP
+        bands = [
+            value for value in (
+                self.task_response_band, self.coherence_cohesion_band,
+                self.lexical_resource_band, self.grammatical_range_band,
+            ) if value is not None
+        ]
+        if len(bands) != 4:
+            return None
+        average = sum((Decimal(value) for value in bands), Decimal("0")) / Decimal("4")
+        return (average * 2).quantize(Decimal("1"), rounding=ROUND_HALF_UP) / 2
 
     class Meta:
         ordering = ("-submitted_at",)
