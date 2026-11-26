@@ -330,6 +330,75 @@ def ielts_student_submission_file(request, receipt_code):
         return redirect("ielts_submission_receipt", receipt_code=receipt_code)
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
+@require_http_methods(["GET", "POST"])
+def student_register(request):
+    """Public student self-registration with email/password and course modules."""
+    if request.user.is_authenticated and StudentProfile.objects.filter(user=request.user, is_active=True).exists():
+        return redirect("student_dashboard")
+
+    selected_course = request.POST.get("course", "").strip() if request.method == "POST" else ""
+    selected_modules = request.POST.getlist("modules") if request.method == "POST" else []
+    errors = []
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()[:120]
+        roll = request.POST.get("roll", "").strip()[:40]
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
+        confirm_password = request.POST.get("confirm_password", "")
+        valid_modules = COURSE_MODULES.get(selected_course, [])
+        modules = [module for module in selected_modules if module in valid_modules]
+
+        if not name:
+            errors.append("Please enter your full name.")
+        if not email or "@" not in email:
+            errors.append("Please enter a valid email address.")
+        elif get_user_model().objects.filter(email__iexact=email).exists():
+            errors.append("This email is already registered. Please sign in instead.")
+        if not password:
+            errors.append("Please create a password.")
+        elif password != confirm_password:
+            errors.append("The passwords do not match.")
+        if selected_course not in COURSE_MODULES:
+            errors.append("Please select a course.")
+        elif not modules:
+            errors.append("Please select at least one module.")
+
+        User = get_user_model()
+        account = User(username=email, email=email, is_active=True)
+        if password and password == confirm_password:
+            try:
+                validate_password(password, account)
+            except ValidationError as exc:
+                errors.extend(exc.messages)
+
+        if not errors:
+            try:
+                with transaction.atomic():
+                    account.set_password(password)
+                    account.save()
+                    profile = StudentProfile.objects.create(
+                        name=name, roll=roll, course=selected_course,
+                        modules=modules, user=account, is_active=True,
+                    )
+                    StudentCourse.objects.create(
+                        student=profile, course=selected_course,
+                        modules=modules, is_active=True,
+                    )
+                messages.success(request, "Registration successful! You can now log in using your email and password.")
+                return redirect("student_login")
+            except Exception:
+                logger.exception("Student self-registration failed")
+                errors.append("Registration could not be completed. Please try again.")
+
+    return render(request, "students/student_register.html", {
+        "course_modules": COURSE_MODULES,
+        "selected_course": selected_course,
+        "selected_modules": selected_modules,
+        "errors": errors,
+    })
+
+
 def student_login(request):
     if request.user.is_authenticated and hasattr(request.user, "student_profile"):
         return redirect("student_dashboard")
