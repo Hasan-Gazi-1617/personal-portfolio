@@ -6,59 +6,68 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from .models import AttendanceRecord, COURSE_MODULES, StudentProfile
+from .models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile
 
 
 class ClockForm(forms.Form):
     student_id = forms.IntegerField()
+    course = forms.CharField(max_length=40)
     module = forms.CharField(max_length=120)
     period = forms.ChoiceField(choices=AttendanceRecord.Period.choices)
     time_value = forms.TimeField(input_formats=["%H:%M"])
 
 
 def student_attendance(request):
-    students = StudentProfile.objects.filter(is_active=True)
+    if not request.user.is_authenticated:
+        return redirect("student_login")
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
+    if not profile:
+        return redirect("student_login")
+    enrollments = StudentCourse.objects.filter(student=profile, is_active=True)
+    if not enrollments.exists():
+        enrollments = [StudentCourse(student=profile, course=profile.course, modules=profile.modules or [])]
     if request.method == "POST":
         form = ClockForm(request.POST)
         action = request.POST.get("action")
         if form.is_valid() and action in {"sign_in", "sign_out"}:
             with transaction.atomic():
-                student = get_object_or_404(students.select_for_update(), pk=form.cleaned_data["student_id"])
+                student = get_object_or_404(StudentProfile.objects.select_for_update(), pk=profile.pk, is_active=True)
+                course = form.cleaned_data["course"]
                 module = form.cleaned_data["module"]
                 period = form.cleaned_data["period"]
+                enrollment = next((item for item in enrollments if item.course == course), None)
                 active = AttendanceRecord.objects.select_for_update().filter(
                     student=student, sign_in__isnull=False, sign_out__isnull=True
                 ).order_by("-class_date", "-created_at").first()
-                if module not in (student.modules or []) or student.course not in COURSE_MODULES:
-                    messages.error(request, "The selected module is not assigned to this student.")
+                if not enrollment or module not in (enrollment.modules or []):
+                    messages.error(request, "The selected course or module is not assigned to your account.")
                 elif action == "sign_in":
                     if active:
                         messages.error(request, "You are already signed in. Please sign out before starting a new session.")
                     else:
                         AttendanceRecord.objects.create(
                             class_date=timezone.localdate(), student=student, period=period,
-                            course_name=student.course, module_name=module, sign_in=form.cleaned_data["time_value"],
+                            course_name=course, module_name=module, sign_in=form.cleaned_data["time_value"],
                         )
-                        messages.success(request, f"Sign In saved for {student.name}. Session details are locked.")
+                        messages.success(request, f"Sign In saved for {student.name}.")
                 elif not active:
                     messages.error(request, "No active Sign In session was found. Please Sign In first.")
-                elif active.period != period or active.module_name != module:
+                elif active.period != period or active.module_name != module or active.course_name != course:
                     messages.error(request, "Your active session details are locked until Sign Out.")
                 else:
                     active.sign_out = form.cleaned_data["time_value"]
                     active.save(update_fields=["sign_out", "updated_at"])
-                    messages.success(request, f"Sign Out saved for {student.name}. You can start a new session.")
+                    messages.success(request, f"Sign Out saved for {student.name}.")
         else:
-            messages.error(request, "Please select your name, assigned module, AM/PM and a valid time.")
+            messages.error(request, "Please select your assigned course, module, AM/PM and a valid time.")
         return redirect("student_attendance")
     return render(request, "attendance/portal.html", {
-        "students": students,
-        "course_modules": COURSE_MODULES,
+        "student": profile,
+        "course_enrollments": enrollments,
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
-        "attendance_records": AttendanceRecord.objects.filter(student__is_active=True).select_related("student").order_by("-class_date", "period", "student__name")[:150],
+        "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "period")[:150],
     })
-
 
 @require_http_methods(["GET", "POST"])
 def attendance_admin(request):
