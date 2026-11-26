@@ -756,8 +756,8 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 <li class="dropdown-submenu">
                                     <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-people"></i><span>Student Forum</span></a>
                                     <ul class="dropdown-menu submenu-menu">
-                                        <li><a class="dropdown-item" href="{% url 'student_register' %}"><i class="bi bi-person-plus"></i><span>Student Registration</span></a></li>
-                                        <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="bi bi-box-arrow-in-right"></i><span>Student Login</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'attendance_admin' %}"><i class="bi bi-person-badge"></i><span>Manage Students &amp; Access Codes</span></a></li>
                                         <li><a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a></li>
                                         <li class="dropdown-submenu">
                                             <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
@@ -810,10 +810,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                         <li class="nav-item dropdown students-dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>{% if request.user.is_authenticated and request.user.studentprofile %}{{ request.user.studentprofile.name|first_word|default:"Student" }} Forum{% else %}Student Forum{% endif %}</span></a>
                             <ul class="dropdown-menu" aria-labelledby="studentForumMenu">
-                                <li><a class="dropdown-item" href="{% url 'student_register' %}"><i class="bi bi-person-plus"></i><span>Student Registration</span></a></li>
-                                {% if not request.user.is_authenticated %}
-                                <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="bi bi-box-arrow-in-right"></i><span>Student Login</span></a></li>
-                                {% endif %}
+                                {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>{% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
                                     <a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a>
@@ -827,8 +824,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 {% if request.user.is_authenticated %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Profile</span></a></li>
-                                <li><a class="dropdown-item" href="{% url 'student_profile' %}"><i class="bi bi-pencil-square"></i><span>Edit Information</span></a></li>
-                                <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+                                                                <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
                                 {% endif %}
                             </ul>
                         </li>

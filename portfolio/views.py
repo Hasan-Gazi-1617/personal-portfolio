@@ -331,111 +331,41 @@ def ielts_student_submission_file(request, receipt_code):
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
 @require_http_methods(["GET", "POST"])
-def student_register(request):
-    """Public student self-registration with email/password and course modules."""
+def student_access(request):
+    """Student access using the roll number and private code issued by an admin."""
     if request.user.is_authenticated and StudentProfile.objects.filter(user=request.user, is_active=True).exists():
         return redirect("student_dashboard")
-
-    selected_course = request.POST.get("course", "").strip() if request.method == "POST" else ""
-    selected_modules = request.POST.getlist("modules") if request.method == "POST" else []
-    errors = []
-
     if request.method == "POST":
-        name = request.POST.get("name", "").strip()[:120]
-        roll = request.POST.get("roll", "").strip()[:40]
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
-        confirm_password = request.POST.get("confirm_password", "")
-        valid_modules = COURSE_MODULES.get(selected_course, [])
-        modules = [module for module in selected_modules if module in valid_modules]
-
-        if not name:
-            errors.append("Please enter your full name.")
-        if not email or "@" not in email:
-            errors.append("Please enter a valid email address.")
-        elif len(email) > 150:
-            errors.append("Email address must be 150 characters or fewer.")
-        elif get_user_model().objects.filter(email__iexact=email).exists():
-            errors.append("This email is already registered. Please sign in instead.")
-        if not password:
-            errors.append("Please create a password.")
-        elif password != confirm_password:
-            errors.append("The passwords do not match.")
-        if selected_course not in COURSE_MODULES:
-            errors.append("Please select a course.")
-        elif not modules:
-            errors.append("Please select at least one module.")
-
-        User = get_user_model()
-        account = User(username=email, email=email, is_active=True)
-        if password and password == confirm_password:
-            try:
-                validate_password(password, account)
-            except ValidationError as exc:
-                errors.extend(exc.messages)
-
-        if not errors:
-            try:
-                with transaction.atomic():
-                    account.set_password(password)
-                    account.save()
-                    profile = StudentProfile.objects.create(
-                        name=name, roll=roll, course=selected_course,
-                        modules=modules, user=account, is_active=True,
-                    )
-                    StudentCourse.objects.create(
-                        student=profile, course=selected_course,
-                        modules=modules, is_active=True,
-                    )
-                messages.success(request, f"Registration successful, {name.strip().split()[0]}! Please log in using your email and password.")
-                return redirect("student_login")
-            except Exception:
-                logger.exception("Student self-registration failed")
-                errors.append("Registration could not be completed. Please try again.")
-
-    return render(request, "students/student_register.html", {
-        "course_modules": COURSE_MODULES,
-        "selected_course": selected_course,
-        "selected_modules": selected_modules,
-        "errors": errors,
-    })
-
-
-def student_login(request):
-    if request.user.is_authenticated and StudentProfile.objects.filter(user=request.user, is_active=True).exists():
-        return redirect("student_dashboard")
-
-    if request.method == "POST":
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
-        User = get_user_model()
-
-        # Registration stores the email as both username and email. Look up
-        # either field so existing accounts remain usable if their username
-        # was changed independently of their email address.
-        account = User.objects.filter(is_active=True).filter(
-            Q(email__iexact=email) | Q(username__iexact=email)
-        ).order_by("pk").first()
-
-        # Verify the stored password directly. This keeps student sign-in
-        # aligned with the self-registration flow and avoids a mismatch
-        # between email lookup and a configured authentication backend.
-        if account and account.check_password(password):
-            profile = StudentProfile.objects.filter(user=account, is_active=True).first()
-            if profile:
-                login(request, account, backend="django.contrib.auth.backends.ModelBackend")
-                request.session.cycle_key()
-                return redirect("student_dashboard")
-
-        messages.error(request, "Email or password is incorrect, or your student account is inactive.")
-
-    return render(request, "students/student_login.html")
+        roll = request.POST.get("roll", "").strip()
+        access_code = request.POST.get("access_code", "").strip().upper()
+        candidates = StudentProfile.objects.filter(roll__iexact=roll, is_active=True).select_related("user")
+        profile = next(
+            (item for item in candidates if item.access_code and hmac.compare_digest(item.access_code, access_code)),
+            None,
+        )
+        if profile:
+            User = get_user_model()
+            account = profile.user
+            if account is None:
+                account = User(username=f"student-{profile.pk}-{secrets.token_hex(5)}", is_active=True)
+                account.set_unusable_password()
+                account.save()
+                profile.user = account
+                profile.save(update_fields=["user"])
+            elif not account.is_active:
+                account.is_active = True
+                account.save(update_fields=["is_active"])
+            login(request, account, backend="django.contrib.auth.backends.ModelBackend")
+            request.session.cycle_key()
+            return redirect("student_dashboard")
+        messages.error(request, "Roll number or access code is incorrect, or the student profile is inactive.")
+    return render(request, "students/student_access.html")
 
 
 def student_logout(request):
     if request.user.is_authenticated and not request.session.get("owner_access"):
         logout(request)
-    return redirect("student_login")
+    return redirect("student_access")
 
 
 def _student_course_enrollments(profile):
@@ -446,58 +376,14 @@ def _student_course_enrollments(profile):
     return enrollments
 
 
-@require_http_methods(["GET", "POST"])
-def student_profile(request):
-    if not request.user.is_authenticated:
-        return redirect("student_login")
-    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
-    if not profile:
-        return redirect("student_login")
-    errors = []
-    if request.method == "POST":
-        name = request.POST.get("name", "").strip()[:120]
-        roll = request.POST.get("roll", "").strip()[:40]
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
-        User = get_user_model()
-        if not name:
-            errors.append("Please enter your full name.")
-        if not email or "@" not in email or len(email) > 150:
-            errors.append("Please enter a valid email address.")
-        elif User.objects.filter(email__iexact=email).exclude(pk=request.user.pk).exists():
-            errors.append("This email is already used by another account.")
-        elif User.objects.filter(username__iexact=email).exclude(pk=request.user.pk).exists():
-            errors.append("This email cannot be used as a login name.")
-        if password:
-            try:
-                validate_password(password, request.user)
-            except ValidationError as exc:
-                errors.extend(exc.messages)
-        if not errors:
-            with transaction.atomic():
-                request.user.email = email
-                request.user.username = email
-                if password:
-                    request.user.set_password(password)
-                request.user.save()
-                profile.name = name
-                profile.roll = roll
-                profile.save()
-            if password:
-                login(request, request.user)
-            messages.success(request, "Your profile information has been updated.")
-            return redirect("student_profile")
-    return render(request, "students/student_profile.html", {"student": profile, "errors": errors})
-
-
 def student_dashboard(request):
     if not request.user.is_authenticated:
-        return redirect("student_login")
+        return redirect("student_access")
     profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
     if not profile:
         logout(request)
         messages.error(request, "No active student profile is linked to this account. Please contact your teacher.")
-        return redirect("student_login")
+        return redirect("student_access")
     enrollments = _student_course_enrollments(profile)
     courses = [item.course for item in enrollments]
     return render(request, "students/student_dashboard.html", {
@@ -826,9 +712,9 @@ def ielts_admin_panel(request):
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
-        "student_profiles": StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user"),
+        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
         "student_admin_data": [{
-            "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
+            "id": profile.pk, "name": profile.name, "roll": profile.roll, "access_code": profile.access_code, "course": profile.course,
             "courses": [{"course": item.course, "modules": item.modules or [], "joining_date": item.joining_date.strftime("%d %b %Y") if item.joining_date else "—", "course_finish_date": item.course_finish_date.strftime("%d %b %Y") if item.course_finish_date else "—"} for item in _student_course_enrollments(profile)],
             "modules": profile.modules or [], "username": profile.user.username if profile.user_id else "",
             "email": profile.user.email if profile.user_id else "", "has_account": bool(profile.user_id),
@@ -841,7 +727,7 @@ def ielts_admin_panel(request):
             "materials": [{"title": row.title, "description": row.description, "category": row.get_category_display(), "url": row.resource_url or (f"/students/ielts/material/{row.pk}/download/" if row.file else "")} for row in IELTSMaterial.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "lessons": [{"title": row.title, "summary": row.summary, "skill": row.get_skill_display()} for row in IELTSLesson.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "practice_sets": [{"title": row.title, "skill": row.get_skill_display(), "url": f"/students/ielts/practice/{row.pk}/"} for row in IELTSPracticeSet.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
-        } for profile in StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user")],
+        } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
     })
 
 

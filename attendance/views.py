@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from .models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile
+from .models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile, generate_student_access_code
 
 
 class ClockForm(forms.Form):
@@ -19,10 +19,10 @@ class ClockForm(forms.Form):
 
 def student_attendance(request):
     if not request.user.is_authenticated:
-        return redirect("student_login")
+        return redirect("student_access")
     profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
     if not profile:
-        return redirect("student_login")
+        return redirect("student_access")
     enrollments = StudentCourse.objects.filter(student=profile, is_active=True)
     if not enrollments.exists():
         enrollments = [StudentCourse(student=profile, course=profile.course, modules=profile.modules or [])]
@@ -80,12 +80,17 @@ def attendance_admin(request):
             roll = request.POST.get("roll", "").strip()[:40]
             course = request.POST.get("course", "")
             modules = [m.strip() for m in request.POST.getlist("modules") if m.strip()]
-            if not name or course not in COURSE_MODULES or not modules or any(m not in COURSE_MODULES[course] for m in modules):
-                messages.error(request, "Enter a student name, valid course and at least one valid assigned module.")
+            if not name or not roll or course not in COURSE_MODULES or not modules or any(m not in COURSE_MODULES[course] for m in modules):
+                messages.error(request, "Enter the student name, roll number, valid course and at least one assigned module.")
             else:
                 profile, _ = StudentProfile.objects.update_or_create(name=name, roll=roll, course=course, defaults={"modules": modules, "is_active": True})
                 StudentCourse.objects.update_or_create(student=profile, course=course, defaults={"modules": modules, "is_active": True})
                 messages.success(request, f"Student profile saved: {name}.")
+        elif action == "regenerate_access_code":
+            student = get_object_or_404(StudentProfile, pk=request.POST.get("student_id"))
+            student.access_code = generate_student_access_code()
+            student.save(update_fields=["access_code"])
+            messages.success(request, f"A new access code was generated for {student.name}.")
         elif action == "manual_attendance":
             try:
                 student = get_object_or_404(StudentProfile, pk=int(request.POST.get("student_id")), is_active=True)

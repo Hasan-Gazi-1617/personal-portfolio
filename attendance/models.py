@@ -1,4 +1,5 @@
 from datetime import datetime
+import secrets
 from django.db import models
 from django.conf import settings
 
@@ -15,10 +16,16 @@ COURSE_MODULES = {
 }
 
 
+def generate_student_access_code():
+    """Return a short, high-entropy code for a student portal profile."""
+    return secrets.token_hex(5).upper()
+
+
 class StudentProfile(models.Model):
     COURSE_CHOICES = [(name, name) for name in COURSE_MODULES]
     name = models.CharField(max_length=120, db_index=True)
     roll = models.CharField(max_length=40, blank=True)
+    access_code = models.CharField(max_length=10, unique=True, default=generate_student_access_code, editable=False)
     course = models.CharField(max_length=40, choices=COURSE_CHOICES)
     modules = models.JSONField(default=list, help_text="Modules assigned to this student")
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="student_profile")
