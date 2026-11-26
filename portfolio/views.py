@@ -112,32 +112,12 @@ def ielts_learning(request):
             elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".docx", ".png", ".jpg", ".jpeg"):
                 messages.error(request, "Please upload a PDF, Word document or image file.")
             else:
-                extracted_text = ""
-                extraction_error = ""
-                if uploaded:
-                    try:
-                        from .ielts_services import extract_uploaded_text
-                        extracted_text = extract_uploaded_text(uploaded)
-                    except Exception as exc:
-                        extraction_error = str(exc)[:500]
-                    uploaded.seek(0)
-                final_answer = answer_text
-                if extracted_text:
-                    final_answer = (answer_text + "\n\n[Text extracted from uploaded file]\n" + extracted_text).strip() if answer_text else extracted_text
-                from .ielts_services import score_assignment
-                assessment = score_assignment(assignment.title, assignment.instructions, final_answer) if final_answer else {
-                    "status": "extraction_failed", "notice": extraction_error or "No readable text was found."
-                }
-                if extraction_error and not extracted_text and not answer_text:
-                    assessment = {"status": "extraction_failed", "notice": extraction_error}
+                # Assignments are assessed manually by the teacher. Keep the original
+                # uploaded file available in Teacher Admin View for review.
                 submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name,
                     student_roll=request.POST.get("student_roll", "").strip()[:40],
-                    answer_text=final_answer, extracted_text=extracted_text, file=uploaded,
-                    ai_status=assessment.get("status", "pending"),
-                    ai_band_score=assessment.get("overall_band"),
-                    ai_feedback=assessment,
-                    word_count=assessment.get("word_count", len(final_answer.split())),
+                    answer_text=answer_text, file=uploaded,
                 )
                 receipts = request.session.get("ielts_submission_receipts", [])
                 receipts = [code for code in receipts if code != str(submission.receipt_code)]
