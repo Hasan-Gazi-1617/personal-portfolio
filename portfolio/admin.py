@@ -1,4 +1,10 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
 
 from .models import ComplaintTicket, TicketActivity
 
@@ -111,23 +117,105 @@ class StudentCourseInline(admin.TabularInline):
     show_change_link = True
 
 
+class StudentProfileAdminForm(forms.ModelForm):
+    username = forms.CharField(max_length=150, label="Login username")
+    email = forms.EmailField(label="Login email")
+    password = forms.CharField(
+        label="Login password", required=False,
+        widget=forms.PasswordInput,
+        help_text="Required for a new account. Leave blank when editing to keep the current password.",
+    )
+
+    class Meta:
+        model = StudentProfile
+        fields = (
+            "name", "roll", "course", "modules", "joining_date",
+            "course_finish_date", "is_active",
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        linked_user = getattr(self.instance, "user", None) if self.instance and self.instance.pk else None
+        if linked_user:
+            self.fields["username"].initial = linked_user.get_username()
+            self.fields["email"].initial = linked_user.email
+        else:
+            self.fields["password"].required = True
+
+    def clean(self):
+        cleaned = super().clean()
+        User = get_user_model()
+        username_field = User.USERNAME_FIELD
+        username = cleaned.get("username")
+        email = cleaned.get("email")
+        password = cleaned.get("password")
+        linked_user = getattr(self.instance, "user", None) if self.instance and self.instance.pk else None
+
+        if username:
+            matches = User._default_manager.filter(**{f"{username_field}__iexact": username})
+            if linked_user:
+                matches = matches.exclude(pk=linked_user.pk)
+            if matches.exists():
+                self.add_error("username", "This username is already in use.")
+
+        if email:
+            matches = User._default_manager.filter(email__iexact=email)
+            if linked_user:
+                matches = matches.exclude(pk=linked_user.pk)
+            if matches.exists():
+                self.add_error("email", "This email is already in use.")
+
+        if password:
+            candidate = linked_user or User(**{username_field: username or ""}, email=email or "")
+            try:
+                validate_password(password, candidate)
+            except ValidationError as exc:
+                self.add_error("password", exc)
+        elif not linked_user:
+            self.add_error("password", "Enter a password for the student's login account.")
+        return cleaned
+
+
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
+    form = StudentProfileAdminForm
     list_display = ("name", "roll", "course", "username_display", "email_display", "is_active", "created_at")
     list_filter = ("course", "is_active", "joining_date")
     search_fields = ("name", "roll", "course", "user__username", "user__email")
-    autocomplete_fields = ("user",)
     inlines = (StudentCourseInline,)
     readonly_fields = ("created_at",)
     fieldsets = (
         ("Student information", {"fields": ("name", "roll", "course", "modules", "joining_date", "course_finish_date", "is_active")}),
-        ("Login account", {"fields": ("user",)}),
+        ("Student login credentials", {"fields": ("username", "email", "password")}),
         ("System information", {"fields": ("created_at",)}),
     )
 
+    @transaction.atomic
+    def save_model(self, request, obj, form, change):
+        User = get_user_model()
+        username = form.cleaned_data["username"]
+        email = form.cleaned_data["email"]
+        password = form.cleaned_data.get("password")
+
+        if obj.user_id:
+            account = obj.user
+            setattr(account, User.USERNAME_FIELD, username)
+            account.email = email
+            if password:
+                account.set_password(password)
+            account.save()
+        else:
+            account = User._default_manager.create_user(
+                **{User.USERNAME_FIELD: username},
+                email=email,
+                password=password,
+            )
+        obj.user = account
+        super().save_model(request, obj, form, change)
+
     @admin.display(description="Username", ordering="user__username")
     def username_display(self, obj):
-        return obj.user.username if obj.user_id else "No account"
+        return obj.user.get_username() if obj.user_id else "No account"
 
     @admin.display(description="Email", ordering="user__email")
     def email_display(self, obj):
