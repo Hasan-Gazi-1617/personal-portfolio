@@ -8,7 +8,11 @@
 <h1 style="font-size:clamp(24px,4vw,34px);font-weight:900;margin:12px 0">{{ submission.assignment.title }}</h1>
 <p>Submitted by {{ submission.student_name }}{% if submission.student_roll %} · Roll {{ submission.student_roll }}{% endif %}</p>
 <p style="font-size:12px;color:var(--text-muted)">Submitted: {{ submission.submitted_at|date:"d M Y, h:i A" }}</p>
-{% if submission.reviewed_at %}
+{% if submission.status == "failed" %}
+<div class="af-pill" style="background:rgba(220,38,38,.12);color:#b91c1c">Assignment FAILED · Writing locked</div><p class="af-feedback" style="margin-top:14px"><strong>Reason:</strong> {{ submission.failed_reason }}<br>Your teacher/admin can edit, delete or reopen this attempt. If reopened, go to Assignments and click Start Assignment to begin again.</p>
+{% elif submission.status == "in_progress" %}
+<div class="af-pill" style="background:rgba(245,158,11,.12);color:#b45309">Assignment reopened · Ready to restart</div><p class="af-feedback" style="margin-top:14px">Your teacher/admin reopened this attempt. Return to Assignments and click Start Assignment. Your writing timer will begin when you click Start.</p>
+{% elif submission.reviewed_at %}
 <div class="af-pill">Teacher review published{% if submission.overall_band_score != None %} · Overall IELTS Band {{ submission.overall_band_score }}{% endif %}{% if submission.score != None %} · Score {{ submission.score }} / 100{% endif %}</div>
 {% else %}
 <div class="af-pill" style="background:rgba(245,158,11,.12);color:#b45309">Waiting for teacher review</div>
