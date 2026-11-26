@@ -107,6 +107,9 @@ def ielts_learning(request):
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             student_name = request.POST.get("student_name", "").strip()[:100]
             student_roll = request.POST.get("student_roll", "").strip()[:40]
+            linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
+            if linked_profile:
+                student_name, student_roll = linked_profile.name, linked_profile.roll
             if not student_name:
                 return JsonResponse({"ok": False, "message": "Enter your name before starting the timed assignment."}, status=400)
             receipts = request.session.get("ielts_submission_receipts", [])
@@ -118,12 +121,14 @@ def ielts_learning(request):
                 submission = reopened
                 submission.student_name = student_name
                 submission.student_roll = student_roll
+                if linked_profile:
+                    submission.student_profile = linked_profile
                 submission.started_at = timezone.now()
-                submission.save(update_fields=["student_name", "student_roll", "started_at"])
+                submission.save(update_fields=["student_name", "student_roll", "started_at", "student_profile"])
             else:
                 submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name, student_roll=student_roll,
-                    status="in_progress", started_at=timezone.now(),
+                    student_profile=linked_profile, status="in_progress", started_at=timezone.now(),
                 )
             receipts.insert(0, str(submission.receipt_code))
             request.session["ielts_submission_receipts"] = list(dict.fromkeys(receipts))[:30]
@@ -203,7 +208,7 @@ def ielts_learning(request):
             "modules": profile.modules or [], "email": profile.user.email if profile.user_id else "",
             "has_account": bool(profile.user_id),
             "attendance": [{"date": row.class_date.strftime("%d %b %Y"), "module": row.module_name, "period": row.period, "in": row.sign_in.strftime("%I:%M %p") if row.sign_in else "—", "out": row.sign_out.strftime("%I:%M %p") if row.sign_out else "—", "duration": row.total_duration} for row in profile.attendance_records.all()[:40]],
-            "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSAssignmentSubmission.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("assignment")[:30]],
+            "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:30]],
             "practice": [{"title": row.practice.title, "score": f"{row.objective_score if row.objective_score is not None else '—'} / {row.total_objective if row.total_objective is not None else '—'}", "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y")} for row in IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:30]],
         } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
         "today": timezone.localdate(),
@@ -317,7 +322,7 @@ def student_dashboard(request):
     return render(request, "students/student_dashboard.html", {
         "student": profile,
         "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
-        "submissions": IELTSAssignmentSubmission.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("assignment")[:100],
+        "submissions": IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:100],
         "practice_attempts": IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:100],
         "notices": IELTSNotice.objects.filter(is_published=True)[:30],
         "materials": IELTSMaterial.objects.filter(is_published=True)[:100],
