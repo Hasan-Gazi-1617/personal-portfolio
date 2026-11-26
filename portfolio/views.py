@@ -109,14 +109,41 @@ def ielts_learning(request):
                 messages.error(request, "Enter your name and provide written work or attach a file.")
             elif uploaded and uploaded.size > 10 * 1024 * 1024:
                 messages.error(request, "The attachment must be 10 MB or smaller.")
-            elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg"):
+            elif uploaded and os.path.splitext(uploaded.name)[1].lower() not in (".pdf", ".docx", ".png", ".jpg", ".jpeg"):
                 messages.error(request, "Please upload a PDF, Word document or image file.")
             else:
+                extracted_text = ""
+                extraction_error = ""
+                if uploaded:
+                    try:
+                        from .ielts_services import extract_uploaded_text
+                        extracted_text = extract_uploaded_text(uploaded)
+                    except Exception as exc:
+                        extraction_error = str(exc)[:500]
+                    uploaded.seek(0)
+                final_answer = answer_text
+                if extracted_text:
+                    final_answer = (answer_text + "\n\n[Text extracted from uploaded file]\n" + extracted_text).strip() if answer_text else extracted_text
+                from .ielts_services import score_assignment
+                assessment = score_assignment(assignment.title, assignment.instructions, final_answer) if final_answer else {
+                    "status": "extraction_failed", "notice": extraction_error or "No readable text was found."
+                }
+                if extraction_error and not extracted_text and not answer_text:
+                    assessment = {"status": "extraction_failed", "notice": extraction_error}
                 submission = IELTSAssignmentSubmission.objects.create(
                     assignment=assignment, student_name=student_name,
                     student_roll=request.POST.get("student_roll", "").strip()[:40],
-                    answer_text=answer_text, file=uploaded,
+                    answer_text=final_answer, extracted_text=extracted_text, file=uploaded,
+                    ai_status=assessment.get("status", "pending"),
+                    ai_band_score=assessment.get("overall_band"),
+                    ai_feedback=assessment,
+                    word_count=assessment.get("word_count", len(final_answer.split())),
                 )
+                receipts = request.session.get("ielts_submission_receipts", [])
+                receipts = [code for code in receipts if code != str(submission.receipt_code)]
+                receipts.insert(0, str(submission.receipt_code))
+                request.session["ielts_submission_receipts"] = receipts[:25]
+                request.session.modified = True
                 return redirect("ielts_submission_receipt", receipt_code=submission.receipt_code)
             return redirect("/students/ielts/#assignments")
 
@@ -139,6 +166,7 @@ def ielts_learning(request):
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
         "assignments": IELTSAssignment.objects.filter(is_published=True),
+        "my_submissions": IELTSAssignmentSubmission.objects.filter(receipt_code__in=request.session.get("ielts_submission_receipts", [])).select_related("assignment").order_by("-submitted_at"),
     }
     return render(request, "students/ielts.html", context)
 
