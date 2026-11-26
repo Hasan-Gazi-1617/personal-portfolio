@@ -17,7 +17,7 @@ from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_POST
 
 logger = logging.getLogger(__name__)
@@ -354,6 +354,7 @@ def ielts_student_submission_file(request, receipt_code):
         return redirect("ielts_submission_receipt", receipt_code=receipt_code)
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
+@ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
 def student_access(request):
     """Student access using the roll number and private code issued by an admin."""
