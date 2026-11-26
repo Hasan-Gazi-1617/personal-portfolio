@@ -250,6 +250,30 @@ def ielts_learning(request):
     return render(request, "students/ielts.html", context)
 
 
+
+def student_assignment_submission(request):
+    """Student-only assignment workspace inside the personal student account."""
+    if not request.user.is_authenticated:
+        return redirect("student_access")
+    profile = StudentProfile.objects.filter(user=request.user, is_active=True).first()
+    if not profile:
+        logout(request)
+        messages.error(request, "No active student profile is linked to this account. Please contact your teacher.")
+        return redirect("student_access")
+    if request.method == "POST":
+        # Reuse the existing, validated assignment workflow so timers, paste limits,
+        # submission checks and receipt handling remain consistent.
+        return ielts_learning(request)
+    enrollments = _student_course_enrollments(profile)
+    courses = [item.course for item in enrollments]
+    return render(request, "students/student_assignment_submission.html", {
+        "student": profile,
+        "student_first_name": profile.name.strip().split()[0] if profile.name.strip() else "Student",
+        "assignments": IELTSAssignment.objects.filter(course__in=courses, is_published=True).order_by("course", "title"),
+        "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment").order_by("-submitted_at")[:100],
+    })
+
+
 def ielts_practice(request, pk):
     practice = get_object_or_404(IELTSPracticeSet, pk=pk, is_published=True)
     linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
