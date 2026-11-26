@@ -203,7 +203,7 @@ def ielts_learning(request):
         ],
         "course_modules": COURSE_MODULES,
         "course_student_data": list(StudentProfile.objects.filter(is_active=True).values("name", "roll", "course", "modules")),
-        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
+        "student_profiles": StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user"),
         "student_admin_data": [{
             "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
             "modules": profile.modules or [], "email": profile.user.email if profile.user_id else "",
