@@ -106,11 +106,22 @@ def ielts_learning(request):
             student_roll = request.POST.get("student_roll", "").strip()[:40]
             if not student_name:
                 return JsonResponse({"ok": False, "message": "Enter your name before starting the timed assignment."}, status=400)
-            submission = IELTSAssignmentSubmission.objects.create(
-                assignment=assignment, student_name=student_name, student_roll=student_roll,
-                status="in_progress", started_at=timezone.now(),
-            )
             receipts = request.session.get("ielts_submission_receipts", [])
+            reopened = IELTSAssignmentSubmission.objects.filter(
+                assignment=assignment, status="in_progress", started_at__isnull=True,
+                receipt_code__in=receipts,
+            ).order_by("-submitted_at").first()
+            if reopened:
+                submission = reopened
+                submission.student_name = student_name
+                submission.student_roll = student_roll
+                submission.started_at = timezone.now()
+                submission.save(update_fields=["student_name", "student_roll", "started_at"])
+            else:
+                submission = IELTSAssignmentSubmission.objects.create(
+                    assignment=assignment, student_name=student_name, student_roll=student_roll,
+                    status="in_progress", started_at=timezone.now(),
+                )
             receipts.insert(0, str(submission.receipt_code))
             request.session["ielts_submission_receipts"] = list(dict.fromkeys(receipts))[:30]
             request.session.modified = True
@@ -393,7 +404,7 @@ def ielts_admin_panel(request):
             submission.status = "in_progress"
             submission.paste_attempts = 0
             submission.failed_reason = ""
-            submission.started_at = timezone.now()
+            submission.started_at = None
             submission.elapsed_seconds = None
             submission.answer_text = ""
             submission.word_count = 0
