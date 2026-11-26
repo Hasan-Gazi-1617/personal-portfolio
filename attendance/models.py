@@ -22,6 +22,8 @@ class StudentProfile(models.Model):
     course = models.CharField(max_length=40, choices=COURSE_CHOICES)
     modules = models.JSONField(default=list, help_text="Modules assigned to this student")
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="student_profile")
+    joining_date = models.DateField(null=True, blank=True)
+    course_finish_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
