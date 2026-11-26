@@ -113,11 +113,14 @@
  student.addEventListener('change',()=>{fillModules();applySession();});
  module.addEventListener('change',()=>{moduleValue.value=module.value;signIn.disabled=!(student.value&&module.value);});
  period.addEventListener('change',()=>{periodValue.value=period.value;});
+ timeInput.addEventListener('input',()=>{timeInput.dataset.manual='true';});
  form.addEventListener('submit',event=>{
    const submitter=event.submitter;
    if(!submitter||!['sign_in','sign_out'].includes(submitter.value))return;
-   if(!student.value||!moduleValue.value||!timeInput.value){event.preventDefault();return;}
+   if(!student.value||!moduleValue.value){event.preventDefault();return;}
    const now=new Date();
+   if(timeInput.dataset.manual!=='true')timeInput.value=pad(now.getHours())+':'+pad(now.getMinutes());
+   if(!timeInput.value){event.preventDefault();return;}
    const parts=(submitter.value==='sign_out'
      ? [now.getFullYear(),now.getMonth()+1,now.getDate()]
      : date.value.split('-').map(Number));
