@@ -667,12 +667,10 @@ def ielts_admin_panel(request):
             submission.failed_reason = ""
             submission.started_at = None
             submission.elapsed_seconds = None
-            submission.answer_text = ""
-            submission.word_count = 0
-            submission.file = ""
+            # Keep the student's existing draft so they can continue from where they stopped.
             submission.reviewed_at = None
-            submission.save(update_fields=["status", "paste_attempts", "failed_reason", "started_at", "elapsed_seconds", "answer_text", "word_count", "file", "reviewed_at"])
-            messages.success(request, f"Reopened for {submission.student_name}. The timer has restarted and the student can begin again from their private submission link.")
+            submission.save(update_fields=["status", "paste_attempts", "failed_reason", "started_at", "elapsed_seconds", "reviewed_at"])
+            messages.success(request, f"Reopened for {submission.student_name}. The saved draft is preserved and the student can continue from their private submission link.")
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
