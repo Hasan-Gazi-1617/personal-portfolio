@@ -698,7 +698,7 @@ def ielts_admin_panel(request):
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
         "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
-        "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
+        "student_profiles": StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user"),
         "student_admin_data": [{
             "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
             "courses": [{"course": item.course, "modules": item.modules or [], "joining_date": item.joining_date.strftime("%d %b %Y") if item.joining_date else "—", "course_finish_date": item.course_finish_date.strftime("%d %b %Y") if item.course_finish_date else "—"} for item in _student_course_enrollments(profile)],
@@ -713,7 +713,7 @@ def ielts_admin_panel(request):
             "materials": [{"title": row.title, "description": row.description, "category": row.get_category_display(), "url": row.resource_url or (f"/students/ielts/material/{row.pk}/download/" if row.file else "")} for row in IELTSMaterial.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "lessons": [{"title": row.title, "summary": row.summary, "skill": row.get_skill_display()} for row in IELTSLesson.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
             "practice_sets": [{"title": row.title, "skill": row.get_skill_display(), "url": f"/students/ielts/practice/{row.pk}/"} for row in IELTSPracticeSet.objects.filter(course__in=[item.course for item in _student_course_enrollments(profile)], is_published=True)[:100]],
-        } for profile in StudentProfile.objects.filter(is_active=True).select_related("user")],
+        } for profile in StudentProfile.objects.filter(is_active=True, user__isnull=False).select_related("user")],
     })
 
 
