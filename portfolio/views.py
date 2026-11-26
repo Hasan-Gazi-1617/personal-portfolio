@@ -123,7 +123,7 @@ def ielts_learning(request):
                     uploaded.seek(0)
                 final_answer = answer_text
                 if extracted_text:
-                    final_answer = (answer_text + "\\n\\n[Text extracted from uploaded file]\\n" + extracted_text).strip() if answer_text else extracted_text
+                    final_answer = (answer_text + "\n\n[Text extracted from uploaded file]\n" + extracted_text).strip() if answer_text else extracted_text
                 from .ielts_services import score_assignment
                 assessment = score_assignment(assignment.title, assignment.instructions, final_answer) if final_answer else {
                     "status": "extraction_failed", "notice": extraction_error or "No readable text was found."
