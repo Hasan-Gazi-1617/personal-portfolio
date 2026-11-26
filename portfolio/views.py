@@ -10,7 +10,7 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +19,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
-from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent
+from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -42,8 +42,189 @@ def home(request):
 
 
 def ielts_learning(request):
-    """Public IELTS learning hub for current and future students."""
-    return render(request, "students/ielts.html")
+    """Open IELTS learning portal. Public actions are limited to submitting practice and assignments."""
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "submit_assignment":
+            assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
+            student_name = request.POST.get("student_name", "").strip()[:100]
+            answer_text = request.POST.get("answer_text", "").strip()
+            uploaded = request.FILES.get("submission_file")
+            if not student_name or (not answer_text and not uploaded):
+                messages.error(request, "Enter your name and provide written work or attach a file.")
+            elif uploaded and uploaded.size > 10 * 1024 * 1024:
+                messages.error(request, "The attachment must be 10 MB or smaller.")
+            else:
+                IELTSAssignmentSubmission.objects.create(
+                    assignment=assignment, student_name=student_name,
+                    student_roll=request.POST.get("student_roll", "").strip()[:40],
+                    answer_text=answer_text, file=uploaded,
+                )
+                messages.success(request, "Assignment submitted. Your teacher will review it.")
+            return redirect("ielts_learning#assignments")
+
+    context = {
+        "notices": IELTSNotice.objects.filter(is_published=True),
+        "materials": IELTSMaterial.objects.filter(is_published=True),
+        "lessons": IELTSLesson.objects.filter(is_published=True),
+        "practice_sets": IELTSPracticeSet.objects.filter(is_published=True),
+        "attendance": IELTSAttendance.objects.all()[:20],
+        "assignments": IELTSAssignment.objects.filter(is_published=True),
+    }
+    return render(request, "students/ielts.html", context)
+
+
+def ielts_practice(request, pk):
+    practice = get_object_or_404(IELTSPracticeSet, pk=pk, is_published=True)
+    result = None
+    if request.method == "POST":
+        name = request.POST.get("student_name", "").strip()[:100]
+        roll = request.POST.get("student_roll", "").strip()[:40]
+        if not name:
+            messages.error(request, "Please enter your name before starting the practice.")
+        else:
+            answers = {}
+            for key, value in request.POST.items():
+                if key.startswith("answer_"):
+                    answers[key[7:]] = value.strip()[:5000]
+            objective_total = 0
+            objective_score = 0
+            subjective_response = ""
+            subjective_prompt = ""
+            for index, question in enumerate(practice.questions or []):
+                qtype = str(question.get("type", "objective")).lower()
+                answer = answers.get(str(index), "")
+                if qtype in {"objective", "choice", "short"} and question.get("answer") is not None:
+                    objective_total += 1
+                    expected = str(question.get("answer", "")).strip().casefold()
+                    if answer.strip().casefold() == expected:
+                        objective_score += 1
+                elif answer:
+                    subjective_response += f"\nQuestion: {question.get('prompt', '')}\nResponse: {answer}\n"
+                    subjective_prompt += str(question.get("prompt", "")) + "\n"
+            ai_score = None
+            feedback = "Objective answers were checked automatically. Subjective responses await teacher review."
+            if practice.skill in {"writing", "speaking"} and subjective_response:
+                from .ielts_services import score_subjective
+                ai_score, feedback = score_subjective(practice.skill, subjective_prompt, subjective_response)
+            result = IELTSPracticeAttempt.objects.create(
+                practice=practice, student_name=name, student_roll=roll,
+                answers=answers, objective_score=objective_score,
+                total_objective=objective_total, ai_score=ai_score, ai_feedback=feedback,
+            )
+            return render(request, "students/ielts_practice_result.html", {
+                "practice": practice, "attempt": result,
+            })
+    return render(request, "students/ielts_practice.html", {"practice": practice})
+
+
+def ielts_admin_panel(request):
+    """Teacher tools are protected by the existing private owner session."""
+    denied = _owner_required(request)
+    if denied:
+        return denied
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "notice":
+            IELTSNotice.objects.create(title=request.POST.get("title", "").strip()[:180],
+                                      message=request.POST.get("message", "").strip(),
+                                      is_published=True)
+            messages.success(request, "Class announcement published.")
+        elif action == "assignment":
+            title = request.POST.get("title", "").strip()[:180]
+            instructions = request.POST.get("instructions", "").strip()
+            if title and instructions:
+                IELTSAssignment.objects.create(title=title, instructions=instructions, is_published=True)
+                messages.success(request, "Assignment published.")
+        elif action == "material":
+            title = request.POST.get("title", "").strip()[:180]
+            if title:
+                IELTSMaterial.objects.create(
+                    title=title, description=request.POST.get("description", ""),
+                    category=request.POST.get("category", "general"),
+                    resource_url=request.POST.get("resource_url", "").strip(),
+                    file=request.FILES.get("material_file"),
+                )
+                messages.success(request, "Course material added.")
+        elif action == "lesson":
+            title = request.POST.get("title", "").strip()[:180]
+            content = request.POST.get("content", "").strip()
+            if title and content:
+                IELTSLesson.objects.create(
+                    title=title, content=content, summary=request.POST.get("summary", "")[:280],
+                    skill=request.POST.get("skill", "general"),
+                    order=int(request.POST.get("order", 0) or 0),
+                )
+                messages.success(request, "Lesson published.")
+        elif action == "practice":
+            title = request.POST.get("title", "").strip()[:180]
+            try:
+                questions = json.loads(request.POST.get("questions_json", "[]"))
+                if not isinstance(questions, list):
+                    raise ValueError("Questions must be a JSON list.")
+                duration = max(1, min(180, int(request.POST.get("time_minutes", 20))))
+                if title and questions:
+                    IELTSPracticeSet.objects.create(
+                        title=title, skill=request.POST.get("skill", "reading"),
+                        instructions=request.POST.get("instructions", ""),
+                        time_minutes=duration, questions=questions, is_published=True,
+                    )
+                    messages.success(request, "Timed practice set published.")
+            except (ValueError, TypeError, json.JSONDecodeError):
+                messages.error(request, "Practice questions must be valid JSON in a list.")
+        elif action == "attendance":
+            try:
+                class_date = datetime.strptime(request.POST.get("class_date", ""), "%Y-%m-%d").date()
+                batch = request.POST.get("batch", "IELTS").strip()[:100] or "IELTS"
+                roster = []
+                for line in request.POST.get("roster", "").splitlines():
+                    parts = [part.strip() for part in line.split("|", 2)]
+                    if len(parts) >= 2 and parts[1]:
+                        roster.append({"roll": parts[0][:40], "name": parts[1][:100],
+                                      "status": parts[2].lower() if len(parts) > 2 and parts[2].lower() in {"present", "absent", "late"} else "present"})
+                IELTSAttendance.objects.update_or_create(
+                    class_date=class_date, batch=batch,
+                    defaults={"topic": request.POST.get("topic", "")[:180], "roster": roster},
+                )
+                messages.success(request, "Attendance sheet saved.")
+            except ValueError:
+                messages.error(request, "Choose a valid class date.")
+        elif action == "review_submission":
+            submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
+            try:
+                fragments = json.loads(request.POST.get("marked_fragments", "[]"))
+                if not isinstance(fragments, list):
+                    raise ValueError("Marking must be a list.")
+                raw_score = request.POST.get("score", "").strip()
+                submission.score = float(raw_score) if raw_score else None
+                submission.marked_fragments = fragments
+                submission.teacher_feedback = request.POST.get("teacher_feedback", "").strip()
+                submission.reviewed_at = timezone.now()
+                submission.save()
+                messages.success(request, "Submission feedback saved.")
+            except (ValueError, TypeError, json.JSONDecodeError):
+                messages.error(request, "Score or highlighted answer format is invalid.")
+        return redirect("ielts_admin_panel")
+
+    return render(request, "students/ielts_admin.html", {
+        "notices": IELTSNotice.objects.all()[:12],
+        "assignments": IELTSAssignment.objects.all()[:20],
+        "submissions": IELTSAssignmentSubmission.objects.select_related("assignment")[:30],
+        "materials": IELTSMaterial.objects.all()[:20],
+        "lessons": IELTSLesson.objects.all()[:20],
+        "practice_sets": IELTSPracticeSet.objects.all()[:20],
+        "attendance": IELTSAttendance.objects.all()[:20],
+        "attempts": IELTSPracticeAttempt.objects.select_related("practice")[:20],
+    })
+
+
+def ielts_material_download(request, pk):
+    material = get_object_or_404(IELTSMaterial, pk=pk, is_published=True)
+    if not material.file:
+        return redirect(material.resource_url or "ielts_learning")
+    return FileResponse(material.file.open("rb"), as_attachment=True, filename=material.file.name.rsplit("/", 1)[-1])
+
+
 
 
 def mikrotik_generator(request):
