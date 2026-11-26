@@ -61,7 +61,7 @@ def ielts_learning(request):
                     answer_text=answer_text, file=uploaded,
                 )
                 messages.success(request, "Assignment submitted. Your teacher will review it.")
-            return redirect("ielts_learning#assignments")
+            return redirect("/students/ielts/#assignments")
 
     context = {
         "notices": IELTSNotice.objects.filter(is_published=True),
