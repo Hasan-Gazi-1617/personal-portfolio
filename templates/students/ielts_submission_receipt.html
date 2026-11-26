@@ -37,5 +37,5 @@
 {% for fragment in submission.marked_fragments %}<div class="af-band" style="margin-top:9px">{{ fragment.text }}</div>{% endfor %}
 </div>
 {% endif %}
-<div class="af-actions"><a href="{% url 'ielts_learning' %}#view-assignments">View Assignment Menu</a><a href="{% url 'ielts_learning' %}#assignments">Back to Assignments</a></div>
+<div class="af-actions"><a href="{% url 'student_dashboard' %}">Back to Student Account</a><a href="{% url 'ielts_learning' %}#view-assignments">View Assignment Menu</a><a href="{% url 'ielts_learning' %}#assignments">Back to Assignments</a></div>
 </section></div></main>{% endblock %}
