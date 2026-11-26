@@ -22,9 +22,22 @@ class TicketActivityAdmin(admin.ModelAdmin):
 
 from .models import (
     IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet,
-    IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment,
-    IELTSAssignmentSubmission,
+    IELTSPracticeAttempt, IELTSAssignment, IELTSAssignmentSubmission,
 )
+from attendance.models import StudentProfile, AttendanceRecord
+
+# Use course/student terminology in Django Admin instead of IELTS-only labels.
+for model, singular, plural in (
+    (IELTSNotice, "Student notice", "Student notices"),
+    (IELTSMaterial, "Course material", "Course materials"),
+    (IELTSLesson, "Course lesson", "Course lessons"),
+    (IELTSPracticeSet, "Course practice set", "Course practice sets"),
+    (IELTSPracticeAttempt, "Student practice attempt", "Student practice attempts"),
+    (IELTSAssignment, "Course assignment", "Course assignments"),
+    (IELTSAssignmentSubmission, "Student assignment submission", "Student assignment submissions"),
+):
+    model._meta.verbose_name = singular
+    model._meta.verbose_name_plural = plural
 
 
 @admin.register(IELTSNotice)
@@ -58,19 +71,13 @@ class IELTSPracticeSetAdmin(admin.ModelAdmin):
 
 @admin.register(IELTSPracticeAttempt)
 class IELTSPracticeAttemptAdmin(admin.ModelAdmin):
-    list_display = ("student_name", "practice", "objective_score", "ai_score", "submitted_at")
+    list_display = ("student_name", "student_roll", "practice", "objective_score", "ai_score", "submitted_at")
     list_filter = ("practice__skill", "submitted_at")
     search_fields = ("student_name", "student_roll", "practice__title")
     readonly_fields = ("practice", "student_name", "student_roll", "answers", "objective_score", "total_objective", "submitted_at")
 
 
-@admin.register(IELTSAttendance)
-class IELTSAttendanceAdmin(admin.ModelAdmin):
-    list_display = ("class_date", "batch", "topic", "updated_at")
-    list_filter = ("batch", "class_date")
-    search_fields = ("batch", "topic")
-    fields = ("class_date", "batch", "topic", "roster")
-
+ 
 
 @admin.register(IELTSAssignment)
 class IELTSAssignmentAdmin(admin.ModelAdmin):
@@ -81,8 +88,32 @@ class IELTSAssignmentAdmin(admin.ModelAdmin):
 
 @admin.register(IELTSAssignmentSubmission)
 class IELTSAssignmentSubmissionAdmin(admin.ModelAdmin):
-    list_display = ("student_name", "assignment", "score", "reviewed_at", "submitted_at")
-    list_filter = ("assignment", "reviewed_at")
-    search_fields = ("student_name", "student_roll", "assignment__title")
-    fields = ("assignment", "student_name", "student_roll", "answer_text", "file", "teacher_feedback", "marked_fragments", "score", "reviewed_at", "submitted_at")
+    list_display = ("student_name", "student_roll", "student_profile", "assignment", "score", "reviewed_at", "submitted_at")
+    list_filter = ("assignment", "reviewed_at", "student_profile__course")
+    search_fields = ("student_name", "student_roll", "assignment__title", "student_profile__name", "student_profile__user__username")
+    fields = ("student_profile", "assignment", "student_name", "student_roll", "answer_text", "file", "teacher_feedback", "marked_fragments", "score", "reviewed_at", "submitted_at")
     readonly_fields = ("submitted_at",)
+
+
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    list_display = ("name", "roll", "course", "username_display", "email_display", "is_active")
+    list_filter = ("course", "is_active")
+    search_fields = ("name", "roll", "course", "user__username", "user__email")
+    autocomplete_fields = ("user",)
+
+    @admin.display(description="Username")
+    def username_display(self, obj):
+        return obj.user.username if obj.user_id else "No account"
+
+    @admin.display(description="Email")
+    def email_display(self, obj):
+        return obj.user.email if obj.user_id else "—"
+
+
+@admin.register(AttendanceRecord)
+class AttendanceRecordAdmin(admin.ModelAdmin):
+    list_display = ("class_date", "student", "course_name", "module_name", "period", "sign_in", "sign_out")
+    list_filter = ("course_name", "module_name", "period", "class_date")
+    search_fields = ("student__name", "student__roll", "student__user__username", "course_name", "module_name")
+    autocomplete_fields = ("student",)
