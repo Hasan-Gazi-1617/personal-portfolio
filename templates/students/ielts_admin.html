@@ -34,7 +34,7 @@
  const links=[...nav.querySelectorAll('[data-section]')];
  const panels=[...document.querySelectorAll('[data-panel]')];
  function activate(name,updateHash){
-   if(!links.some(a=>a.dataset.section===name))name='notices';
+   if(!links.some(a=>a.dataset.section===name))name='notice-entry';
    panels.forEach(p=>p.hidden=p.dataset.panel!==name);
    links.forEach(a=>{if(a.dataset.section===name)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
    const first=panels.find(p=>p.dataset.panel===name);
@@ -47,7 +47,7 @@
  });
  const target=location.hash.slice(1);
  const matching=panels.find(p=>p.id===target);
- activate(matching?matching.dataset.panel:'notices',false);
+ activate(matching?matching.dataset.panel:'notice-entry',false);
 })();
 {{ course_modules|json_script:'course-modules-data' }}<script>(function(){const moduleData=JSON.parse(document.getElementById('course-modules-data').textContent);const courseSelect=document.getElementById('admin-att-course'),moduleList=document.getElementById('admin-att-modules');if(courseSelect&&moduleList){function renderAdminModules(){moduleList.innerHTML='';(moduleData[courseSelect.value]||[]).forEach(m=>{const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='modules';input.value=m;label.append(input,document.createTextNode(' '+m));moduleList.appendChild(label);});}courseSelect.addEventListener('change',renderAdminModules);renderAdminModules();}
 document.querySelectorAll('.admin-att-student').forEach(select=>{const form=select.closest('form'),moduleSelect=form&&form.querySelector('.admin-att-module');if(!moduleSelect)return;function updateModules(){const current=moduleSelect.dataset.current||moduleSelect.value;moduleSelect.innerHTML='<option value="">Select module</option>';(select.selectedOptions[0]?.dataset.modules||'').split('||').filter(Boolean).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;if(m===current)o.selected=true;moduleSelect.appendChild(o);});}select.addEventListener('change',updateModules);updateModules();});})();</script>{% endblock %}
