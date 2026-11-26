@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
 from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission
-from attendance.models import AttendanceRecord, COURSE_MODULES, StudentProfile
+from attendance.models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -347,6 +347,14 @@ def student_logout(request):
     return redirect("student_login")
 
 
+def _student_course_enrollments(profile):
+    enrollments = list(StudentCourse.objects.filter(student=profile, is_active=True).order_by("course"))
+    if not enrollments:
+        enrollments = [StudentCourse(student=profile, course=profile.course, modules=profile.modules or [],
+                                     joining_date=profile.joining_date, course_finish_date=profile.course_finish_date)]
+    return enrollments
+
+
 def student_dashboard(request):
     if not request.user.is_authenticated:
         return redirect("student_login")
@@ -355,14 +363,17 @@ def student_dashboard(request):
         logout(request)
         messages.error(request, "No active student profile is linked to this account. Please contact your teacher.")
         return redirect("student_login")
+    enrollments = _student_course_enrollments(profile)
+    courses = [item.course for item in enrollments]
     return render(request, "students/student_dashboard.html", {
         "student": profile,
+        "course_enrollments": enrollments,
         "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
-        "submissions": IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:100],
-        "practice_attempts": IELTSPracticeAttempt.objects.filter(student_name__iexact=profile.name, student_roll=profile.roll).select_related("practice")[:100],
-        "notices": IELTSNotice.objects.filter(is_published=True)[:30],
-        "materials": IELTSMaterial.objects.filter(is_published=True)[:100],
-        "lessons": IELTSLesson.objects.filter(is_published=True)[:100],
+        "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment")[:100],
+        "practice_attempts": IELTSPracticeAttempt.objects.filter(student_profile=profile).select_related("practice")[:100],
+        "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True)[:100],
+        "materials": IELTSMaterial.objects.filter(course__in=courses, is_published=True)[:100],
+        "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
     })
 
 
