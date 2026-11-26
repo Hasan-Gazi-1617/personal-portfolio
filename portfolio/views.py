@@ -395,8 +395,8 @@ def ielts_admin_panel(request):
         if action == "notice":
             title = request.POST.get("title", "").strip()[:180]
             message = request.POST.get("message", "").strip()
-            if title and message:
-                IELTSNotice.objects.create(title=title, message=message, is_published=True)
+            if title and message and request.POST.get("course") in COURSE_MODULES:
+                IELTSNotice.objects.create(title=title, message=message, course=request.POST["course"], is_published=True)
                 messages.success(request, "Notice published successfully.")
             else:
                 messages.error(request, "Enter both a notice title and details.")
@@ -424,13 +424,16 @@ def ielts_admin_panel(request):
             except (TypeError, ValueError):
                 duration, min_words, max_words = 40, 250, 350
             if title and instructions:
-                IELTSAssignment.objects.create(title=title, instructions=instructions, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
-                messages.success(request, "IELTS timed writing assignment published.")
+                course = request.POST.get("course", "")
+                if course not in COURSE_MODULES:
+                    raise ValueError("Select a valid course for this assignment.")
+                IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                messages.success(request, f"{course} assignment published.")
         elif action == "material":
             title = request.POST.get("title", "").strip()[:180]
-            if title:
+            if title and request.POST.get("course") in COURSE_MODULES:
                 IELTSMaterial.objects.create(
-                    title=title, description=request.POST.get("description", ""),
+                    title=title, course=request.POST["course"], description=request.POST.get("description", ""),
                     category=request.POST.get("category", "general"),
                     resource_url=request.POST.get("resource_url", "").strip(),
                     file=request.FILES.get("material_file"),
@@ -439,9 +442,9 @@ def ielts_admin_panel(request):
         elif action == "lesson":
             title = request.POST.get("title", "").strip()[:180]
             content = request.POST.get("content", "").strip()
-            if title and content:
+            if title and content and request.POST.get("course") in COURSE_MODULES:
                 IELTSLesson.objects.create(
-                    title=title, content=content, summary=request.POST.get("summary", "")[:280],
+                    title=title, course=request.POST["course"], content=content, summary=request.POST.get("summary", "")[:280],
                     skill=request.POST.get("skill", "general"),
                     order=int(request.POST.get("order", 0) or 0),
                 )
@@ -454,8 +457,11 @@ def ielts_admin_panel(request):
                     raise ValueError("Questions must be a JSON list.")
                 duration = max(1, min(180, int(request.POST.get("time_minutes", 20))))
                 if title and questions:
+                    course = request.POST.get("course", "")
+                    if course not in COURSE_MODULES:
+                        raise ValueError("Select a valid course for this practice set.")
                     IELTSPracticeSet.objects.create(
-                        title=title, skill=request.POST.get("skill", "reading"),
+                        title=title, course=course, skill=request.POST.get("skill", "reading"),
                         instructions=request.POST.get("instructions", ""),
                         time_minutes=duration, questions=questions, is_published=True,
                     )
@@ -511,9 +517,37 @@ def ielts_admin_panel(request):
                         profile.course_finish_date = finish_date
                         profile.is_active = True
                         profile.save()
+                    StudentCourse.objects.update_or_create(
+                        student=profile, course=course,
+                        defaults={"modules": modules, "joining_date": joining_date, "course_finish_date": finish_date, "is_active": True},
+                    )
                 messages.success(request, f"Student registration completed for {name}. Login uses {email}.")
             except ValidationError as exc:
                 messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
+            except (ValueError, TypeError) as exc:
+                messages.error(request, str(exc))
+        elif action == "student_course_add":
+            try:
+                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
+                course = request.POST.get("course", "")
+                if course not in COURSE_MODULES:
+                    raise ValueError("Select a valid course.")
+                selected = request.POST.getlist("modules")
+                all_modules = request.POST.get("all_modules") == "1"
+                modules = list(COURSE_MODULES[course]) if all_modules else [item for item in selected if item in COURSE_MODULES[course]]
+                if not modules:
+                    raise ValueError("Select at least one module or choose All modules.")
+                joining_raw = request.POST.get("joining_date", "").strip()
+                finish_raw = request.POST.get("course_finish_date", "").strip()
+                joining_date = datetime.strptime(joining_raw, "%Y-%m-%d").date() if joining_raw else None
+                finish_date = datetime.strptime(finish_raw, "%Y-%m-%d").date() if finish_raw else None
+                if joining_date and finish_date and finish_date < joining_date:
+                    raise ValueError("Course finish date cannot be before the joining date.")
+                StudentCourse.objects.update_or_create(
+                    student=profile, course=course,
+                    defaults={"modules": modules, "joining_date": joining_date, "course_finish_date": finish_date, "is_active": True},
+                )
+                messages.success(request, f"{course} enrolled for {profile.name}.")
             except (ValueError, TypeError) as exc:
                 messages.error(request, str(exc))
         elif action == "student_account_update":
@@ -649,6 +683,7 @@ def ielts_admin_panel(request):
         "student_profiles": StudentProfile.objects.filter(is_active=True).select_related("user"),
         "student_admin_data": [{
             "id": profile.pk, "name": profile.name, "roll": profile.roll, "course": profile.course,
+            "courses": [{"course": item.course, "modules": item.modules or [], "joining_date": item.joining_date.strftime("%d %b %Y") if item.joining_date else "—", "course_finish_date": item.course_finish_date.strftime("%d %b %Y") if item.course_finish_date else "—"} for item in _student_course_enrollments(profile)],
             "modules": profile.modules or [], "username": profile.user.username if profile.user_id else "",
             "email": profile.user.email if profile.user_id else "", "has_account": bool(profile.user_id),
             "joining_date": profile.joining_date.strftime("%d %b %Y") if profile.joining_date else "—",
