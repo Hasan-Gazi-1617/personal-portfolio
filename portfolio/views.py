@@ -209,6 +209,15 @@ def ielts_submission_file(request, pk):
         return redirect("ielts_admin_panel")
     return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
 
+def ielts_student_submission_file(request, receipt_code):
+    allowed_codes = request.session.get("ielts_submission_receipts", [])
+    if str(receipt_code) not in allowed_codes:
+        return HttpResponseForbidden("This private submission link is not available in this browser session.")
+    submission = get_object_or_404(IELTSAssignmentSubmission, receipt_code=receipt_code)
+    if not submission.file:
+        return redirect("ielts_submission_receipt", receipt_code=receipt_code)
+    return FileResponse(submission.file.open("rb"), as_attachment=True, filename=submission.file.name.rsplit("/", 1)[-1])
+
 def ielts_admin_panel(request):
     """Teacher tools are protected by the existing private owner session."""
     denied = _owner_required(request)
