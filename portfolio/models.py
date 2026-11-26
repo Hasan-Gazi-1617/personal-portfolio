@@ -436,6 +436,10 @@ class IELTSAssignmentSubmission(models.Model):
     # Admin marks individual answer fragments: [{"text": "...", "correct": true}, ...]
     marked_fragments = models.JSONField(default=list, blank=True)
     score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    task_response_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    coherence_cohesion_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    lexical_resource_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    grammatical_range_band = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
