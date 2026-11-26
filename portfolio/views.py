@@ -604,7 +604,9 @@ def ielts_admin_panel(request):
                 class_date = datetime.strptime(request.POST.get("class_date", ""), "%Y-%m-%d").date()
                 period = request.POST.get("period", "")
                 module = request.POST.get("module", "")
-                if period not in AttendanceRecord.Period.values or module not in (student.modules or []):
+                course = request.POST.get("course", "")
+                enrollment = StudentCourse.objects.filter(student=student, course=course, is_active=True).first()
+                if period not in AttendanceRecord.Period.values or not enrollment or module not in (enrollment.modules or []):
                     raise ValueError
                 record = get_object_or_404(AttendanceRecord, pk=request.POST.get("attendance_id")) if action == "edit_attendance" else None
                 if record:
@@ -614,7 +616,7 @@ def ielts_admin_panel(request):
                         class_date=class_date, student=student, period=period,
                         course_name=student.course, module_name=module,
                     )
-                record.course_name, record.module_name = student.course, module
+                record.course_name, record.module_name = course, module
                 record.sign_in = datetime.strptime(request.POST["sign_in"], "%H:%M").time() if request.POST.get("sign_in") else None
                 record.sign_out = datetime.strptime(request.POST["sign_out"], "%H:%M").time() if request.POST.get("sign_out") else None
                 record.sign_out_date = class_date if record.sign_out else None
@@ -688,6 +690,7 @@ def ielts_admin_panel(request):
         "practice_sets": IELTSPracticeSet.objects.all()[:20],
         "attendance_students": StudentProfile.objects.all(),
         "active_attendance_students": StudentProfile.objects.filter(is_active=True),
+        "attendance_enrollment_data": [{"student_id": row.student_id, "course": row.course, "modules": row.modules or []} for row in StudentCourse.objects.filter(student__is_active=True, is_active=True)],
         "attendance_records": AttendanceRecord.objects.select_related("student").all()[:300],
         "course_modules": COURSE_MODULES,
         "today": timezone.localdate(),
