@@ -85,18 +85,16 @@ ready(function(){
     if(!card.querySelector('.cert-status'))card.querySelector('div:last-child').appendChild(el('span','cert-status','<i class="bi bi-arrow-repeat"></i> Continuous learning'));
   });
 
-  var cvLink=document.querySelector('.hero-buttons a[download]');
-  if(cvLink&&!document.querySelector('.cv-preview-trigger')){
-    var preview=el('button','btn btn-secondary-custom cv-preview-trigger','Preview CV <i class="bi bi-file-earmark-person"></i>');
-    preview.type='button';cvLink.insertAdjacentElement('afterend',preview);
+  var cvLink=document.querySelector('.hero-buttons a[href*="CV_HASAN.pdf"]:not([download])');
+  if(cvLink&&!document.getElementById('cvPreviewModal')){
     var modal=el('div','cv-modal');
     modal.id='cvPreviewModal';modal.setAttribute('aria-hidden','true');
     modal.innerHTML='<div class="cv-dialog" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle"><div class="cv-dialog-head"><strong id="cvModalTitle"><i class="bi bi-file-earmark-person"></i> MD. HASAN — CV Preview</strong><button class="modal-icon-btn" type="button" aria-label="Close CV preview"><i class="bi bi-x-lg"></i></button></div><iframe class="cv-frame" title="MD. Hasan CV preview" loading="lazy"></iframe></div>';
     document.body.appendChild(modal);
     var frame=modal.querySelector('iframe'),close=modal.querySelector('button');
-    function openCv(){frame.src=cvLink.href;modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';close.focus()}
+    function openCv(e){e.preventDefault();frame.src=cvLink.href;modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';close.focus()}
     function closeCv(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');frame.removeAttribute('src');document.body.style.overflow=''}
-    preview.addEventListener('click',openCv);close.addEventListener('click',closeCv);modal.addEventListener('click',function(e){if(e.target===modal)closeCv()});
+    cvLink.addEventListener('click',openCv);close.addEventListener('click',closeCv);modal.addEventListener('click',function(e){if(e.target===modal)closeCv()});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('is-open'))closeCv()});
   }
 
