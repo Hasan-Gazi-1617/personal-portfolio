@@ -30,6 +30,19 @@ def student_attendance(request):
         form = ClockForm(request.POST)
         action = request.POST.get("action")
         if form.is_valid() and action in {"sign_in", "sign_out"}:
+            try:
+                raw_timestamp = request.POST.get("timestamp_local", "").strip()
+                if raw_timestamp:
+                    browser_time = datetime.fromisoformat(raw_timestamp.replace("Z", "+00:00"))
+                    if timezone.is_naive(browser_time):
+                        raise ValueError("Timezone-aware browser timestamp required.")
+                    local_time = timezone.localtime(browser_time)
+                    clock_date, clock_time = local_time.date(), local_time.time().replace(tzinfo=None)
+                else:
+                    clock_date, clock_time = timezone.localdate(), form.cleaned_data["time_value"]
+            except (TypeError, ValueError):
+                messages.error(request, "Your browser time could not be verified. Please refresh and try again.")
+                return redirect("student_attendance")
             with transaction.atomic():
                 student = get_object_or_404(StudentProfile.objects.select_for_update(), pk=profile.pk, is_active=True)
                 course = form.cleaned_data["course"]
