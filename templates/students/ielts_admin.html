@@ -138,7 +138,8 @@ function renderStudentDetails(student,target){
 function renderTeacherStudent(){
  const student=adminStudents.find(x=>String(x.id)===adminStudentSelect.value);
  renderStudentDetails(student,adminProfile);
- if(accountProfile)accountProfile.value=student?String(student.id):'';\n if(document.getElementById('student-course-profile'))document.getElementById('student-course-profile').value=student?String(student.id):'';
+ if(accountProfile)accountProfile.value=student?String(student.id):'';
+ if(document.getElementById('student-course-profile'))document.getElementById('student-course-profile').value=student?String(student.id):'';
  if(accountUsername)accountUsername.value=student?student.username:'';
  if(accountEmail)accountEmail.value=student?student.email:'';
 }
