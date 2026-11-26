@@ -311,6 +311,7 @@ def ielts_admin_panel(request):
             if name:
                 IELTSStudent.objects.get_or_create(name=name, defaults={"roll": roll})
                 messages.success(request, "Student added to the student list.")
+                return redirect("/students/ielts/admin/#attendance")
             else:
                 messages.error(request, "Enter a student name.")
         elif action == "attendance":
@@ -335,7 +336,7 @@ def ielts_admin_panel(request):
                 messages.success(request, "Attendance saved successfully.")
             except (ValueError, TypeError):
                 messages.error(request, "Check the date, student, course, module and time fields.")
-            return redirect("/students/ielts/#attendance")
+            return redirect("/students/ielts/admin/#attendance")
         elif action == "review_submission":
             submission = get_object_or_404(IELTSAssignmentSubmission, pk=request.POST.get("submission_id"))
             try:
