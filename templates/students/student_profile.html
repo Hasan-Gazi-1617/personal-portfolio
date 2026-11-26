@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit Student Profile | Hasan{% endblock %}
+{% block extra_css %}
+<style>
+.sp-page{min-height:80vh;padding:125px 16px 70px;background:radial-gradient(ellipse at 80% 0,rgba(34,197,94,.12),transparent 42%),var(--bg-primary);color:var(--text-primary)}
+.sp-card{max-width:650px;margin:auto;padding:clamp(20px,4vw,36px);border:1px solid var(--border);border-radius:20px;background:var(--bg-card);box-shadow:0 20px 65px rgba(0,0,0,.08)}
+.sp-card h1{font-size:clamp(25px,4vw,34px);font-weight:850;margin:8px 0}.sp-note{font-size:13px;color:var(--text-secondary);line-height:1.7}.sp-form{display:grid;gap:15px;margin-top:22px}.sp-form label{font-size:12px;font-weight:800}.sp-form input{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-primary);color:var(--text-primary)}.sp-submit{border:0;border-radius:10px;padding:14px;background:#22c55e;color:#052b16;font-weight:900;cursor:pointer}.sp-alert{padding:11px;border-radius:9px;background:rgba(220,38,38,.1);margin:8px 0;font-size:13px}.sp-link{color:#16a34a;font-size:12px;font-weight:800;text-decoration:none}
+</style>
+{% endblock %}
+{% block content %}
+<main class="sp-page"><section class="sp-card">
+<span style="font-size:11px;font-weight:900;letter-spacing:1.5px;color:#16a34a">MY STUDENT PROFILE</span>
+<h1>Edit Information</h1><p class="sp-note">Update your personal information and login email. Leave the new password blank if you do not want to change it.</p>
+{% for error in errors %}<div class="sp-alert">{{ error }}</div>{% endfor %}
+<form class="sp-form" method="post">{% csrf_token %}
+<label>Full Name<input name="name" type="text" maxlength="120" value="{{ request.POST.name|default:student.name }}" required></label>
+<label>Roll<input name="roll" type="text" maxlength="40" value="{{ request.POST.roll|default:student.roll }}"></label>
+<label>Email address<input name="email" type="email" maxlength="150" value="{{ request.POST.email|default:request.user.email }}" required></label>
+<label>New Password (optional)<input name="password" type="password" autocomplete="new-password"></label>
+<button class="sp-submit" type="submit">Save Information</button>
+</form>
+<p class="sp-note" style="margin-top:18px"><a class="sp-link" href="{% url 'student_dashboard' %}">← Back to Student Profile</a></p>
+</section></main>
+{% endblock %}
