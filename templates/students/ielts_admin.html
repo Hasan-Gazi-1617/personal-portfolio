@@ -87,8 +87,7 @@ document.querySelectorAll(".attendance-edit-details").forEach(details=>{const fo
 <label class="assignment-field">Module<select name="module_name" class="assignment-module" required><option value="">Select module</option></select></label>
 <label class="assignment-field assignment-field-title">Assignment Title<input name="title" placeholder="e.g. Academic Writing Task 2" maxlength="180" required></label>
 <label class="assignment-field">Duration (minutes)<input type="number" name="time_minutes" min="1" max="180" value="40" required></label>
-<label class="assignment-field">Minimum Words<input type="number" name="min_words" min="1" max="5000" value="250" required></label>
-<label class="assignment-field">Maximum Words<input type="number" name="max_words" min="1" max="5000" value="350" required></label>
+<div class="assignment-word-limits" hidden><label class="assignment-field">Minimum Words<input type="number" name="min_words" min="1" max="5000" value="250"></label><label class="assignment-field">Maximum Words<input type="number" name="max_words" min="1" max="5000" value="350"></label></div>
 </div>
 <label class="assignment-field assignment-instructions">Assignment Instructions<textarea name="instructions" placeholder="Write clear task instructions for this student..." required></textarea></label>
 <div class="assignment-form-footer"><span class="ia-sub">This assignment will be visible only to the selected student.</span><button class="ia-btn" type="submit"><i class="bi bi-send"></i> Assign to Student</button></div>
@@ -108,8 +107,7 @@ document.querySelectorAll(".attendance-edit-details").forEach(details=>{const fo
 <label>Module<select name="module_name" class="assignment-module" data-current="{{ assignment.module_name }}" required></select></label>
 <label>Assignment Title<input name="title" value="{{ assignment.title }}" maxlength="180" required></label>
 <label>Duration (minutes)<input type="number" name="time_minutes" value="{{ assignment.time_minutes }}" min="1" max="180" required></label>
-<label>Minimum Words<input type="number" name="min_words" value="{{ assignment.min_words }}" min="1" max="5000" required></label>
-<label>Maximum Words<input type="number" name="max_words" value="{{ assignment.max_words }}" min="1" max="5000" required></label>
+<div class="assignment-word-limits" hidden><label>Minimum Words<input type="number" name="min_words" value="{{ assignment.min_words }}" min="1" max="5000"></label><label>Maximum Words<input type="number" name="max_words" value="{{ assignment.max_words }}" min="1" max="5000"></label></div>
 <label class="assignment-edit-instructions">Instructions<textarea name="instructions" required>{{ assignment.instructions }}</textarea></label>
 <div class="assignment-edit-footer"><button class="ia-btn" type="submit">Save Assignment</button></div>
 </form></td></tr>{% empty %}<tr><td colspan="7">No assignments created yet. Select a student above to publish their first task.</td></tr>{% endfor %}
@@ -267,8 +265,10 @@ document.querySelectorAll('.assignment-student').forEach(studentSelect=>{
 });
 document.querySelectorAll('.assignment-course').forEach(courseSelect=>{
  const form=courseSelect.closest('form');const moduleSelect=form?.querySelector('.assignment-module');if(!moduleSelect)return;
- function updateAssignmentModules(){const current=moduleSelect.dataset.current||moduleSelect.value;moduleSelect.innerHTML='<option value="">Select module</option>';(moduleData[courseSelect.value]||[]).forEach(module=>{const option=document.createElement('option');option.value=module;option.textContent=module;if(module===current)option.selected=true;moduleSelect.appendChild(option);});moduleSelect.dataset.current='';}
- courseSelect.addEventListener('change',()=>{moduleSelect.dataset.current='';updateAssignmentModules();});updateAssignmentModules();
+ const wordLimits=form.querySelector('.assignment-word-limits');
+ function updateWordLimitFields(){if(!wordLimits)return;const show=courseSelect.value.trim().toLowerCase()==='ielts'&&moduleSelect.value.trim().toLowerCase()==='writing';wordLimits.hidden=!show;wordLimits.querySelectorAll('input').forEach(input=>{input.required=show;});}
+ function updateAssignmentModules(){const current=moduleSelect.dataset.current||moduleSelect.value;moduleSelect.innerHTML='<option value="">Select module</option>';(moduleData[courseSelect.value]||[]).forEach(module=>{const option=document.createElement('option');option.value=module;option.textContent=module;if(module===current)option.selected=true;moduleSelect.appendChild(option);});moduleSelect.dataset.current='';updateWordLimitFields();}
+ courseSelect.addEventListener('change',()=>{moduleSelect.dataset.current='';updateAssignmentModules();});moduleSelect.addEventListener('change',updateWordLimitFields);updateAssignmentModules();
 });
 const extraCourse=document.getElementById('additional-course'),extraModules=document.getElementById('additional-course-modules'),extraAll=document.getElementById('additional-course-all');
 if(extraCourse&&extraModules&&extraAll){function renderExtraModules(){extraModules.innerHTML='';(moduleData[extraCourse.value]||[]).forEach(m=>{const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:7px;font-size:12px';const input=document.createElement('input');input.type='checkbox';input.name='modules';input.value=m;input.disabled=extraAll.checked;label.append(input,document.createTextNode(m));extraModules.appendChild(label);});}extraCourse.addEventListener('change',renderExtraModules);extraAll.addEventListener('change',renderExtraModules);renderExtraModules();}
