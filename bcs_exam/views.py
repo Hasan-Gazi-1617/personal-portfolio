@@ -138,8 +138,10 @@ def exam_result(request, attempt_id):
 def teacher_exams(request):
     _owner(request)
     exams = BCSExam.objects.all().prefetch_related("questions")
-    attempts = BCSAttempt.objects.filter(submitted_at__isnull=False).select_related("student", "exam").order_by("-submitted_at")[:300]
-    return render(request, "bcs_exam/teacher.html", {"exams": exams, "attempts": attempts})
+    submissions = BCSAttempt.objects.filter(submitted_at__isnull=False).select_related("student", "exam").order_by("-submitted_at")
+    pending_review_count = submissions.filter(reviewed_at__isnull=True).count()
+    attempts = submissions[:300]
+    return render(request, "bcs_exam/teacher.html", {"exams": exams, "attempts": attempts, "pending_review_count": pending_review_count})
 
 
 @require_POST
