@@ -90,7 +90,8 @@ def start_exam(request, exam_id):
             messages.error(request, "You have already submitted this examination.")
             return redirect("bcs_exam_list")
         attempt = BCSAttempt.objects.create(exam=exam, student=profile)
-    remaining_seconds = max(0, exam.duration_minutes * 60 - int((timezone.now() - attempt.started_at).total_seconds()))\n    return render(request, "bcs_exam/take_exam.html", {"exam": exam, "attempt": attempt, "questions": exam.questions.all(), "remaining_seconds": remaining_seconds})
+    remaining_seconds = max(0, exam.duration_minutes * 60 - int((timezone.now() - attempt.started_at).total_seconds()))
+    return render(request, "bcs_exam/take_exam.html", {"exam": exam, "attempt": attempt, "questions": exam.questions.all(), "remaining_seconds": remaining_seconds})
 
 
 @login_required
