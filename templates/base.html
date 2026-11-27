@@ -652,7 +652,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                 <div class="portfolio-nav-column portfolio-nav-community">
                     <ul class="navbar-nav">
-                        {% if not request.user.is_authenticated or not request.user.student_profile %}
+                        {% if not request.session.owner_access and not request.user.student_profile %}
                         <li class="nav-item"><a class="nav-link admin-view-link" href="{% url 'owner_login' %}"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Admin View</span></a></li>
                         {% endif %}
                         {% if request.session.owner_access %}
@@ -697,7 +697,9 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                         <li class="nav-item dropdown students-dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>{% if request.user.is_authenticated and request.user.student_profile %}{{ request.user.student_profile.name|first_word|default:"Student" }} Forum{% else %}Student Forum{% endif %}</span></a>
                             <ul class="dropdown-menu" aria-labelledby="studentForumMenu">
-                                {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>{% endif %}
+                                {% if not request.user.is_authenticated %}
+                                <li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>
+                                {% endif %}
                                 {% if request.user.is_authenticated and request.user.student_profile %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
@@ -711,20 +713,11 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                     </ul>
                                 </li>
                                 <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#student-directory"><i class="bi bi-people"></i><span>View Students</span></a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Profile</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#my-information"><i class="bi bi-person-circle"></i><span>My Profile</span></a></li>
                                 <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
                                 {% endif %}
                             </ul>
-                                </li>
-                                {% if request.user.is_authenticated %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Profile</span></a></li>
-                                                                <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
-                                {% endif %}
-                            </ul>
                         </li>
-
                         {% endif %}
                     </ul>
                 </div>
