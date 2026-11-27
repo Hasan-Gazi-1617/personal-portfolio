@@ -4,7 +4,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("attendance", "__first__"),
+        ("attendance", "0004_studentprofile_user"),
         ("portfolio", "0021_ieltsassignment_corrected_answer"),
     ]
 
