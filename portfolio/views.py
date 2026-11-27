@@ -430,12 +430,14 @@ def student_dashboard(request):
         profile.city = request.POST.get("city", "").strip()[:100]
         profile.cell_phone = request.POST.get("cell_phone", "").strip()[:30]
         raw_dob = request.POST.get("date_of_birth", "").strip()
+        raw_finish = request.POST.get("course_finish_date", "").strip()
         try:
             profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
+            profile.course_finish_date = datetime.strptime(raw_finish, "%Y-%m-%d").date() if raw_finish else None
         except ValueError:
             messages.error(request, "Enter a valid date of birth.")
             return redirect("student_dashboard")
-        profile.save(update_fields=["email", "address", "country", "city", "cell_phone", "date_of_birth"])
+        profile.save(update_fields=["email", "address", "country", "city", "cell_phone", "date_of_birth", "course_finish_date"])
         if profile.user_id and profile.email and profile.user.email != profile.email:
             profile.user.email = profile.email
             profile.user.save(update_fields=["email"])
