@@ -1,6 +1,8 @@
 import os
 import json
 import hmac
+import re
+import difflib
 import logging
 import secrets
 import time
@@ -17,6 +19,8 @@ from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
@@ -337,7 +341,23 @@ def ielts_submission_receipt(request, receipt_code):
             return HttpResponse("This submission belongs to another student account.", status=403)
     elif str(receipt_code) not in request.session.get("ielts_submission_receipts", []):
         return HttpResponse("This private submission link is not available in this browser session.", status=403)
-    return render(request, "students/ielts_submission_receipt.html", {"submission": submission})
+    comparison_html = ""
+    if submission.answer_text and submission.corrected_answer:
+        original = re.findall(r"\\s+|[^\\s]+", submission.answer_text)
+        corrected = re.findall(r"\\s+|[^\\s]+", submission.corrected_answer)
+        parts = []
+        for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, original, corrected, autojunk=False).get_opcodes():
+            if tag == "equal":
+                parts.extend(escape(token) for token in original[i1:i2])
+            elif tag == "delete":
+                parts.append('<del class="diff-deleted">' + "".join(str(escape(token)) for token in original[i1:i2]) + '</del>')
+            elif tag == "insert":
+                parts.append('<ins class="diff-added">' + "".join(str(escape(token)) for token in corrected[j1:j2]) + '</ins>')
+            else:
+                parts.append('<del class="diff-deleted">' + "".join(str(escape(token)) for token in original[i1:i2]) + '</del>')
+                parts.append('<ins class="diff-added">' + "".join(str(escape(token)) for token in corrected[j1:j2]) + '</ins>')
+        comparison_html = mark_safe("".join(parts))
+    return render(request, "students/ielts_submission_receipt.html", {"submission": submission, "comparison_html": comparison_html})
 
 
 def ielts_submission_file(request, pk):
@@ -860,6 +880,7 @@ def ielts_admin_panel(request):
                         raise ValueError("IELTS criterion bands must be between 0 and 9 in 0.5 steps.")
                     setattr(submission, field, band_value)
                 submission.teacher_feedback = request.POST.get("teacher_feedback", "").strip()
+                submission.corrected_answer = request.POST.get("corrected_answer", "").strip()
                 submission.teacher_strengths = request.POST.get("teacher_strengths", "").strip()
                 submission.teacher_improvements = request.POST.get("teacher_improvements", "").strip()
                 submission.corrected_sentences = request.POST.get("corrected_sentences", "").strip()
