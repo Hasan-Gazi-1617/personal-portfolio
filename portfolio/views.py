@@ -640,6 +640,27 @@ def ielts_admin_panel(request):
                 messages.success(request, f"{course} enrolled for {profile.name}.")
             except (ValueError, TypeError) as exc:
                 messages.error(request, str(exc))
+        elif action == "student_personal_update":
+            try:
+                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
+                profile.name = request.POST.get("student_name", "").strip()[:120]
+                profile.roll = request.POST.get("roll", "").strip()[:40]
+                profile.email = request.POST.get("email", "").strip()[:254]
+                profile.address = request.POST.get("address", "").strip()
+                profile.country = request.POST.get("country", "").strip()[:100]
+                profile.city = request.POST.get("city", "").strip()[:100]
+                profile.cell_phone = request.POST.get("cell_phone", "").strip()[:30]
+                raw_dob = request.POST.get("date_of_birth", "").strip()
+                profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
+                raw_finish = request.POST.get("course_finish_date", "").strip()
+                profile.course_finish_date = datetime.strptime(raw_finish, "%Y-%m-%d").date() if raw_finish else None
+                profile.save()
+                if profile.user_id and profile.email:
+                    profile.user.email = profile.email
+                    profile.user.save(update_fields=["email"])
+                messages.success(request, f"Personal information updated for {profile.name}.")
+            except (ValueError, TypeError):
+                messages.error(request, "Check the student personal information and date fields.")
         elif action == "student_account_update":
             try:
                 profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
