@@ -35,7 +35,6 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/olt-search.css' %}">
     {% block extra_css %}{% endblock %}
 
 <style>
@@ -93,8 +92,6 @@ html[data-theme="light"] .admin-panel-dropdown .dropdown-divider{border-color:rg
  .portfolio-nav-layout .navbar-nav{gap:0}
  .portfolio-nav-layout .nav-link{padding:8px 6px!important;font-size:11px}
  .portfolio-nav-column{min-width:0}
- .olt-location-search{flex:0 1 205px;min-width:155px;max-width:205px;margin:0 0 0 auto}
- .olt-search-shell{width:100%}
  .navbar-custom .theme-toggle{flex:0 0 42px;margin-left:4px!important}
 }
 @media(max-width:1199.98px){
@@ -296,10 +293,6 @@ html[data-theme="light"] .footer-social a {
     margin-right: 0;
 }
 
-.olt-search-shell {
-    transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
-}
-
 .manor-dropdown .manor-menu,
 .manor-dropdown .submenu-menu {
     background: rgba(13,24,39,.97) !important;
@@ -375,53 +368,6 @@ html[data-theme="light"] .navbar-custom .nav-link:focus,
 html[data-theme="light"] .navbar-custom .nav-link.show {
     color: #166534 !important;
     background: rgba(34,197,94,.13);
-}
-
-html[data-theme="light"] .olt-search-shell {
-    background: rgba(255,255,255,.94) !important;
-    border-color: rgba(21,128,61,.28) !important;
-    box-shadow: 0 8px 24px rgba(21,128,61,.09) !important;
-}
-
-html[data-theme="light"] .olt-search-input {
-    color: #123524 !important;
-    background: transparent !important;
-}
-
-html[data-theme="light"] .olt-search-input::placeholder {
-    color: #6b8577 !important;
-}
-
-html[data-theme="light"] .olt-search-icon,
-html[data-theme="light"] .olt-search-clear {
-    color: #15803d !important;
-}
-
-html[data-theme="light"] .olt-search-panel {
-    background: rgba(255,255,255,.98) !important;
-    border-color: rgba(21,128,61,.22) !important;
-    box-shadow: 0 22px 48px rgba(21,128,61,.14) !important;
-}
-
-html[data-theme="light"] .olt-search-result {
-    color: #315844 !important;
-    border-color: rgba(21,128,61,.1) !important;
-}
-
-html[data-theme="light"] .olt-search-result:hover,
-html[data-theme="light"] .olt-search-result:focus {
-    color: #166534 !important;
-    background: rgba(34,197,94,.11) !important;
-}
-
-html[data-theme="light"] .olt-search-result strong,
-html[data-theme="light"] .olt-search-result i {
-    color: #166534 !important;
-}
-
-html[data-theme="light"] .olt-search-result small,
-html[data-theme="light"] .olt-search-empty {
-    color: #648072 !important;
 }
 
 html[data-theme="light"] .manor-dropdown .manor-menu,
@@ -503,8 +449,8 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
     <link rel="stylesheet" href="{% static 'css/portfolio-enhancements.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive-foundation.css' %}">
 
-<!-- OLT SEARCH READABILITY OVERRIDES -->
-<style>
+<!-- NAVBAR READABILITY OVERRIDES -->
+ <style>
     /* Keep the desktop brand logo slightly inset from the viewport's left edge. */
     @media (min-width: 1200px) {
         .navbar-custom {
@@ -522,67 +468,8 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
         }
     }
 
-    .olt-search-input {
-        font-size: 14px !important;
-        min-height: 40px;
-    }
-    .olt-search-panel {
-        min-width: min(390px, calc(100vw - 28px));
-        max-height: min(65vh, 520px);
-        overflow-y: auto;
-    }
-    .olt-panel-header,
-    .olt-panel-footer {
-        font-size: 11px !important;
-    }
-    .olt-search-result {
-        min-height: 58px;
-        padding: 10px 12px !important;
-        gap: 9px;
-    }
-    .olt-result-content strong {
-        display: block;
-        font-size: 14px !important;
-        line-height: 1.35;
-        font-weight: 700;
-    }
-    .olt-result-content > span {
-        display: block;
-        margin-top: 2px;
-        font-size: 12px !important;
-        line-height: 1.35;
-    }
-    .olt-result-icon,
-    .olt-result-open {
-        font-size: 14px !important;
-    }
-    .olt-search-empty {
-        padding: 16px 12px !important;
-        font-size: 13px !important;
-    }
-    .olt-search-empty strong {
-        font-size: 14px !important;
-    }
-    .olt-search-empty small {
-        font-size: 12px !important;
-    }
-    @media (max-width: 575.98px) {
-        .olt-search-panel {
-            min-width: min(340px, calc(100vw - 24px));
-        }
-        .olt-result-content strong {
-            font-size: 14px !important;
-        }
-        .olt-result-content > span {
-            font-size: 12px !important;
-        }
-    }
 
-/* ===== NAVIGATION FONT SIZE ===== */
-.navbar-custom .navbar-nav .nav-link{font-size:14px!important;font-weight:600!important;padding:10px 11px!important}
-@media(max-width:1199.98px) and (min-width:992px){.navbar-custom .navbar-nav .nav-link{font-size:14px!important;padding-left:8px!important;padding-right:8px!important}}
-@media(max-width:991.98px){.navbar-custom .navbar-nav .nav-link{font-size:14px!important;padding:11px 14px!important}}
-</style>
+ </style>
 
     <link rel="stylesheet" href="{% static 'css/theme-refinement.css' %}">
     <link rel="stylesheet" href="{% static 'css/premium-navigation.css' %}">
@@ -738,42 +625,6 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                 </div>
             </div>
 
-            {% if request.session.owner_access %}
-            <!-- OLT LOCATION SEARCH -->
-            <div class="olt-location-search" id="oltLocationSearch">
-                <div class="olt-search-shell">
-                    <i class="bi bi-search olt-search-icon"></i>
-
-                    <input
-                        type="text"
-                        id="oltLocationInput"
-                        class="olt-search-input"
-                        placeholder="Search location..."
-                        autocomplete="off"
-                        spellcheck="false"
-                        aria-label="Search OLT by location"
-                        aria-controls="oltSearchResults"
-                        aria-expanded="false">
-
-                    <button
-                        type="button"
-                        class="olt-search-clear"
-                        id="oltSearchClear"
-                        aria-label="Clear OLT search">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-
-                <div
-                    class="olt-search-panel"
-                    id="oltSearchResults"
-                    role="listbox"
-                    aria-label="OLT location search results">
-                </div>
-            </div>
-            {% endif %}
-
-
             <button type="button" class="theme-toggle" id="themeToggle"
                     aria-label="Switch to light theme" title="Switch theme">
                 <i class="bi bi-sun-fill theme-icon-light"></i>
@@ -859,226 +710,6 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
 <!-- ================= BOOTSTRAP JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- ================= OLT LOCATION SEARCH JS ================= -->
-{% if request.session.owner_access %}
-{{ olt_locations|json_script:"olt-location-data" }}
-{% endif %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const searchWrap = document.getElementById('oltLocationSearch');
-    const searchInput = document.getElementById('oltLocationInput');
-    const resultsBox = document.getElementById('oltSearchResults');
-    const clearButton = document.getElementById('oltSearchClear');
-
-    if (!searchWrap || !searchInput || !resultsBox || !clearButton) return;
-
-    // Keep usernames/passwords out of frontend JavaScript.
-    // Search results only open the matching OLT login page.
-    const dataElement = document.getElementById("olt-location-data");
-    const oltLocations = dataElement ? JSON.parse(dataElement.textContent) : [];
-
-    let visibleMatches = [];
-    let activeIndex = -1;
-
-    function escapeHtml(value) {
-        return String(value).replace(/[&<>'"]/g, function (char) {
-            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char];
-        });
-    }
-
-    function closeResults() {
-        resultsBox.classList.remove('show');
-        resultsBox.innerHTML = '';
-        searchInput.setAttribute('aria-expanded', 'false');
-        activeIndex = -1;
-        visibleMatches = [];
-    }
-
-    function openOlt(item) {
-        if (!item) return;
-        window.open(item.url, '_blank', 'noopener,noreferrer');
-        closeResults();
-    }
-
-    function updateActiveResult() {
-        const resultButtons = resultsBox.querySelectorAll('.olt-search-result');
-
-        resultButtons.forEach(function (button, index) {
-            button.classList.toggle('is-active', index === activeIndex);
-        });
-
-        if (activeIndex >= 0 && resultButtons[activeIndex]) {
-            resultButtons[activeIndex].scrollIntoView({ block: 'nearest' });
-        }
-    }
-
-    function renderResults(query) {
-        const term = query.trim().toLowerCase();
-
-        if (!term) {
-            closeResults();
-            return;
-        }
-
-        // Allow searching by location, OLT number/name, or PON port.
-        // Matching OLT/port should return the locations belonging to it.
-        const matches = oltLocations.filter(function (item) {
-            return (
-                String(item.location || '').toLowerCase().includes(term) ||
-                String(item.olt || '').toLowerCase().includes(term) ||
-                String(item.port || '').toLowerCase().includes(term) ||
-                String(item.pop || '').toLowerCase().includes(term)
-            );
-        });
-
-        // Remove duplicate rows that may come from both built-in and env-configured lists.
-        const seen = new Set();
-        visibleMatches = matches
-            .filter(function (item) {
-                const key = [item.location, item.olt, item.port].join('|').toLowerCase();
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            })
-            .sort(function (a, b) {
-                const aName = String(a.location || '').toLowerCase();
-                const bName = String(b.location || '').toLowerCase();
-                const aStarts = aName.startsWith(term);
-                const bStarts = bName.startsWith(term);
-
-                if (aStarts && !bStarts) return -1;
-                if (!aStarts && bStarts) return 1;
-                return aName.localeCompare(bName);
-            })
-            .slice(0, 12);
-
-        activeIndex = -1;
-
-        if (!visibleMatches.length) {
-            resultsBox.innerHTML = `
-                <div class="olt-panel-header">
-                    <span>OLT LOCATIONS</span>
-                    <span>0 results</span>
-                </div>
-                <div class="olt-search-empty">
-                    <span class="olt-empty-icon"><i class="bi bi-search"></i></span>
-                    <strong>No location found</strong>
-                    <small>Try another location, OLT name, or port.</small>
-                </div>
-                <div class="olt-panel-footer">
-                    <span><i class="bi bi-search"></i> Search by area name</span>
-                    <span>ESC to close</span>
-                </div>`;
-            resultsBox.classList.add('show');
-            searchInput.setAttribute('aria-expanded', 'true');
-            return;
-        }
-
-        const resultHtml = visibleMatches.map(function (item, index) {
-            return `
-                <button
-                    type="button"
-                    class="olt-search-result"
-                    data-index="${index}"
-                    role="option">
-
-                    <span class="olt-result-icon">
-                        <i class="bi bi-geo-alt"></i>
-                    </span>
-
-                    <span class="olt-result-content">
-                        <strong>${escapeHtml(item.location)}</strong>
-                        <span>
-                            <b>${escapeHtml(item.olt)}</b>
-                            <i>•</i>
-                            ${escapeHtml(item.pop)}
-                            <i>•</i>
-                            :${escapeHtml(item.port)}
-                        </span>
-                    </span>
-
-                    <span class="olt-result-open" aria-hidden="true">
-                        <i class="bi bi-arrow-up-right"></i>
-                    </span>
-                </button>`;
-        }).join('');
-
-        resultsBox.innerHTML = `
-            <div class="olt-panel-header">
-                <span>OLT LOCATIONS</span>
-                <span>${visibleMatches.length} result${visibleMatches.length === 1 ? '' : 's'}</span>
-            </div>
-
-            <div class="olt-panel-list">
-                ${resultHtml}
-            </div>
-
-            <div class="olt-panel-footer">
-                <span><i class="bi bi-search"></i> Search location / OLT / port</span>
-                <span>ESC to close</span>
-            </div>`;
-
-        resultsBox.classList.add('show');
-        searchInput.setAttribute('aria-expanded', 'true');
-
-        resultsBox.querySelectorAll('.olt-search-result').forEach(function (button) {
-            button.addEventListener('click', function () {
-                openOlt(visibleMatches[Number(button.dataset.index)]);
-            });
-        });
-    }
-
-    searchInput.addEventListener('input', function () {
-        renderResults(searchInput.value);
-    });
-
-    searchInput.addEventListener('focus', function () {
-        if (searchInput.value.trim()) renderResults(searchInput.value);
-    });
-
-    searchInput.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            closeResults();
-            searchInput.blur();
-            return;
-        }
-
-        if (!visibleMatches.length) return;
-
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            activeIndex = (activeIndex + 1) % visibleMatches.length;
-            updateActiveResult();
-        }
-
-        if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            activeIndex = activeIndex <= 0 ? visibleMatches.length - 1 : activeIndex - 1;
-            updateActiveResult();
-        }
-
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            openOlt(visibleMatches[activeIndex >= 0 ? activeIndex : 0]);
-        }
-    });
-
-    clearButton.addEventListener('click', function () {
-        searchInput.value = '';
-        closeResults();
-        searchInput.focus();
-    });
-
-    document.addEventListener('click', function (event) {
-        if (!searchWrap.contains(event.target)) closeResults();
-    });
-});
-</script>
-
-
-
 
 <script>
 (function(){
