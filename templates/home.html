@@ -1213,10 +1213,10 @@ document.addEventListener("DOMContentLoaded", function () {
 #experience .experience-summary{margin:10px 0 16px!important;font-size:12px!important;line-height:1.65!important}
 #experience .experience-focus>span{display:block;margin-bottom:10px!important}
 #experience .experience-focus-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px 18px!important}
-#experience .experience-focus-grid>div{display:grid;grid-template-columns:25px minmax(0,1fr);column-gap:8px;align-items:start;padding:9px 10px!important;border-radius:9px;background:rgba(148,163,184,.055)}
-#experience .experience-focus-grid>div>b{grid-row:1/3;font-size:10px!important}
-#experience .experience-focus-grid strong{font-size:12px!important;line-height:1.35}
-#experience .experience-focus-grid small{margin-top:3px!important;font-size:10px!important;line-height:1.5!important}
+#experience .experience-focus-grid>div{display:grid!important;grid-template-columns:22px minmax(135px,.8fr) minmax(0,2fr)!important;column-gap:9px;align-items:start;padding:10px 11px!important;border-radius:9px;background:rgba(148,163,184,.055);min-width:0}
+#experience .experience-focus-grid>div>b{grid-column:1;grid-row:1;font-size:10px!important;line-height:1.5!important}
+#experience .experience-focus-grid strong{grid-column:2;grid-row:1;font-size:12px!important;line-height:1.4!important;min-width:0;word-break:normal!important;overflow-wrap:normal!important}
+#experience .experience-focus-grid small{grid-column:3;grid-row:1;margin:0!important;font-size:10px!important;line-height:1.55!important;min-width:0;word-break:normal!important;overflow-wrap:break-word!important}
 #experience .experience-previous-heading{margin:24px 0 12px!important}
 #experience .experience-previous-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important}
 #experience .experience-previous-card{padding:17px!important;border-radius:13px}
@@ -1229,6 +1229,10 @@ document.addEventListener("DOMContentLoaded", function () {
 @media(max-width:991.98px){
  #experience .experience-previous-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #experience .experience-v2-heading{align-items:start;flex-direction:column;gap:8px}
+}
+@media(max-width:767.98px){
+ #experience .experience-focus-grid{grid-template-columns:1fr!important}
+ #experience .experience-focus-grid>div{grid-template-columns:22px minmax(135px,.7fr) minmax(0,2fr)!important}
 }
 @media(max-width:575.98px){
  #experience.experience-v2{padding-top:48px!important;padding-bottom:50px!important}
