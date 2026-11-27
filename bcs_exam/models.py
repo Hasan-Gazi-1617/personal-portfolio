@@ -20,6 +20,8 @@ class BCSExam(models.Model):
     def __str__(self): return self.title
     @property
     def question_count(self): return self.questions.count()
+    @property
+    def full_marks(self): return self.question_count * self.marks_per_question
 
 class BCSQuestion(models.Model):
     exam = models.ForeignKey(BCSExam, on_delete=models.CASCADE, related_name="questions")
