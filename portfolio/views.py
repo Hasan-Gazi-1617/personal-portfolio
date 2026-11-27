@@ -540,15 +540,18 @@ def ielts_admin_panel(request):
         elif action == "assignment":
             title = request.POST.get("title", "").strip()[:180]
             instructions = request.POST.get("instructions", "").strip()
+            course = request.POST.get("course", "")
+            module_name = request.POST.get("module_name", "").strip()[:120]
             try:
                 duration = max(1, min(180, int(request.POST.get("time_minutes", 40))))
-                min_words = max(1, min(5000, int(request.POST.get("min_words", 250))))
-                max_words = max(min_words, min(5000, int(request.POST.get("max_words", 350))))
+                if course == "IELTS" and module_name.lower() == "writing":
+                    min_words = max(1, min(5000, int(request.POST.get("min_words", 250))))
+                    max_words = max(min_words, min(5000, int(request.POST.get("max_words", 350))))
+                else:
+                    min_words, max_words = 1, 5000
             except (TypeError, ValueError):
                 duration, min_words, max_words = 40, 250, 350
             if title and instructions:
-                course = request.POST.get("course", "")
-                module_name = request.POST.get("module_name", "").strip()[:120]
                 student_id = request.POST.get("student_id", "").strip()
                 target_student = get_object_or_404(StudentProfile, pk=student_id, is_active=True) if student_id else None
                 enrollment = StudentCourse.objects.filter(student=target_student, course=course, is_active=True).first() if target_student else None
@@ -786,14 +789,17 @@ def ielts_admin_panel(request):
                 title = request.POST.get("title", "").strip()[:180]
                 instructions = request.POST.get("instructions", "").strip()
                 duration = int(request.POST.get("time_minutes", 40))
-                min_words = int(request.POST.get("min_words", 250))
-                max_words = int(request.POST.get("max_words", 350))
                 module_name = request.POST.get("module_name", "").strip()[:120]
+                if course == "IELTS" and module_name.lower() == "writing":
+                    min_words = int(request.POST.get("min_words", 250))
+                    max_words = int(request.POST.get("max_words", 350))
+                else:
+                    min_words, max_words = 1, 5000
                 student_id = request.POST.get("student_id", "").strip()
                 target_student = get_object_or_404(StudentProfile, pk=student_id, is_active=True) if student_id else None
                 enrollment = StudentCourse.objects.filter(student=target_student, course=course, is_active=True).first() if target_student else None
                 allowed_modules = (enrollment.modules if enrollment else (target_student.modules if target_student and target_student.course == course else [])) or []
-                if course not in COURSE_MODULES or module_name not in COURSE_MODULES[course] or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000 or (target_student and module_name not in allowed_modules):
+                if course not in COURSE_MODULES or module_name not in COURSE_MODULES[course] or not title or not instructions or not 1 <= duration <= 180 or (course == "IELTS" and module_name.lower() == "writing" and not 1 <= min_words <= max_words <= 5000) or (target_student and module_name not in allowed_modules):
                     raise ValueError
                 assignment.course, assignment.module_name, assignment.target_student, assignment.title, assignment.instructions = course, module_name, target_student, title, instructions
                 assignment.time_minutes, assignment.min_words, assignment.max_words = duration, min_words, max_words
