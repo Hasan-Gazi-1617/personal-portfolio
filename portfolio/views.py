@@ -430,14 +430,12 @@ def student_dashboard(request):
         profile.city = request.POST.get("city", "").strip()[:100]
         profile.cell_phone = request.POST.get("cell_phone", "").strip()[:30]
         raw_dob = request.POST.get("date_of_birth", "").strip()
-        raw_finish = request.POST.get("course_finish_date", "").strip()
         try:
             profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
-            profile.course_finish_date = datetime.strptime(raw_finish, "%Y-%m-%d").date() if raw_finish else None
         except ValueError:
             messages.error(request, "Enter a valid date of birth.")
             return redirect("student_dashboard")
-        profile.save(update_fields=["email", "address", "country", "city", "cell_phone", "date_of_birth", "course_finish_date"])
+        profile.save(update_fields=["email", "address", "country", "city", "cell_phone", "date_of_birth"])
         if profile.user_id and profile.email and profile.user.email != profile.email:
             profile.user.email = profile.email
             profile.user.save(update_fields=["email"])
@@ -456,6 +454,7 @@ def student_dashboard(request):
         "attendance_records": AttendanceRecord.objects.filter(student=profile).order_by("-class_date", "-created_at")[:200],
         "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment")[:100],
         "practice_attempts": IELTSPracticeAttempt.objects.filter(student_profile=profile).select_related("practice")[:100],
+        "student_directory": StudentProfile.objects.filter(is_active=True).prefetch_related("course_enrollments"),
         "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True).filter(Q(student__isnull=True) | Q(student=profile))[:100],
         "materials": IELTSMaterial.objects.filter(course__in=courses, is_published=True)[:100],
         "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
@@ -574,7 +573,7 @@ def ielts_admin_panel(request):
                 modules = list(valid_modules) if all_modules else [item for item in selected if item in valid_modules]
                 joining_raw = request.POST.get("joining_date", "").strip()
                 finish_raw = request.POST.get("course_finish_date", "").strip()
-                joining_date = datetime.strptime(joining_raw, "%Y-%m-%d").date() if joining_raw else None
+                joining_date = datetime.strptime(joining_raw, "%Y-%m-%d").date() if joining_raw else timezone.localdate()
                 finish_date = datetime.strptime(finish_raw, "%Y-%m-%d").date() if finish_raw else None
                 if not username or len(username) > 150:
                     raise ValueError("Enter a valid username (maximum 150 characters).")
