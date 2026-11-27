@@ -154,7 +154,7 @@ function renderStudentDetails(student,target){
  const top=document.createElement('article');top.className='ia-course-module';
  const h=document.createElement('h3');h.textContent=student.name+' · '+student.course;top.appendChild(h);
  const details=[
-  ['Username',student.username||'Not set'],['Email',student.email||'Not set'],['Roll',student.roll||'Not set'],
+  ['Username',student.username||'Not set'],['Access Code',student.access_code||'Not set'],['Email',student.email||'Not set'],['Roll',student.roll||'Not set'],
   ['Primary Course',student.course||'—'],['Modules',(student.modules||[]).join(', ')||'None assigned'],
   ['Joining Date',student.joining_date||'—'],['Course Finish Date',student.course_finish_date||'—'],
   ['Address',student.address||'—'],['Country',student.country||'—'],['City',student.city||'—'],
