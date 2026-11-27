@@ -273,11 +273,13 @@ def student_assignment_submission(request):
         # submission checks and receipt handling remain consistent.
         return ielts_learning(request)
     enrollments = _student_course_enrollments(profile)
-    courses = [item.course for item in enrollments]
+    assignment_filter = Q(pk__in=[])
+    for enrollment in enrollments:
+        assignment_filter |= Q(course=enrollment.course, module_name="") | Q(course=enrollment.course, module_name__in=(enrollment.modules or []))
     return render(request, "students/student_assignment_submission.html", {
         "student": profile,
         "student_first_name": profile.name.strip().split()[0] if profile.name.strip() else "Student",
-        "assignments": IELTSAssignment.objects.filter(course__in=courses, is_published=True).order_by("course", "title"),
+        "assignments": IELTSAssignment.objects.filter(assignment_filter, is_published=True).order_by("course", "module_name", "title"),
         "submissions": IELTSAssignmentSubmission.objects.filter(student_profile=profile).select_related("assignment").order_by("-submitted_at")[:100],
     })
 
