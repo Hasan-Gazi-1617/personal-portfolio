@@ -152,8 +152,8 @@ def ielts_learning(request):
         if action == "start_assignment":
             assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"), is_published=True)
             linked_profile = StudentProfile.objects.filter(user=request.user, is_active=True).first() if request.user.is_authenticated else None
-            if not linked_profile or assignment.course not in {item.course for item in _student_course_enrollments(linked_profile)}:
-                return JsonResponse({"ok": False, "message": "This assignment is not available in your enrolled courses."}, status=403)
+            if not linked_profile or (assignment.target_student_id and assignment.target_student_id != linked_profile.pk) or assignment.course not in {item.course for item in _student_course_enrollments(linked_profile)}:
+                return JsonResponse({"ok": False, "message": "This assignment is not assigned to your student account."}, status=403)
             student_name = request.POST.get("student_name", "").strip()[:100]
             student_roll = request.POST.get("student_roll", "").strip()[:40]
             if linked_profile:
@@ -252,7 +252,7 @@ def ielts_learning(request):
         ],
         "today": timezone.localdate(),
         "now_time": timezone.localtime().strftime("%H:%M"),
-        "assignments": IELTSAssignment.objects.filter(course__in=enrolled_courses, is_published=True),
+        "assignments": IELTSAssignment.objects.filter(Q(target_student=profile) | Q(target_student__isnull=True, course__in=enrolled_courses), is_published=True),
         "my_submissions": IELTSAssignmentSubmission.objects.filter(receipt_code__in=request.session.get("ielts_submission_receipts", [])).select_related("assignment").order_by("-submitted_at"),
     }
     return render(request, "students/ielts.html", context)
@@ -275,7 +275,8 @@ def student_assignment_submission(request):
     enrollments = _student_course_enrollments(profile)
     assignment_filter = Q(pk__in=[])
     for enrollment in enrollments:
-        assignment_filter |= Q(course=enrollment.course, module_name="") | Q(course=enrollment.course, module_name__in=(enrollment.modules or []))
+        assignment_filter |= Q(target_student__isnull=True, course=enrollment.course, module_name="") | Q(target_student__isnull=True, course=enrollment.course, module_name__in=(enrollment.modules or []))
+    assignment_filter |= Q(target_student=profile)
     return render(request, "students/student_assignment_submission.html", {
         "student": profile,
         "student_first_name": profile.name.strip().split()[0] if profile.name.strip() else "Student",
@@ -467,7 +468,8 @@ def student_dashboard(request):
     courses = [item.course for item in enrollments]
     assignment_filter = Q(pk__in=[])
     for enrollment in enrollments:
-        assignment_filter |= Q(course=enrollment.course, module_name="") | Q(course=enrollment.course, module_name__in=(enrollment.modules or []))
+        assignment_filter |= Q(target_student__isnull=True, course=enrollment.course, module_name="") | Q(target_student__isnull=True, course=enrollment.course, module_name__in=(enrollment.modules or []))
+    assignment_filter |= Q(target_student=profile)
     student_assignment_objects = list(IELTSAssignment.objects.filter(assignment_filter, is_published=True).order_by("course", "module_name", "title")[:100])
     student_submissions = {row.assignment_id: row for row in IELTSAssignmentSubmission.objects.filter(student_profile=profile, assignment__in=student_assignment_objects).select_related("assignment")}
     student_assignment_rows = [{"assignment": item, "submission": student_submissions.get(item.pk)} for item in student_assignment_objects]
@@ -545,11 +547,15 @@ def ielts_admin_panel(request):
             if title and instructions:
                 course = request.POST.get("course", "")
                 module_name = request.POST.get("module_name", "").strip()[:120]
-                if course in COURSE_MODULES and module_name in COURSE_MODULES[course]:
-                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, module_name=module_name, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
-                    messages.success(request, f"{course} assignment published.")
+                student_id = request.POST.get("student_id", "").strip()
+                target_student = get_object_or_404(StudentProfile, pk=student_id, is_active=True) if student_id else None
+                enrollment = StudentCourse.objects.filter(student=target_student, course=course, is_active=True).first() if target_student else None
+                allowed_modules = (enrollment.modules if enrollment else (target_student.modules if target_student and target_student.course == course else [])) or []
+                if course in COURSE_MODULES and module_name in COURSE_MODULES[course] and target_student and module_name in allowed_modules:
+                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, module_name=module_name, target_student=target_student, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                    messages.success(request, f"Assignment published for {target_student.name} ({target_student.roll or target_student.user.username}).")
                 else:
-                    messages.error(request, "Select a valid course and module for this assignment.")
+                    messages.error(request, "Select a student who is actively enrolled in the selected course and module.")
         elif action == "material":
             title = request.POST.get("title", "").strip()[:180]
             if title and request.POST.get("course") in COURSE_MODULES:
@@ -781,9 +787,13 @@ def ielts_admin_panel(request):
                 min_words = int(request.POST.get("min_words", 250))
                 max_words = int(request.POST.get("max_words", 350))
                 module_name = request.POST.get("module_name", "").strip()[:120]
-                if course not in COURSE_MODULES or module_name not in COURSE_MODULES[course] or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000:
+                student_id = request.POST.get("student_id", "").strip()
+                target_student = get_object_or_404(StudentProfile, pk=student_id, is_active=True) if student_id else None
+                enrollment = StudentCourse.objects.filter(student=target_student, course=course, is_active=True).first() if target_student else None
+                allowed_modules = (enrollment.modules if enrollment else (target_student.modules if target_student and target_student.course == course else [])) or []
+                if course not in COURSE_MODULES or module_name not in COURSE_MODULES[course] or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000 or (target_student and module_name not in allowed_modules):
                     raise ValueError
-                assignment.course, assignment.module_name, assignment.title, assignment.instructions = course, module_name, title, instructions
+                assignment.course, assignment.module_name, assignment.target_student, assignment.title, assignment.instructions = course, module_name, target_student, title, instructions
                 assignment.time_minutes, assignment.min_words, assignment.max_words = duration, min_words, max_words
                 assignment.save()
                 messages.success(request, "Assignment updated.")
@@ -920,6 +930,8 @@ def ielts_admin_panel(request):
     legacy_by_pair = {(item.assignment_id, item.student_name.casefold(), item.student_roll.casefold()): item for item in submissions_for_review if not item.student_profile_id}
     for assignment in assignments_for_review:
         for profile in active_profiles:
+            if assignment.target_student_id and assignment.target_student_id != profile.pk:
+                continue
             enrollments = [enrollment for enrollment in profile.course_enrollments.all() if enrollment.is_active and enrollment.course == assignment.course]
             if not enrollments and profile.course == assignment.course:
                 enrollments = [None]
@@ -931,7 +943,7 @@ def ielts_admin_panel(request):
                 assignment_student_rows.append({
                     "student_name": profile.name, "student_roll": profile.roll, "course": assignment.course,
                     "module": assignment.module_name or (", ".join(modules) if modules else "—"),
-                    "assignment": assignment, "submission": submission,
+                    "assignment": assignment, "assigned_to": profile.name, "submission": submission,
                     "submitted": bool(submission and submission.status == "submitted"),
                     "duration": f"{submission.elapsed_seconds} sec" if submission and submission.elapsed_seconds else "—",
                     "word_count": submission.word_count if submission else "—",
@@ -939,7 +951,8 @@ def ielts_admin_panel(request):
     return render(request, "students/ielts_admin.html", {
         "assignment_student_rows": assignment_student_rows,
         "notices": IELTSNotice.objects.all()[:12],
-        "assignments": IELTSAssignment.objects.all()[:20],
+        "assignments": IELTSAssignment.objects.select_related("target_student")[:100],
+        "assignment_students": StudentProfile.objects.filter(is_active=True).select_related("user").prefetch_related("course_enrollments"),
         "submissions": IELTSAssignmentSubmission.objects.select_related("assignment")[:30],
         "materials": IELTSMaterial.objects.all()[:20],
         "lessons": IELTSLesson.objects.all()[:20],
