@@ -516,7 +516,7 @@ def ielts_admin_panel(request):
             if title and instructions:
                 course = request.POST.get("course", "")
                 if course in COURSE_MODULES:
-                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, module_name=request.POST.get("module_name", "").strip()[:120], time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
                     messages.success(request, f"{course} assignment published.")
                 else:
                     messages.error(request, "Select a valid course for this assignment.")
@@ -746,7 +746,7 @@ def ielts_admin_panel(request):
                 max_words = int(request.POST.get("max_words", 350))
                 if course not in COURSE_MODULES or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000:
                     raise ValueError
-                assignment.course, assignment.title, assignment.instructions = course, title, instructions
+                assignment.course, assignment.module_name, assignment.title, assignment.instructions = course, request.POST.get("module_name", "").strip()[:120], title, instructions
                 assignment.time_minutes, assignment.min_words, assignment.max_words = duration, min_words, max_words
                 assignment.save()
                 messages.success(request, "Assignment updated.")
