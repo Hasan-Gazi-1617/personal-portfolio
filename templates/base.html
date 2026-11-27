@@ -472,6 +472,13 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 .admin-panel-dropdown .dropdown-submenu{position:relative}
 .admin-panel-dropdown .dropdown-submenu>.submenu-menu{position:absolute!important;top:0!important;left:100%!important;right:auto!important;margin:0!important;min-width:230px;z-index:1200}
 @media(max-width:991.98px){.students-dropdown .dropdown-submenu>.submenu-menu,.admin-panel-dropdown .dropdown-submenu>.submenu-menu{position:static!important;left:auto!important;margin:5px 0 5px 12px!important;width:calc(100% - 12px)}}
+
+/* Reliable nested dropdowns for Admin Panel and Student Forum. */
+.admin-panel-dropdown .dropdown-submenu,.students-dropdown .dropdown-submenu{position:relative}
+.admin-panel-dropdown .dropdown-submenu>.submenu-menu,.students-dropdown .dropdown-submenu>.submenu-menu{display:none;position:absolute;top:0;left:100%;right:auto;margin:0;min-width:235px;z-index:1300}
+.admin-panel-dropdown .dropdown-submenu>.submenu-menu.show,.students-dropdown .dropdown-submenu>.submenu-menu.show{display:block}
+.admin-panel-dropdown .dropdown-submenu>.submenu-toggle:after,.students-dropdown .dropdown-submenu>.submenu-toggle:after{float:right;margin-left:12px;transform:rotate(-90deg)}
+@media(max-width:1199.98px){.admin-panel-dropdown .dropdown-submenu>.submenu-menu,.students-dropdown .dropdown-submenu>.submenu-menu{position:static;left:auto;width:100%;margin:5px 0 5px 10px;box-shadow:none}}
 </style>
 
 <script>
@@ -645,6 +652,9 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
 
                 <div class="portfolio-nav-column portfolio-nav-community">
                     <ul class="navbar-nav">
+                        {% if not request.user.is_authenticated or not request.user.student_profile %}
+                        <li class="nav-item"><a class="nav-link admin-view-link" href="{% url 'owner_login' %}"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Admin View</span></a></li>
+                        {% endif %}
                         {% if request.session.owner_access %}
                         <li class="nav-item dropdown admin-panel-dropdown">
                             <a class="nav-link dropdown-toggle admin-view-link" href="#" id="adminPanelMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -658,6 +668,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                     <ul class="dropdown-menu submenu-menu">
                                         <li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>
                                         <li><a class="dropdown-item" href="{% url 'attendance_admin' %}"><i class="bi bi-person-badge"></i><span>Manage Students &amp; Access Codes</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}#student-admin"><i class="bi bi-person-lines-fill"></i><span>View Students</span></a></li>
 
                                         <li class="dropdown-submenu">
                                             <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
@@ -684,21 +695,27 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                         </li>
                         {% else %}
                         <li class="nav-item dropdown students-dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>{% if request.user.is_authenticated and request.user.studentprofile %}{{ request.user.student_profile.name|first_word|default:"Student" }} Forum{% else %}Student Forum{% endif %}</span></a>
+                            <a class="nav-link dropdown-toggle" href="#" id="studentForumMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-people nav-item-icon" aria-hidden="true"></i><span>{% if request.user.is_authenticated and request.user.student_profile %}{{ request.user.student_profile.name|first_word|default:"Student" }} Forum{% else %}Student Forum{% endif %}</span></a>
                             <ul class="dropdown-menu" aria-labelledby="studentForumMenu">
                                 {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>{% endif %}
+                                {% if request.user.is_authenticated and request.user.student_profile %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
-
                                     <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>My Courses</span></a>
                                     <ul class="dropdown-menu submenu-menu">
-                                        {% if request.user.is_authenticated and request.user.student_profile %}
-                                            {% for enrollment in request.user.student_profile.course_enrollments.all %}
-                                                {% if enrollment.is_active %}<li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><i class="bi bi-journal-bookmark"></i><span>{{ enrollment.course }}</span></a></li>{% endif %}
-                                            {% endfor %}
-                                            {% if not request.user.student_profile.course_enrollments.all %}<li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><span>{{ request.user.student_profile.course }}</span></a></li>{% endif %}
-                                        {% endif %}
+                                        {% for enrollment in request.user.student_profile.course_enrollments.all %}
+                                            {% if enrollment.is_active %}<li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><i class="bi bi-journal-bookmark"></i><span>{{ enrollment.course }}</span></a></li>{% endif %}
+                                        {% empty %}
+                                            <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><span>{{ request.user.student_profile.course }}</span></a></li>
+                                        {% endfor %}
                                     </ul>
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#student-directory"><i class="bi bi-people"></i><span>View Students</span></a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i class="bi bi-person-circle"></i><span>My Student Profile</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+                                {% endif %}
+                            </ul>
                                 </li>
                                 {% if request.user.is_authenticated %}
                                 <li><hr class="dropdown-divider"></li>
@@ -1128,5 +1145,20 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ document.querySelectorAll('.dropdown-submenu > .submenu-toggle').forEach(function(toggle){
+  toggle.addEventListener('click',function(event){
+   event.preventDefault();event.stopPropagation();
+   const parent=toggle.closest('.dropdown-submenu');const menu=parent&&parent.querySelector(':scope > .submenu-menu');
+   if(!menu)return;const wasOpen=menu.classList.contains('show');const root=toggle.closest('.dropdown-menu');
+   if(root)root.querySelectorAll('.dropdown-submenu > .submenu-menu.show').forEach(function(other){if(other!==menu){other.classList.remove('show');const t=other.parentElement.querySelector(':scope > .submenu-toggle');if(t)t.setAttribute('aria-expanded','false')}});
+   menu.classList.toggle('show',!wasOpen);toggle.setAttribute('aria-expanded',String(!wasOpen));
+  });
+ });
+ document.addEventListener('click',function(event){if(!event.target.closest('.dropdown-menu'))document.querySelectorAll('.dropdown-submenu > .submenu-menu.show').forEach(function(menu){menu.classList.remove('show');const t=menu.parentElement.querySelector(':scope > .submenu-toggle');if(t)t.setAttribute('aria-expanded','false')});});
+});
+</script>
 </body>
 </html>
