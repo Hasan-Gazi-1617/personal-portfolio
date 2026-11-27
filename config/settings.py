@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'books',
     'site_insights',
     'attendance',
+    'bcs_exam',
 ]
 
 MIDDLEWARE = [
