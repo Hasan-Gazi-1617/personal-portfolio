@@ -147,6 +147,7 @@ const primaryCourse=document.getElementById('personal-course'),primaryModules=do
  document.querySelectorAll('.student-account-link').forEach(button=>button.addEventListener('click',()=>{
  const student=adminStudents.find(x=>String(x.id)===button.dataset.studentId);
  renderStudentDetails(student,adminProfile);
+ fillPersonal(student);
  if(accountProfile)accountProfile.value=student?String(student.id):'';
  if(document.getElementById('student-course-profile'))document.getElementById('student-course-profile').value=student?String(student.id):'';
  if(accountUsername)accountUsername.value=student?student.username:'';
