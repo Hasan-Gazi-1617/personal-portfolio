@@ -651,11 +651,25 @@ def ielts_admin_panel(request):
                 profile.country = request.POST.get("country", "").strip()[:100]
                 profile.city = request.POST.get("city", "").strip()[:100]
                 profile.cell_phone = request.POST.get("cell_phone", "").strip()[:30]
+                course = request.POST.get("course", profile.course).strip()
+                if course not in COURSE_MODULES:
+                    raise ValueError("Choose a valid primary course.")
+                modules = [item for item in request.POST.getlist("modules") if item in COURSE_MODULES[course]]
+                if not modules:
+                    raise ValueError("Choose at least one module for the primary course.")
                 raw_dob = request.POST.get("date_of_birth", "").strip()
-                profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
+                raw_joining = request.POST.get("joining_date", "").strip()
                 raw_finish = request.POST.get("course_finish_date", "").strip()
+                profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
+                profile.joining_date = datetime.strptime(raw_joining, "%Y-%m-%d").date() if raw_joining else None
                 profile.course_finish_date = datetime.strptime(raw_finish, "%Y-%m-%d").date() if raw_finish else None
+                profile.course = course
+                profile.modules = modules
                 profile.save()
+                StudentCourse.objects.update_or_create(
+                    student=profile, course=course,
+                    defaults={"modules": modules, "joining_date": profile.joining_date, "course_finish_date": profile.course_finish_date, "is_active": True},
+                )
                 if profile.user_id and profile.email:
                     profile.user.email = profile.email
                     profile.user.save(update_fields=["email"])
@@ -799,8 +813,8 @@ def ielts_admin_panel(request):
             "id": profile.pk, "name": profile.name, "roll": profile.roll, "access_code": profile.access_code, "course": profile.course,
             "courses": [{"course": item.course, "modules": item.modules or [], "joining_date": item.joining_date.strftime("%d %b %Y") if item.joining_date else "—", "course_finish_date": item.course_finish_date.strftime("%d %b %Y") if item.course_finish_date else "—"} for item in _student_course_enrollments(profile)],
             "modules": profile.modules or [], "username": profile.user.username if profile.user_id else "",
-            "email": profile.email or (profile.user.email if profile.user_id else ""), "address": profile.address, "country": profile.country, "city": profile.city, "cell_phone": profile.cell_phone, "date_of_birth": profile.date_of_birth.strftime("%d %b %Y") if profile.date_of_birth else "—", "date_of_birth_iso": profile.date_of_birth.isoformat() if profile.date_of_birth else "", "course_finish_date_iso": profile.course_finish_date.isoformat() if profile.course_finish_date else "", "has_account": bool(profile.user_id),
-            "joining_date": profile.joining_date.strftime("%d %b %Y") if profile.joining_date else "—",
+            "email": profile.email or (profile.user.email if profile.user_id else ""), "address": profile.address, "country": profile.country, "city": profile.city, "cell_phone": profile.cell_phone, "date_of_birth": profile.date_of_birth.strftime("%d %b %Y") if profile.date_of_birth else "—", "date_of_birth_iso": profile.date_of_birth.isoformat() if profile.date_of_birth else "", "course_finish_date_iso": profile.course_finish_date.isoformat() if profile.course_finish_date else "", "course": profile.course, "modules": profile.modules or [], "has_account": bool(profile.user_id),
+            "joining_date": profile.joining_date.strftime("%d %b %Y") if profile.joining_date else "—", "joining_date_iso": profile.joining_date.isoformat() if profile.joining_date else "",
             "course_finish_date": profile.course_finish_date.strftime("%d %b %Y") if profile.course_finish_date else "—",
             "attendance": [{"date": row.class_date.strftime("%d %b %Y"), "module": row.module_name, "period": row.period, "in": row.sign_in.strftime("%I:%M %p") if row.sign_in else "—", "out": row.sign_out.strftime("%I:%M %p") if row.sign_out else "—", "duration": row.total_duration} for row in profile.attendance_records.all()[:100]],
             "assignments": [{"title": row.assignment.title, "status": row.get_status_display(), "date": timezone.localtime(row.submitted_at).strftime("%d %b %Y"), "answer": row.answer_text, "feedback": row.teacher_feedback, "receipt": f"/students/ielts/submission/{row.receipt_code}/", "file": f"/owner/ielts/submission/{row.pk}/file/" if row.file else ""} for row in IELTSAssignmentSubmission.objects.filter(Q(student_profile=profile) | Q(student_profile__isnull=True, student_name__iexact=profile.name, student_roll=profile.roll)).select_related("assignment")[:100]],
