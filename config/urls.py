@@ -8,6 +8,7 @@ urlpatterns = [
     path('analytics/', include('site_insights.urls')),
     path('library/', include('books.urls')),
     path('', include('attendance.urls')),
+    path('', include('bcs_exam.urls')),
     path('', include('portfolio.urls')),
 ]
 
