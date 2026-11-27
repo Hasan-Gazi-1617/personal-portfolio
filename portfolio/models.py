@@ -419,6 +419,7 @@ class IELTSAttendance(models.Model):
 
 class IELTSAssignment(models.Model):
     course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
+    target_student = models.ForeignKey("attendance.StudentProfile", null=True, blank=True, on_delete=models.CASCADE, related_name="individual_ielts_assignments", help_text="When set, this assignment is visible only to the selected student. Leave empty for course-wide assignments.")
     module_name = models.CharField(max_length=120, blank=True, default="")
     title = models.CharField(max_length=180)
     instructions = models.TextField()
