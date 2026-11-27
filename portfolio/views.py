@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 from .forms import AdminTicketForm, EngineerTicketUpdateForm
 from .models import ComplaintTicket, TicketActivity, OLTDevice, ONUStatus, OLTEvent, IELTSNotice, IELTSMaterial, IELTSLesson, IELTSPracticeSet, IELTSPracticeAttempt, IELTSAttendance, IELTSAssignment, IELTSAssignmentSubmission
-from attendance.models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile
+from attendance.models import AttendanceRecord, COURSE_MODULES, StudentCourse, StudentProfile, generate_student_access_code
 from .tki_import import decode_tki_upload, import_solved_tsv
 
 
@@ -647,6 +647,9 @@ def ielts_admin_panel(request):
                 profile.name = request.POST.get("student_name", "").strip()[:120]
                 profile.roll = request.POST.get("roll", "").strip()[:40]
                 profile.email = request.POST.get("email", "").strip()[:254]
+                profile.access_code = request.POST.get("access_code", profile.access_code).strip().upper()[:10]
+                if not profile.access_code or StudentProfile.objects.filter(access_code=profile.access_code).exclude(pk=profile.pk).exists():
+                    raise ValueError("Access Code must be unique and cannot be blank.")
                 profile.address = request.POST.get("address", "").strip()
                 profile.country = request.POST.get("country", "").strip()[:100]
                 profile.city = request.POST.get("city", "").strip()[:100]
@@ -666,6 +669,19 @@ def ielts_admin_panel(request):
                 profile.course = course
                 profile.modules = modules
                 profile.save()
+                if profile.user_id:
+                    account = profile.user
+                    username = request.POST.get("username", account.username).strip()
+                    password = request.POST.get("password", "")
+                    User = get_user_model()
+                    if not username or User.objects.filter(username__iexact=username).exclude(pk=account.pk).exists():
+                        raise ValueError("Username is required and must be unique.")
+                    account.username = username
+                    account.email = profile.email
+                    if password:
+                        validate_password(password, account)
+                        account.set_password(password)
+                    account.save()
                 StudentCourse.objects.update_or_create(
                     student=profile, course=course,
                     defaults={"modules": modules, "joining_date": profile.joining_date, "course_finish_date": profile.course_finish_date, "is_active": True},
@@ -702,6 +718,63 @@ def ielts_admin_panel(request):
                 messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
             except ValueError as exc:
                 messages.error(request, str(exc))
+        elif action == "student_delete":
+            try:
+                profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"))
+                student_name = profile.name
+                student_roll = profile.roll
+                with transaction.atomic():
+                    IELTSAssignmentSubmission.objects.filter(student_profile=profile).delete()
+                    IELTSAssignmentSubmission.objects.filter(student_name__iexact=student_name, student_roll=student_roll).delete()
+                    IELTSPracticeAttempt.objects.filter(student_name__iexact=student_name, student_roll=student_roll).delete()
+                    AttendanceRecord.objects.filter(student=profile).delete()
+                    if profile.user_id:
+                        profile.user.delete()
+                    profile.delete()
+                messages.success(request, f"{student_name} and all linked student records were permanently deleted.")
+            except Exception as exc:
+                logger.exception("Unable to permanently delete student profile")
+                messages.error(request, "Student could not be deleted because linked records still exist. Check related records before retrying.")
+        elif action == "assignment_update":
+            try:
+                assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"))
+                course = request.POST.get("course", "")
+                title = request.POST.get("title", "").strip()[:180]
+                instructions = request.POST.get("instructions", "").strip()
+                duration = int(request.POST.get("time_minutes", 40))
+                min_words = int(request.POST.get("min_words", 250))
+                max_words = int(request.POST.get("max_words", 350))
+                if course not in COURSE_MODULES or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000:
+                    raise ValueError
+                assignment.course, assignment.title, assignment.instructions = course, title, instructions
+                assignment.time_minutes, assignment.min_words, assignment.max_words = duration, min_words, max_words
+                assignment.save()
+                messages.success(request, "Assignment updated.")
+            except (ValueError, TypeError):
+                messages.error(request, "Check assignment course, title, duration and word limits.")
+        elif action == "assignment_delete":
+            get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id")).delete()
+            messages.success(request, "Assignment and its submissions were permanently deleted.")
+        elif action == "material_update":
+            try:
+                material = get_object_or_404(IELTSMaterial, pk=request.POST.get("material_id"))
+                course = request.POST.get("course", "")
+                title = request.POST.get("title", "").strip()[:180]
+                if course not in COURSE_MODULES or not title:
+                    raise ValueError
+                material.course, material.title = course, title
+                material.description = request.POST.get("description", "").strip()
+                material.category = request.POST.get("category", "general")
+                material.resource_url = request.POST.get("resource_url", "").strip()
+                if request.FILES.get("material_file"):
+                    material.file = request.FILES["material_file"]
+                material.save()
+                messages.success(request, "Course material updated.")
+            except (ValueError, TypeError):
+                messages.error(request, "Check the course material details.")
+        elif action == "material_delete":
+            get_object_or_404(IELTSMaterial, pk=request.POST.get("material_id")).delete()
+            messages.success(request, "Course material deleted.")
         elif action == "attendance_student":
             name = request.POST.get("name", "").strip()[:120]
             roll = request.POST.get("roll", "").strip()[:40]
