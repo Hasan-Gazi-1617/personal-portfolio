@@ -72,6 +72,9 @@ def student_course(request, slug):
     """Require an active student account assigned to the selected subject."""
     subject_map = {
         "ielts": {"title": "IELTS", "courses": ["IELTS", "Language Testing"], "modules": ["Listening", "Reading", "Writing", "Speaking", "Lexical Resources", "Grammatical Theory"]},
+        "language-testing": {"title": "Language Testing", "courses": ["Language Testing"], "modules": COURSE_MODULES["Language Testing"]},
+        "school-courses": {"title": "School Courses", "courses": ["School Academy"], "modules": COURSE_MODULES["School Academy"]},
+        "college-courses": {"title": "College Courses", "courses": ["College Academy"], "modules": COURSE_MODULES["College Academy"]},
         "bcs": {"title": "BCS", "courses": ["BCS"], "modules": COURSE_MODULES["BCS"]},
         "computer-science": {"title": "Computer Science", "courses": ["Programming", "CSE Course", "Undergraduate Courses"], "modules": sorted({m for c in ["Programming", "CSE Course", "Undergraduate Courses"] for m in COURSE_MODULES[c]})},
     }
