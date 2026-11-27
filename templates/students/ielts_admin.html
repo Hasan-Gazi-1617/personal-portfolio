@@ -62,9 +62,12 @@
 <section class="ia-card ia-full" id="review-admin" data-panel="assignments" hidden>
 <h2>Review Student Submissions</h2>
 <p class="ia-sub">Manual teacher assessment only. Read the original essay, score the four IELTS criteria and use Sentence Clinic: Original sentence → Refined sentence → Why this correction works.</p>
+<div style="overflow:auto;margin:14px 0 22px"><table class="ia-table"><thead><tr><th>Student Name</th><th>Roll No</th><th>Course</th><th>Module</th><th>Duration</th><th>Min / Max Words</th><th>Submitted</th><th>Action</th></tr></thead><tbody>
+{% for submission in submissions %}<tr><td>{{ submission.student_name }}</td><td>{{ submission.student_roll|default:"—" }}</td><td>{{ submission.assignment.course }}</td><td>{{ submission.assignment.module_name|default:"—" }}</td><td>{% if submission.elapsed_seconds %}{{ submission.elapsed_seconds }} sec{% else %}—{% endif %}</td><td>{{ submission.assignment.min_words }} / {{ submission.assignment.max_words }}</td><td>{% if submission.status == "submitted" %}Yes{% else %}No{% endif %}</td><td><a class="ia-btn" href="#submission-{{ submission.pk }}" style="display:inline-block;text-decoration:none">View Assignment</a></td></tr>{% empty %}<tr><td colspan="8">No assignment submissions.</td></tr>{% endfor %}
+</tbody></table></div>
 <div class="ia-review-list">
 {% for submission in submissions %}
-<article class="ia-review-card">
+<article class="ia-review-card" id="submission-{{ submission.pk }}">
 <div class="ia-review-top"><div><b style="font-size:15px">{{ submission.student_name }}</b> {% if submission.student_roll %}<span class="ia-sub">· Roll {{ submission.student_roll }}</span>{% endif %}<div style="font-size:12px;margin-top:5px">{{ submission.assignment.course }} · {{ submission.assignment.title }} · Submitted {{ submission.submitted_at|date:"d M Y, h:i A" }}</div></div><span class="ia-review-status {% if submission.status == 'failed' %}failed{% elif submission.reviewed_at %}done{% endif %}">{% if submission.status == "failed" %}Failed · Locked{% elif submission.status == "in_progress" %}In Progress{% elif submission.reviewed_at %}Reviewed{% else %}Pending Review{% endif %}</span></div>
 <div class="ia-review-grid" style="margin-top:14px">
 <div><h3 style="font-size:13px;font-weight:800;margin-bottom:8px">Student's Written Answer</h3><div class="ia-review-content">{{ submission.answer_text|default:"No typed answer. Please open the uploaded attachment." }}</div></div>
