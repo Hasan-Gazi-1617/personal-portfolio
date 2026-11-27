@@ -463,6 +463,15 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
     }
 }
 
+
+/* Student/Admin nested menus: open to the right without clipping. */
+.students-dropdown .dropdown-menu{overflow:visible}
+.students-dropdown .dropdown-submenu{position:relative}
+.students-dropdown .dropdown-submenu>.submenu-menu{position:absolute!important;top:0!important;left:100%!important;right:auto!important;margin:0!important;min-width:220px;z-index:1200}
+.admin-panel-dropdown .dropdown-menu{overflow:visible}
+.admin-panel-dropdown .dropdown-submenu{position:relative}
+.admin-panel-dropdown .dropdown-submenu>.submenu-menu{position:absolute!important;top:0!important;left:100%!important;right:auto!important;margin:0!important;min-width:230px;z-index:1200}
+@media(max-width:991.98px){.students-dropdown .dropdown-submenu>.submenu-menu,.admin-panel-dropdown .dropdown-submenu>.submenu-menu{position:static!important;left:auto!important;margin:5px 0 5px 12px!important;width:calc(100% - 12px)}}
 </style>
 
 <script>
@@ -656,6 +665,9 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                                 <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
                                                 <li><a class="dropdown-item" href="{% url 'student_course' 'bcs' %}"><i class="bi bi-journal-check"></i><span>BCS</span></a></li>
                                                 <li><a class="dropdown-item" href="{% url 'student_course' 'computer-science' %}"><i class="bi bi-cpu"></i><span>Computer Science</span></a></li>
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'language-testing' %}"><i class="bi bi-translate"></i><span>Language Testing</span></a></li>
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'school-courses' %}"><i class="bi bi-book"></i><span>School Courses</span></a></li>
+                                                <li><a class="dropdown-item" href="{% url 'student_course' 'college-courses' %}"><i class="bi bi-mortarboard"></i><span>College Courses</span></a></li>
                                             </ul>
                                         </li>
                                     </ul>
@@ -678,11 +690,14 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
 
-                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
+                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>My Courses</span></a>
                                     <ul class="dropdown-menu submenu-menu">
-                                        <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
-                                        <li><a class="dropdown-item" href="{% url 'student_course' 'bcs' %}"><i class="bi bi-journal-check"></i><span>BCS</span></a></li>
-                                        <li><a class="dropdown-item" href="{% url 'student_course' 'computer-science' %}"><i class="bi bi-cpu"></i><span>Computer Science</span></a></li>
+                                        {% if request.user.is_authenticated and request.user.student_profile %}
+                                            {% for enrollment in request.user.student_profile.course_enrollments.all %}
+                                                {% if enrollment.is_active %}<li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><i class="bi bi-journal-bookmark"></i><span>{{ enrollment.course }}</span></a></li>{% endif %}
+                                            {% endfor %}
+                                            {% if not request.user.student_profile.course_enrollments.all %}<li><a class="dropdown-item" href="{% url 'student_dashboard' %}#course-module-students"><span>{{ request.user.student_profile.course }}</span></a></li>{% endif %}
+                                        {% endif %}
                                     </ul>
                                 </li>
                                 {% if request.user.is_authenticated %}
