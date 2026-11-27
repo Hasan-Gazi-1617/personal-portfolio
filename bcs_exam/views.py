@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal
+from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -84,7 +85,7 @@ def submit_exam(request, attempt_id):
     with transaction.atomic():
         attempt = get_object_or_404(BCSAttempt.objects.select_for_update(), pk=attempt_id, student=profile, submitted_at__isnull=True)
         exam = attempt.exam
-        if timezone.now() > attempt.started_at + timezone.timedelta(minutes=exam.duration_minutes):
+        if timezone.now() > attempt.started_at + timedelta(minutes=exam.duration_minutes):
             pass
         answers = {}
         correct = wrong = unanswered = 0
