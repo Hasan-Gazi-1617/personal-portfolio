@@ -1,9 +1,12 @@
+import logging
 import re
 import uuid
 from urllib.parse import urlparse
 from django.db import IntegrityError
 from django.utils import timezone
 from .models import DailyVisitor, PageView
+
+logger = logging.getLogger(__name__)
 
 BOT_RE = re.compile(r'bot|crawler|spider|preview|uptime|monitor', re.I)
 
@@ -22,6 +25,16 @@ class PublicPageAnalyticsMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
+
+    def process_exception(self, request, exception):
+        # Owner-only Student Records errors need their traceback in Render logs.
+        # Do not expose exception details in the browser response.
+        if request.path.rstrip('/') == '/owner/ielts' and request.session.get('owner_access'):
+            logger.exception(
+                'Unhandled exception while rendering the owner Student/Admin panel',
+                exc_info=(type(exception), exception, exception.__traceback__),
+            )
+        return None
 
 
     def __call__(self, request):
