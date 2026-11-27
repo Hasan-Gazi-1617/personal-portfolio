@@ -443,6 +443,7 @@ class IELTSAssignmentSubmission(models.Model):
     student_name = models.CharField(max_length=100)
     student_roll = models.CharField(max_length=40, blank=True)
     answer_text = models.TextField(blank=True)
+    corrected_answer = models.TextField(blank=True, help_text="Teacher's corrected version for side-by-side word comparison")
     word_count = models.PositiveIntegerField(default=0)
     elapsed_seconds = models.PositiveIntegerField(null=True, blank=True)
     STATUS_CHOICES = (("in_progress", "In Progress"), ("submitted", "Submitted"), ("failed", "Failed"))
