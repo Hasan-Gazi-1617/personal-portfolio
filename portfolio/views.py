@@ -466,6 +466,9 @@ def student_dashboard(request):
     assignment_filter = Q(pk__in=[])
     for enrollment in enrollments:
         assignment_filter |= Q(course=enrollment.course, module_name="") | Q(course=enrollment.course, module_name__in=(enrollment.modules or []))
+    student_assignment_objects = list(IELTSAssignment.objects.filter(assignment_filter, is_published=True).order_by("course", "module_name", "title")[:100])
+    student_submissions = {row.assignment_id: row for row in IELTSAssignmentSubmission.objects.filter(student_profile=profile, assignment__in=student_assignment_objects).select_related("assignment")}
+    student_assignment_rows = [{"assignment": item, "submission": student_submissions.get(item.pk)} for item in student_assignment_objects]
     first_sign_in = AttendanceRecord.objects.filter(student=profile, sign_in__isnull=False).order_by("class_date", "created_at").first()
     if first_sign_in and not profile.joining_date:
         profile.joining_date = first_sign_in.class_date
@@ -481,7 +484,8 @@ def student_dashboard(request):
         "notices": IELTSNotice.objects.filter(course__in=courses, is_published=True).filter(Q(student__isnull=True) | Q(student=profile))[:100],
         "materials": IELTSMaterial.objects.filter(course__in=courses, is_published=True)[:100],
         "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
-        "assignments": IELTSAssignment.objects.filter(assignment_filter, is_published=True)[:100],
+        "assignments": student_assignment_objects,
+        "student_assignment_rows": student_assignment_rows,
         "practice_sets": IELTSPracticeSet.objects.filter(course__in=courses, is_published=True)[:100],
         "countries": ["Afghanistan", "Australia", "Bangladesh", "Canada", "China", "France", "Germany", "India", "Italy", "Japan", "Malaysia", "Nepal", "Pakistan", "Saudi Arabia", "Singapore", "South Korea", "United Arab Emirates", "United Kingdom", "United States"],
         "country_cities": {"Bangladesh": ["Dhaka", "Chattogram", "Sylhet", "Rajshahi", "Khulna", "Barishal", "Rangpur", "Mymensingh", "Cumilla", "Cox's Bazar"], "India": ["Delhi", "Mumbai", "Kolkata", "Chennai", "Bengaluru", "Hyderabad"], "United States": ["New York", "Los Angeles", "Chicago", "Houston", "San Francisco"], "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Edinburgh"], "Canada": ["Toronto", "Vancouver", "Montreal", "Ottawa", "Calgary"], "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"], "Malaysia": ["Kuala Lumpur", "George Town", "Johor Bahru"], "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina"], "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah"], "Nepal": ["Kathmandu", "Pokhara", "Lalitpur"], "Pakistan": ["Karachi", "Lahore", "Islamabad"]},
