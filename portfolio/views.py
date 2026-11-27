@@ -544,11 +544,12 @@ def ielts_admin_panel(request):
                 duration, min_words, max_words = 40, 250, 350
             if title and instructions:
                 course = request.POST.get("course", "")
-                if course in COURSE_MODULES:
-                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, module_name=request.POST.get("module_name", "").strip()[:120], time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
+                module_name = request.POST.get("module_name", "").strip()[:120]
+                if course in COURSE_MODULES and module_name in COURSE_MODULES[course]:
+                    IELTSAssignment.objects.create(title=title, instructions=instructions, course=course, module_name=module_name, time_minutes=duration, min_words=min_words, max_words=max_words, is_published=True)
                     messages.success(request, f"{course} assignment published.")
                 else:
-                    messages.error(request, "Select a valid course for this assignment.")
+                    messages.error(request, "Select a valid course and module for this assignment.")
         elif action == "material":
             title = request.POST.get("title", "").strip()[:180]
             if title and request.POST.get("course") in COURSE_MODULES:
@@ -777,9 +778,10 @@ def ielts_admin_panel(request):
                 duration = int(request.POST.get("time_minutes", 40))
                 min_words = int(request.POST.get("min_words", 250))
                 max_words = int(request.POST.get("max_words", 350))
-                if course not in COURSE_MODULES or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000:
+                module_name = request.POST.get("module_name", "").strip()[:120]
+                if course not in COURSE_MODULES or module_name not in COURSE_MODULES[course] or not title or not instructions or not 1 <= duration <= 180 or not 1 <= min_words <= max_words <= 5000:
                     raise ValueError
-                assignment.course, assignment.module_name, assignment.title, assignment.instructions = course, request.POST.get("module_name", "").strip()[:120], title, instructions
+                assignment.course, assignment.module_name, assignment.title, assignment.instructions = course, module_name, title, instructions
                 assignment.time_minutes, assignment.min_words, assignment.max_words = duration, min_words, max_words
                 assignment.save()
                 messages.success(request, "Assignment updated.")
