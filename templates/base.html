@@ -344,8 +344,23 @@ html[data-theme="light"] .footer-social a {
     transform: translate(-50%, -1px) !important;
 }
 
+.navbar-custom .container:has(.owner-login-theme-toggle) {
+    position: relative;
+    min-height: 64px;
+}
+
 .owner-login-theme-toggle {
-    margin-left: auto !important;
+    position: absolute !important;
+    top: 50%;
+    right: 12px;
+    margin: 0 !important;
+    transform: translateY(-50%);
+    z-index: 5;
+}
+
+.owner-login-theme-toggle:hover,
+.owner-login-theme-toggle:focus-visible {
+    transform: translateY(calc(-50% - 2px));
 }
 
 .manor-dropdown .dropdown-item:hover,
