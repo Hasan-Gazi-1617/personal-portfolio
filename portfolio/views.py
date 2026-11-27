@@ -928,7 +928,7 @@ def ielts_admin_panel(request):
                 messages.success(request, "Teacher review published to the student portal.")
             except (ValueError, TypeError):
                 messages.error(request, "Please check the overall score and IELTS band scores. Bands must use 0.5 steps.")
-        return redirect("ielts_admin_panel")
+        return redirect(request.path)
 
     assignment_student_rows = []
     assignments_for_review = list(IELTSAssignment.objects.all())
