@@ -616,7 +616,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                     </ul>
                                 </li>
                                 <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#student-directory"><i class="bi bi-people"></i><span>View Students</span></a></li>
-                                {% if request.user.student_profile.course == 'BCS' %}<li><a class="dropdown-item" href="{% url 'bcs_exam_list' %}"><i class="bi bi-ui-checks"></i><span>Preliminary Examination</span></a></li>{% endif %}
+                                {% if request.user.student_profile.course == 'BCS' %}<li><a class="dropdown-item" href="{% url 'bcs_exam_list' %}"><i class="bi bi-ui-checks"></i><span>Preliminary Examination</span></a></li>{% else %}{% for enrollment in request.user.student_profile.course_enrollments.all %}{% if enrollment.is_active and enrollment.course == 'BCS' %}<li><a class="dropdown-item" href="{% url 'bcs_exam_list' %}"><i class="bi bi-ui-checks"></i><span>Preliminary Examination</span></a></li>{% endif %}{% endfor %}{% endif %}
                                 <li><a class="dropdown-item" href="{% url 'student_dashboard' %}#my-information"><i class="bi bi-person-circle"></i><span>My Profile</span></a></li>
                                 <li><a class="dropdown-item" href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
                                 {% endif %}
