@@ -346,7 +346,7 @@ def ielts_submission_receipt(request, receipt_code):
     comparison_html = ""
     if submission.answer_text and submission.corrected_answer:
         original = re.findall(r"\s+|[^\s]+", submission.answer_text)
-        corrected = re.findall(r"\\s+|[^\\s]+", submission.corrected_answer)
+        corrected = re.findall(r"\s+|[^\s]+", submission.corrected_answer)
         parts = []
         for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, original, corrected, autojunk=False).get_opcodes():
             if tag == "equal":
