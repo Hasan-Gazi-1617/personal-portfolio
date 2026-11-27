@@ -698,7 +698,6 @@ def ielts_admin_panel(request):
                 profile.course_finish_date = datetime.strptime(raw_finish, "%Y-%m-%d").date() if raw_finish else None
                 profile.course = course
                 profile.modules = modules
-                profile.save()
                 if profile.user_id:
                     account = profile.user
                     username = request.POST.get("username", account.username).strip()
@@ -712,6 +711,7 @@ def ielts_admin_panel(request):
                         validate_password(password, account)
                         account.set_password(password)
                     account.save()
+                profile.save()
                 StudentCourse.objects.update_or_create(
                     student=profile, course=course,
                     defaults={"modules": modules, "joining_date": profile.joining_date, "course_finish_date": profile.course_finish_date, "is_active": True},
@@ -720,8 +720,10 @@ def ielts_admin_panel(request):
                     profile.user.email = profile.email
                     profile.user.save(update_fields=["email"])
                 messages.success(request, f"Personal information updated for {profile.name}.")
+            except ValidationError as exc:
+                messages.error(request, "Password does not meet security requirements: " + " ".join(exc.messages))
             except (ValueError, TypeError):
-                messages.error(request, "Check the student personal information and date fields.")
+                messages.error(request, "Check the student personal information, access code, username and date fields.")
         elif action == "student_account_update":
             try:
                 profile = get_object_or_404(StudentProfile, pk=request.POST.get("student_profile_id"), is_active=True)
