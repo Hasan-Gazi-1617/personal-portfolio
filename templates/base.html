@@ -564,13 +564,13 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="adminPanelMenu">
                                 <li><a class="dropdown-item" href="{% url 'site_insights:owner_dashboard' %}"><i class="bi bi-graph-up-arrow"></i><span>Analytics</span></a></li>
-                                <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}#student-admin"><i class="bi bi-people"></i><span>Student Records</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'owner_student_records' %}#student-admin"><i class="bi bi-people"></i><span>Student Records</span></a></li>
                                 <li class="dropdown-submenu">
                                     <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-people"></i><span>Student Forum</span></a>
                                     <ul class="dropdown-menu submenu-menu">
                                         <li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>
                                         <li><a class="dropdown-item" href="{% url 'attendance_admin' %}"><i class="bi bi-person-badge"></i><span>Manage Students &amp; Access Codes</span></a></li>
-                                        <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}#student-admin"><i class="bi bi-person-lines-fill"></i><span>View Students</span></a></li>
+                                        <li><a class="dropdown-item" href="{% url 'owner_student_records' %}#student-admin"><i class="bi bi-person-lines-fill"></i><span>View Students</span></a></li>
 
                                         <li class="dropdown-submenu">
                                             <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
@@ -585,7 +585,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}"><i class="bi bi-easel"></i><span>Teacher View</span></a></li>
+                                <li><a class="dropdown-item" href="{% url 'owner_teacher_view' %}"><i class="bi bi-easel"></i><span>Teacher View</span></a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="post" action="{% url 'owner_logout' %}" class="admin-menu-logout-form">
