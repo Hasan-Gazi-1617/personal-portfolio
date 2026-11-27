@@ -39,115 +39,6 @@
     {% block extra_css %}{% endblock %}
 
 <style>
-/* ===== MANOR-IT DATABASE / OLT SIDE SUBMENU FIX ===== */
-.manor-dropdown .dropdown-submenu {
-    position: relative;
-}
-
-.manor-dropdown .submenu-menu {
-    display: none;
-    position: absolute !important;
-    top: 0 !important;
-    left: calc(100% + 8px) !important;
-    right: auto !important;
-
-    min-width: 250px;
-    margin: 0 !important;
-    padding: 7px !important;
-
-    /* Glass / transparent look matching the main dropdown */
-    background: rgba(15, 23, 42, 0.78) !important;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-
-    border: 1px solid rgba(20, 184, 166, 0.16) !important;
-    border-radius: 9px !important;
-
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22) !important;
-    z-index: 1100 !important;
-}
-
-.manor-dropdown .submenu-menu.show {
-    display: block !important;
-}
-
-.manor-dropdown .submenu-menu .dropdown-item {
-    display: flex !important;
-    align-items: center !important;
-    gap: 11px !important;
-
-    min-height: 42px;
-    padding: 11px 13px !important;
-
-    background: transparent !important;
-    color: #cbd5e1 !important;
-    border-radius: 6px !important;
-
-    font-family: "Space Grotesk", "Segoe UI", sans-serif !important;
-    font-size: 13px !important;
-    line-height: 1.35;
-    font-weight: 600 !important;
-    letter-spacing: 0;
-    white-space: nowrap;
-}
-
-.manor-dropdown .submenu-menu .dropdown-item i {
-    width: 17px;
-    color: #14b8a6 !important;
-    font-size: 14px;
-    text-align: center;
-}
-
-.manor-dropdown .submenu-menu .dropdown-item span {
-    color: inherit !important;
-}
-
-.manor-dropdown .submenu-menu .dropdown-item:hover,
-.manor-dropdown .submenu-menu .dropdown-item:focus {
-    background: rgba(20, 184, 166, 0.10) !important;
-    color: #2dd4bf !important;
-}
-
-.manor-dropdown .submenu-toggle {
-    position: relative;
-    padding-right: 34px !important;
-}
-
-.manor-dropdown .submenu-toggle::after {
-    position: absolute;
-    right: 13px;
-    top: 50%;
-    margin: 0 !important;
-    transform: translateY(-50%) rotate(-90deg);
-    color: #14b8a6;
-}
-
-.manor-dropdown .submenu-toggle[aria-expanded="true"] {
-    background: rgba(20, 184, 166, 0.10) !important;
-    color: #2dd4bf !important;
-}
-
-@media (min-width: 992px) {
-    .manor-dropdown .manor-menu {
-        overflow: visible !important;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .manor-dropdown .submenu-menu {
-        position: static !important;
-        width: 100%;
-        min-width: 0;
-        margin: 5px 0 5px 10px !important;
-        box-shadow: none !important;
-        background: rgba(15, 23, 42, 0.62) !important;
-    }
-
-    .manor-dropdown .submenu-toggle::after {
-        transform: translateY(-50%);
-    }
-}
-
 /* ===== OWNER ACCESS + THEME ===== */
 .theme-toggle,.owner-logout-btn{width:42px;height:42px;flex:0 0 42px;display:inline-grid;place-items:center;border:1px solid rgba(20,184,166,.42);border-radius:11px;background:rgba(15,23,42,.72);color:#5eead4;transition:.2s ease}
 .theme-toggle:hover,.owner-logout-btn:hover{transform:translateY(-2px);color:#f8fafc;border-color:#5eead4;background:rgba(20,184,166,.16)}
@@ -758,7 +649,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                     <ul class="dropdown-menu submenu-menu">
                                         <li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>
                                         <li><a class="dropdown-item" href="{% url 'attendance_admin' %}"><i class="bi bi-person-badge"></i><span>Manage Students &amp; Access Codes</span></a></li>
-                                        <li><a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a></li>
+
                                         <li class="dropdown-submenu">
                                             <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
                                             <ul class="dropdown-menu submenu-menu">
@@ -770,33 +661,6 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                     </ul>
                                 </li>
                                 <li><a class="dropdown-item" href="{% url 'ielts_admin_panel' %}"><i class="bi bi-easel"></i><span>Teacher View</span></a></li>
-                                <li class="dropdown-submenu manor-dropdown">
-                                    <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-diagram-2"></i><span>Manor-IT</span></a>
-                                    <ul class="dropdown-menu submenu-menu">
-                                        <li><a class="dropdown-item" href="{{ private_links.webmail|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-envelope"></i><span>Webmail Login</span></a></li>
-                                        <li><a class="dropdown-item" href="https://mail.zoho.com/zm/#mail/folder/inbox" target="_blank" rel="noopener noreferrer"><i class="bi bi-envelope-check"></i><span>ZOHO Support Mail</span></a></li>
-                                        <li><a class="dropdown-item" href="{{ private_links.isp_panel|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-receipt"></i><span>ISP Panel</span></a></li>
-                                        <li><a class="dropdown-item" href="{{ private_links.billing|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-receipt"></i><span>TNR Soft</span></a></li>
-                                        <li class="dropdown-submenu">
-                                            <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-database"></i><span>Database</span></a>
-                                            <ul class="dropdown-menu submenu-menu">
-                                                <li><a class="dropdown-item" href="{{ private_links.client_database|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-file-earmark-spreadsheet"></i><span>New Client Database</span></a></li>
-                                                <li><a class="dropdown-item" href="{{ private_links.level3_database|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-file-earmark-spreadsheet"></i><span>Level3 Clients Database</span></a></li>
-                                                <li><a class="dropdown-item" href="{{ private_links.roster|default:'#' }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-calendar3"></i><span>Roaster</span></a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="dropdown-submenu">
-                                            <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-diagram-3"></i><span>OLT</span></a>
-                                            <ul class="dropdown-menu submenu-menu">
-                                                {% for endpoint in private_links.olt_menu %}
-                                                <li><a class="dropdown-item" href="{{ endpoint.url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-hdd-network"></i><span>{{ endpoint.label }}</span></a></li>
-                                                {% empty %}
-                                                <li><span class="dropdown-item disabled">No OLT links configured</span></li>
-                                                {% endfor %}
-                                            </ul>
-                                        </li>
-                                    </ul>
-                    </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="post" action="{% url 'owner_logout' %}" class="admin-menu-logout-form">
@@ -813,7 +677,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 {% if not request.user.is_authenticated %}<li><a class="dropdown-item" href="{% url 'student_access' %}"><i class="bi bi-key"></i><span>Student Access Portal</span></a></li>{% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-submenu">
-                                    <a class="dropdown-item" href="{% url 'student_learning_house' %}"><i class="bi bi-mortarboard"></i><span>Learning House</span></a>
+
                                     <a class="dropdown-item dropdown-toggle submenu-toggle" href="#" role="button" aria-expanded="false"><i class="bi bi-journals"></i><span>Explore Courses</span></a>
                                     <ul class="dropdown-menu submenu-menu">
                                         <li><a class="dropdown-item" href="{% url 'student_course' 'ielts' %}"><i class="bi bi-translate"></i><span>IELTS</span></a></li>
@@ -828,7 +692,7 @@ html[data-theme="light"] .manor-dropdown .submenu-toggle[aria-expanded="true"] {
                                 {% endif %}
                             </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link admin-view-link" href="{% url 'owner_login' %}"><i class="bi bi-shield-lock"></i><span>Admin View</span></a></li>
+
                         {% endif %}
                     </ul>
                 </div>
@@ -1173,57 +1037,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- ================= MANOR-IT SUBMENU JS ================= -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
 
-    submenuToggles.forEach(function (toggle) {
-        toggle.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const parent = toggle.closest('.dropdown-submenu');
-            if (!parent) return;
-
-            const menu = parent.querySelector(':scope > .submenu-menu');
-            if (!menu) return;
-
-            const isOpen = menu.classList.contains('show');
-
-            document.querySelectorAll('.submenu-menu.show').forEach(function (openMenu) {
-                if (openMenu !== menu) {
-                    openMenu.classList.remove('show');
-                }
-            });
-
-            document.querySelectorAll('.submenu-toggle[aria-expanded="true"]').forEach(function (openToggle) {
-                if (openToggle !== toggle) {
-                    openToggle.setAttribute('aria-expanded', 'false');
-                }
-            });
-
-            if (isOpen) {
-                menu.classList.remove('show');
-                toggle.setAttribute('aria-expanded', 'false');
-            } else {
-                menu.classList.add('show');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-        });
-    });
-
-    document.addEventListener('click', function () {
-        document.querySelectorAll('.submenu-menu.show').forEach(function (menu) {
-            menu.classList.remove('show');
-        });
-
-        document.querySelectorAll('.submenu-toggle[aria-expanded="true"]').forEach(function (toggle) {
-            toggle.setAttribute('aria-expanded', 'false');
-        });
-    });
-});
-</script>
 
 
 <script>
