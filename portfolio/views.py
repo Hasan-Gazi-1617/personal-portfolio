@@ -753,8 +753,12 @@ def ielts_admin_panel(request):
                 student_name = profile.name
                 student_roll = profile.roll
                 with transaction.atomic():
-                    IELTSAssignmentSubmission.objects.filter(student_profile=profile).delete()
-                    IELTSAssignmentSubmission.objects.filter(student_name__iexact=student_name, student_roll=student_roll).delete()
+                    linked_submissions = IELTSAssignmentSubmission.objects.filter(student_profile=profile)
+                    legacy_submissions = IELTSAssignmentSubmission.objects.filter(student_profile__isnull=True, student_name__iexact=student_name, student_roll=student_roll)
+                    for submission in list(linked_submissions) + list(legacy_submissions):
+                        if submission.file:
+                            submission.file.delete(save=False)
+                        submission.delete()
                     IELTSPracticeAttempt.objects.filter(student_name__iexact=student_name, student_roll=student_roll).delete()
                     AttendanceRecord.objects.filter(student=profile).delete()
                     if profile.user_id:
@@ -782,7 +786,11 @@ def ielts_admin_panel(request):
             except (ValueError, TypeError):
                 messages.error(request, "Check assignment course, title, duration and word limits.")
         elif action == "assignment_delete":
-            get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id")).delete()
+            assignment = get_object_or_404(IELTSAssignment, pk=request.POST.get("assignment_id"))
+            for submission in assignment.submissions.all():
+                if submission.file:
+                    submission.file.delete(save=False)
+            assignment.delete()
             messages.success(request, "Assignment and its submissions were permanently deleted.")
         elif action == "material_update":
             try:
@@ -802,7 +810,10 @@ def ielts_admin_panel(request):
             except (ValueError, TypeError):
                 messages.error(request, "Check the course material details.")
         elif action == "material_delete":
-            get_object_or_404(IELTSMaterial, pk=request.POST.get("material_id")).delete()
+            material = get_object_or_404(IELTSMaterial, pk=request.POST.get("material_id"))
+            if material.file:
+                material.file.delete(save=False)
+            material.delete()
             messages.success(request, "Course material deleted.")
         elif action == "attendance_student":
             name = request.POST.get("name", "").strip()[:120]
