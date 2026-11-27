@@ -103,7 +103,7 @@ document.querySelectorAll(".attendance-edit-details").forEach(details=>{const fo
 <td>{{ assignment.time_minutes }} min</td><td>{{ assignment.min_words }}–{{ assignment.max_words }}</td><td>{{ assignment.submissions.count }}</td>
 <td><div class="ia-actions"><button type="button" class="ia-btn assignment-open-edit" data-assignment-id="{{ assignment.pk }}">Edit</button><form method="post" onsubmit="return confirm('Delete this assignment and all its submissions permanently?')">{% csrf_token %}<input type="hidden" name="action" value="assignment_delete"><input type="hidden" name="assignment_id" value="{{ assignment.pk }}"><button class="ia-btn assignment-delete-btn" type="submit">Delete</button></form></div>
 <form class="ia-form assignment-edit-form" id="assignment-edit-{{ assignment.pk }}" method="post" hidden>{% csrf_token %}<input type="hidden" name="action" value="assignment_update"><input type="hidden" name="assignment_id" value="{{ assignment.pk }}">
-<label>Assign To Student<select name="student_id" class="assignment-student"><option value="">All enrolled students (course-wide)</option>{% for student in assignment_students %}<option value="{{ student.pk }}" {% if assignment.target_student_id == student.pk %}selected{% endif %}>{{ student.name }} · {{ student.roll|default:student.user.username }}</option>{% endfor %}</select></label>
+<label>Assign To Student<select name="student_id" class="assignment-student"><option value="">All enrolled students (course-wide)</option>{% for student in assignment_students %}<option value="{{ student.pk }}" data-courses="{% for enrollment in student.course_enrollments.all %}|{{ enrollment.course }}|{% empty %}|{{ student.course }}|{% endfor %}" {% if assignment.target_student_id == student.pk %}selected{% endif %}>{{ student.name }} · {{ student.roll|default:student.user.username }}</option>{% endfor %}</select></label>
 <label>Course<select name="course" class="assignment-course" required>{% for course, modules in course_modules.items %}<option value="{{ course }}" {% if course == assignment.course %}selected{% endif %}>{{ course }}</option>{% endfor %}</select></label>
 <label>Module<select name="module_name" class="assignment-module" data-current="{{ assignment.module_name }}" required></select></label>
 <label>Assignment Title<input name="title" value="{{ assignment.title }}" maxlength="180" required></label>
@@ -255,6 +255,15 @@ document.querySelectorAll('.assignment-open-edit').forEach(button=>{
   let closed=false;const close=()=>{if(closed)return;closed=true;placeholder.after(form);form.hidden=true;overlay.remove();document.body.classList.remove('attendance-modal-open');document.removeEventListener('keydown',esc);};
   const esc=e=>{if(e.key==='Escape')close();};overlay.addEventListener('click',e=>{if(e.target===overlay)close();});overlay.querySelector('.assignment-modal-close').addEventListener('click',close);document.addEventListener('keydown',esc);
  });
+});
+document.querySelectorAll('.assignment-student').forEach(studentSelect=>{
+ const form=studentSelect.closest('form');const courseSelect=form?.querySelector('.assignment-course');if(!courseSelect)return;
+ function filterCourses(){
+  const selected=studentSelect.selectedOptions[0];const allowed=selected&&selected.value?selected.dataset.courses||'':'';
+  Array.from(courseSelect.options).forEach(option=>{if(!option.value){option.hidden=false;return;}option.hidden=!!allowed&&!allowed.includes('|'+option.value+'|');});
+  if(courseSelect.selectedOptions[0]?.hidden){courseSelect.value='';courseSelect.dispatchEvent(new Event('change'));}
+ }
+ studentSelect.addEventListener('change',filterCourses);filterCourses();
 });
 document.querySelectorAll('.assignment-course').forEach(courseSelect=>{
  const form=courseSelect.closest('form');const moduleSelect=form?.querySelector('.assignment-module');if(!moduleSelect)return;
