@@ -420,8 +420,30 @@ def student_dashboard(request):
         logout(request)
         messages.error(request, "No active student profile is linked to this account. Please contact your teacher.")
         return redirect("student_access")
+    if request.method == "POST" and request.POST.get("action") == "update_student_information":
+        profile.email = request.POST.get("email", "").strip()[:254]
+        profile.address = request.POST.get("address", "").strip()
+        profile.country = request.POST.get("country", "").strip()[:100]
+        profile.city = request.POST.get("city", "").strip()[:100]
+        profile.cell_phone = request.POST.get("cell_phone", "").strip()[:30]
+        raw_dob = request.POST.get("date_of_birth", "").strip()
+        try:
+            profile.date_of_birth = datetime.strptime(raw_dob, "%Y-%m-%d").date() if raw_dob else None
+        except ValueError:
+            messages.error(request, "Enter a valid date of birth.")
+            return redirect("student_dashboard")
+        profile.save(update_fields=["email", "address", "country", "city", "cell_phone", "date_of_birth"])
+        if profile.user_id and profile.email and profile.user.email != profile.email:
+            profile.user.email = profile.email
+            profile.user.save(update_fields=["email"])
+        messages.success(request, "Your information has been updated.")
+        return redirect("student_dashboard")
     enrollments = _student_course_enrollments(profile)
     courses = [item.course for item in enrollments]
+    first_sign_in = AttendanceRecord.objects.filter(student=profile, sign_in__isnull=False).order_by("class_date", "created_at").first()
+    if first_sign_in and not profile.joining_date:
+        profile.joining_date = first_sign_in.class_date
+        profile.save(update_fields=["joining_date"])
     return render(request, "students/student_dashboard.html", {
         "student": profile,
         "student_first_name": profile.name.strip().split()[0] if profile.name.strip() else "Student",
@@ -434,8 +456,9 @@ def student_dashboard(request):
         "lessons": IELTSLesson.objects.filter(course__in=courses, is_published=True)[:100],
         "assignments": IELTSAssignment.objects.filter(course__in=courses, is_published=True)[:100],
         "practice_sets": IELTSPracticeSet.objects.filter(course__in=courses, is_published=True)[:100],
+        "countries": ["Afghanistan", "Australia", "Bangladesh", "Canada", "China", "France", "Germany", "India", "Italy", "Japan", "Malaysia", "Nepal", "Pakistan", "Saudi Arabia", "Singapore", "South Korea", "United Arab Emirates", "United Kingdom", "United States"],
+        "country_cities": {"Bangladesh": ["Dhaka", "Chattogram", "Sylhet", "Rajshahi", "Khulna", "Barishal", "Rangpur", "Mymensingh", "Cumilla", "Cox's Bazar"], "India": ["Delhi", "Mumbai", "Kolkata", "Chennai", "Bengaluru", "Hyderabad"], "United States": ["New York", "Los Angeles", "Chicago", "Houston", "San Francisco"], "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Edinburgh"], "Canada": ["Toronto", "Vancouver", "Montreal", "Ottawa", "Calgary"], "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"], "Malaysia": ["Kuala Lumpur", "George Town", "Johor Bahru"], "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina"], "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah"], "Nepal": ["Kathmandu", "Pokhara", "Lalitpur"], "Pakistan": ["Karachi", "Lahore", "Islamabad"]},
     })
-
 
 def ielts_admin_panel(request):
     """Teacher tools are protected by the existing private owner session."""
