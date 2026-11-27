@@ -419,6 +419,7 @@ class IELTSAttendance(models.Model):
 
 class IELTSAssignment(models.Model):
     course = models.CharField(max_length=40, default="IELTS", db_index=True, help_text="Only students enrolled in this course can access this content")
+    module_name = models.CharField(max_length=120, blank=True, default="")
     title = models.CharField(max_length=180)
     instructions = models.TextField()
     time_minutes = models.PositiveSmallIntegerField(default=40, help_text="IELTS writing task duration in minutes")
