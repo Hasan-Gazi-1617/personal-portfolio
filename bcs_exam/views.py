@@ -143,7 +143,8 @@ def create_exam(request):
         messages.success(request, f"{len(parsed)}টি প্রশ্ন draft হিসেবে তৈরি হয়েছে। সঠিক উত্তর ও Preview যাচাই করে Publish করুন।")
     except Exception as exc:
         messages.error(request, str(exc))
-    return redirect("bcs_exam_edit", exam_id=exam.pk if "exam" in locals() else 0)
+        return redirect("bcs_teacher_exams")
+    return redirect("bcs_exam_edit", exam_id=exam.pk)
 
 def edit_exam(request, exam_id):
     _owner(request)
