@@ -27,7 +27,7 @@
 <section class="as-card"><h2 style="font-size:18px;font-weight:850;margin:0 0 6px">Available Assignments</h2><p class="as-muted">Assignments published for your enrolled courses.</p>
 {% for assignment in assignments %}
 <article class="as-card as-assignment" style="margin:15px 0">
-<span class="as-muted">{{ assignment.course }}</span><h3 style="font-size:19px;font-weight:850;margin:5px 0 8px">{{ assignment.title }}</h3>
+<span class="as-muted">{{ assignment.course }} · {{ assignment.module_name|default:"All assigned modules" }}</span><h3 style="font-size:19px;font-weight:850;margin:5px 0 8px">{{ assignment.title }}</h3>
 <p style="font-size:13px;line-height:1.7;white-space:pre-line">{{ assignment.instructions }}</p>
 <p class="as-muted">{{ assignment.time_minutes }} minutes · {{ assignment.min_words }} to {{ assignment.max_words }} words</p>
 <div class="as-stats"><div class="as-stat"><span>TIME REMAINING</span><strong class="as-timer">--:--</strong><small>{{ assignment.time_minutes }} minute timed task</small></div><div class="as-stat"><span>WORD COUNT</span><strong class="as-count">0 <em style="font-size:13px;font-style:normal">/ {{ assignment.max_words }}</em></strong><small>Minimum {{ assignment.min_words }} words</small></div><div class="as-progress"><span></span></div></div>
